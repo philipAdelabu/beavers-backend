@@ -16,6 +16,8 @@ const Dispatch = require('./Dispatch');
 const Training = require('./Training');
 const Promotion = require('./Promotion');
 const AuditLog = require('./AuditLog');
+const Category = require('./Category');
+const Subcategory = require('./Subcategory');
 
 module.exports = {
   User,
@@ -35,5 +37,7 @@ module.exports = {
   Dispatch,
   Training,
   Promotion,
-  AuditLog
+  AuditLog,
+  Category,
+  Subcategory
 };
