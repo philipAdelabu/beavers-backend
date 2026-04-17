@@ -223,7 +223,7 @@ router.post('/login', [
         userType: user.user_type,
         fullName: user.full_name,
         isVerified: user.is_verified,
-        verificationStatus: user.verification_status
+        verificationStatus: user.verification_status 
       }
     });
   } catch (error) {
