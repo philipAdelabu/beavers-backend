@@ -14,10 +14,10 @@ exports.up = async (queryInterface) => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
-    CREATE INDEX idx_categories_name ON categories(name);
-    CREATE INDEX idx_categories_is_active ON categories(is_active);
-    CREATE INDEX idx_categories_display_order ON categories(display_order);
-    CREATE INDEX idx_categories_parent_category ON categories(parent_category_id);
+    CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
+    CREATE INDEX IF NOT EXISTS idx_categories_is_active ON categories(is_active);
+    CREATE INDEX IF NOT EXISTS idx_categories_display_order ON categories(display_order);
+    CREATE INDEX IF NOT EXISTS idx_categories_parent_category ON categories(parent_category_id);
     
     -- Insert main categories
     INSERT INTO categories (id, name, description, display_order, created_at, updated_at) VALUES
@@ -32,7 +32,7 @@ exports.up = async (queryInterface) => {
       (uuid_generate_v4(), 'Appliance Repair', 'Repair and maintenance of home and office appliances', 9, NOW(), NOW()),
       (uuid_generate_v4(), 'Landscaping', 'Garden and landscape design, maintenance, and installation', 10, NOW(), NOW());
     
-    -- Create trigger for updated_at
+    -- Create trigger for categories table (function should exist from migration 001)
     CREATE TRIGGER update_categories_updated_at 
       BEFORE UPDATE ON categories 
       FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

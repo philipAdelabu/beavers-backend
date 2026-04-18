@@ -20,3 +20,185 @@
 2026-04-18 13:25:09 [INFO]: Executed migration: 007_create_payments_table.js 
 2026-04-18 13:25:09 [INFO]: Executed migration: 008_create_warehous_table.js 
 2026-04-18 13:25:09 [ERROR]: Failed to execute migration 009_create_location_history.js: extension "postgis" is not available {"length":314,"name":"error","severity":"ERROR","code":"0A000","detail":"Could not open extension control file \"/usr/share/postgresql/16/extension/postgis.control\": No such file or directory.","hint":"The extension must first be installed on the system where PostgreSQL is running.","file":"extension.c","line":"543","routine":"parse_extension_control_file","stack":"error: extension \"postgis\" is not available\n    at /home/algorithm/projects/beavers/beavers-backend/node_modules/pg/lib/client.js:631:17\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async exports.up (/home/algorithm/projects/beavers/beavers-backend/database/migrations/009_create_location_history.js:2:3)\n    at async executeMigration (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:84:9)\n    at async migrateUp (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:137:5)\n    at async main (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:251:9)"}
+2026-04-18 13:38:28 [INFO]: Running pending migrations... 
+2026-04-18 13:38:28 [INFO]: Database pool connected 
+2026-04-18 13:38:28 [INFO]: Migrations table ready 
+2026-04-18 13:38:28 [INFO]: Found 17 pending migration(s) 
+2026-04-18 13:38:29 [INFO]: Executed migration: 009_create_location_history.js 
+2026-04-18 13:38:29 [INFO]: Executed migration: 010_create_ratings_table.js 
+2026-04-18 13:38:30 [INFO]: Executed migration: 011_create_notifications.js 
+2026-04-18 13:38:30 [INFO]: Executed migration: 012_create_disputes_table.js 
+2026-04-18 13:38:31 [INFO]: Executed migration: 013_create_audit_logs.js 
+2026-04-18 13:38:31 [INFO]: Executed migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:38:32 [INFO]: Executed migration: 015_create_job_offers_table.js 
+2026-04-18 13:38:32 [INFO]: Executed migration: 016_create_training_table.js 
+2026-04-18 13:38:33 [INFO]: Executed migration: 017_create_promotions_table.js 
+2026-04-18 13:38:33 [INFO]: Executed migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:38:34 [ERROR]: Failed to execute migration 019_create_categories_table.js: function update_updated_at_column() does not exist {"length":114,"name":"error","severity":"ERROR","code":"42883","file":"parse_func.c","line":"2169","routine":"LookupFuncName","stack":"error: function update_updated_at_column() does not exist\n    at /home/algorithm/projects/beavers/beavers-backend/node_modules/pg/lib/client.js:631:17\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async exports.up (/home/algorithm/projects/beavers/beavers-backend/database/migrations/019_create_categories_table.js:2:3)\n    at async executeMigration (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:84:9)\n    at async migrateUp (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:137:5)\n    at async main (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:251:9)"}
+2026-04-18 13:52:05 [INFO]: Resetting all migrations... 
+2026-04-18 13:52:05 [INFO]: Database pool connected 
+2026-04-18 13:52:05 [INFO]: Migrations table ready 
+2026-04-18 13:52:05 [INFO]: Rolled back migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:52:05 [INFO]: Rolled back migration: 017_create_promotions_table.js 
+2026-04-18 13:52:05 [INFO]: Rolled back migration: 016_create_training_table.js 
+2026-04-18 13:52:05 [INFO]: Rolled back migration: 015_create_job_offers_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 013_create_audit_logs.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 012_create_disputes_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 011_create_notifications.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 010_create_ratings_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 009_create_location_history.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 008_create_warehous_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 007_create_payments_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 006_create_bill_of_quantities_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 005_create_job_billing_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 004_create_jobs_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 003_create_artisan_profiles_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 002_create_client_profiles_table.js 
+2026-04-18 13:52:06 [INFO]: Rolled back migration: 001_create_users_table.js 
+2026-04-18 13:52:06 [INFO]: All migrations rolled back successfully 
+2026-04-18 13:52:15 [INFO]: Running pending migrations... 
+2026-04-18 13:52:15 [INFO]: Database pool connected 
+2026-04-18 13:52:15 [INFO]: Migrations table ready 
+2026-04-18 13:52:15 [INFO]: Found 25 pending migration(s) 
+2026-04-18 13:52:16 [INFO]: Executed migration: 001_create_users_table.js 
+2026-04-18 13:52:17 [INFO]: Executed migration: 002_create_client_profiles_table.js 
+2026-04-18 13:52:18 [INFO]: Executed migration: 003_create_artisan_profiles_table.js 
+2026-04-18 13:52:18 [INFO]: Executed migration: 004_create_jobs_table.js 
+2026-04-18 13:52:19 [INFO]: Executed migration: 005_create_job_billing_table.js 
+2026-04-18 13:52:19 [INFO]: Executed migration: 006_create_bill_of_quantities_table.js 
+2026-04-18 13:52:19 [INFO]: Executed migration: 007_create_payments_table.js 
+2026-04-18 13:52:20 [INFO]: Executed migration: 008_create_warehous_table.js 
+2026-04-18 13:52:20 [INFO]: Executed migration: 009_create_location_history.js 
+2026-04-18 13:52:21 [INFO]: Executed migration: 010_create_ratings_table.js 
+2026-04-18 13:52:21 [INFO]: Executed migration: 011_create_notifications.js 
+2026-04-18 13:52:22 [INFO]: Executed migration: 012_create_disputes_table.js 
+2026-04-18 13:52:22 [INFO]: Executed migration: 013_create_audit_logs.js 
+2026-04-18 13:52:23 [INFO]: Executed migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:52:23 [INFO]: Executed migration: 015_create_job_offers_table.js 
+2026-04-18 13:52:24 [INFO]: Executed migration: 016_create_training_table.js 
+2026-04-18 13:52:24 [INFO]: Executed migration: 017_create_promotions_table.js 
+2026-04-18 13:52:25 [INFO]: Executed migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:52:25 [INFO]: Executed migration: 019_create_categories_table.js 
+2026-04-18 13:52:25 [INFO]: Executed migration: 020_create_dispatch_requests_table.js 
+2026-04-18 13:52:26 [INFO]: Executed migration: 021_create_substitution_requests_table.js 
+2026-04-18 13:52:26 [ERROR]: Failed to execute migration 022_create_indexes.js: CREATE INDEX CONCURRENTLY cannot run inside a transaction block {"length":132,"name":"error","severity":"ERROR","code":"25001","file":"xact.c","line":"3487","routine":"PreventInTransactionBlock","stack":"error: CREATE INDEX CONCURRENTLY cannot run inside a transaction block\n    at /home/algorithm/projects/beavers/beavers-backend/node_modules/pg/lib/client.js:631:17\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async exports.up (/home/algorithm/projects/beavers/beavers-backend/database/migrations/022_create_indexes.js:2:3)\n    at async executeMigration (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:84:9)\n    at async migrateUp (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:137:5)\n    at async main (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:251:9)"}
+2026-04-18 13:54:40 [INFO]: Running pending migrations... 
+2026-04-18 13:54:40 [INFO]: Database pool connected 
+2026-04-18 13:54:40 [INFO]: Migrations table ready 
+2026-04-18 13:54:40 [INFO]: Found 4 pending migration(s) 
+2026-04-18 13:54:41 [INFO]: Executed migration: 022_create_indexes.js 
+2026-04-18 13:54:41 [INFO]: Executed migration: 023_add_foreign_keys.js 
+2026-04-18 13:54:41 [ERROR]: Failed to execute migration 024_add_soft_delete.js: trigger "update_users_updated_at" for relation "users" already exists {"length":136,"name":"error","severity":"ERROR","code":"42710","file":"trigger.c","line":"768","routine":"CreateTriggerFiringOn","stack":"error: trigger \"update_users_updated_at\" for relation \"users\" already exists\n    at /home/algorithm/projects/beavers/beavers-backend/node_modules/pg/lib/client.js:631:17\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async exports.up (/home/algorithm/projects/beavers/beavers-backend/database/migrations/024_add_soft_delete.js:2:3)\n    at async executeMigration (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:84:9)\n    at async migrateUp (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:137:5)\n    at async main (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:251:9)"}
+2026-04-18 13:54:57 [INFO]: Resetting all migrations... 
+2026-04-18 13:54:57 [INFO]: Database pool connected 
+2026-04-18 13:54:57 [INFO]: Migrations table ready 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 023_add_foreign_keys.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 022_create_indexes.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 021_create_substitution_requests_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 020_create_dispatch_requests_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 019_create_categories_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 017_create_promotions_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 016_create_training_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 015_create_job_offers_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 013_create_audit_logs.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 012_create_disputes_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 011_create_notifications.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 010_create_ratings_table.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 009_create_location_history.js 
+2026-04-18 13:54:57 [INFO]: Rolled back migration: 008_create_warehous_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 007_create_payments_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 006_create_bill_of_quantities_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 005_create_job_billing_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 004_create_jobs_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 003_create_artisan_profiles_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 002_create_client_profiles_table.js 
+2026-04-18 13:54:58 [INFO]: Rolled back migration: 001_create_users_table.js 
+2026-04-18 13:54:58 [INFO]: All migrations rolled back successfully 
+2026-04-18 13:55:01 [INFO]: Running pending migrations... 
+2026-04-18 13:55:01 [INFO]: Database pool connected 
+2026-04-18 13:55:01 [INFO]: Migrations table ready 
+2026-04-18 13:55:01 [INFO]: Found 25 pending migration(s) 
+2026-04-18 13:55:01 [INFO]: Executed migration: 001_create_users_table.js 
+2026-04-18 13:55:02 [INFO]: Executed migration: 002_create_client_profiles_table.js 
+2026-04-18 13:55:02 [INFO]: Executed migration: 003_create_artisan_profiles_table.js 
+2026-04-18 13:55:02 [INFO]: Executed migration: 004_create_jobs_table.js 
+2026-04-18 13:55:03 [INFO]: Executed migration: 005_create_job_billing_table.js 
+2026-04-18 13:55:03 [INFO]: Executed migration: 006_create_bill_of_quantities_table.js 
+2026-04-18 13:55:03 [INFO]: Executed migration: 007_create_payments_table.js 
+2026-04-18 13:55:04 [INFO]: Executed migration: 008_create_warehous_table.js 
+2026-04-18 13:55:04 [INFO]: Executed migration: 009_create_location_history.js 
+2026-04-18 13:55:05 [INFO]: Executed migration: 010_create_ratings_table.js 
+2026-04-18 13:55:05 [INFO]: Executed migration: 011_create_notifications.js 
+2026-04-18 13:55:06 [INFO]: Executed migration: 012_create_disputes_table.js 
+2026-04-18 13:55:06 [INFO]: Executed migration: 013_create_audit_logs.js 
+2026-04-18 13:55:07 [INFO]: Executed migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:55:07 [INFO]: Executed migration: 015_create_job_offers_table.js 
+2026-04-18 13:55:08 [INFO]: Executed migration: 016_create_training_table.js 
+2026-04-18 13:55:08 [INFO]: Executed migration: 017_create_promotions_table.js 
+2026-04-18 13:55:09 [INFO]: Executed migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:55:09 [INFO]: Executed migration: 019_create_categories_table.js 
+2026-04-18 13:55:09 [INFO]: Executed migration: 020_create_dispatch_requests_table.js 
+2026-04-18 13:55:10 [INFO]: Executed migration: 021_create_substitution_requests_table.js 
+2026-04-18 13:55:10 [INFO]: Executed migration: 022_create_indexes.js 
+2026-04-18 13:55:10 [INFO]: Executed migration: 023_add_foreign_keys.js 
+2026-04-18 13:55:11 [ERROR]: Failed to execute migration 024_add_soft_delete.js: trigger "update_users_updated_at" for relation "users" already exists {"length":136,"name":"error","severity":"ERROR","code":"42710","file":"trigger.c","line":"768","routine":"CreateTriggerFiringOn","stack":"error: trigger \"update_users_updated_at\" for relation \"users\" already exists\n    at /home/algorithm/projects/beavers/beavers-backend/node_modules/pg/lib/client.js:631:17\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async exports.up (/home/algorithm/projects/beavers/beavers-backend/database/migrations/024_add_soft_delete.js:2:3)\n    at async executeMigration (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:84:9)\n    at async migrateUp (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:137:5)\n    at async main (/home/algorithm/projects/beavers/beavers-backend/scripts/migrate.js:251:9)"}
+2026-04-18 13:58:32 [INFO]: Resetting all migrations... 
+2026-04-18 13:58:32 [INFO]: Database pool connected 
+2026-04-18 13:58:32 [INFO]: Migrations table ready 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 023_add_foreign_keys.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 022_create_indexes.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 021_create_substitution_requests_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 020_create_dispatch_requests_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 019_create_categories_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 017_create_promotions_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 016_create_training_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 015_create_job_offers_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 013_create_audit_logs.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 012_create_disputes_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 011_create_notifications.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 010_create_ratings_table.js 
+2026-04-18 13:58:32 [INFO]: Rolled back migration: 009_create_location_history.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 008_create_warehous_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 007_create_payments_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 006_create_bill_of_quantities_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 005_create_job_billing_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 004_create_jobs_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 003_create_artisan_profiles_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 002_create_client_profiles_table.js 
+2026-04-18 13:58:33 [INFO]: Rolled back migration: 001_create_users_table.js 
+2026-04-18 13:58:33 [INFO]: All migrations rolled back successfully 
+2026-04-18 13:58:36 [INFO]: Running pending migrations... 
+2026-04-18 13:58:36 [INFO]: Database pool connected 
+2026-04-18 13:58:36 [INFO]: Migrations table ready 
+2026-04-18 13:58:36 [INFO]: Found 25 pending migration(s) 
+2026-04-18 13:58:36 [INFO]: Executed migration: 001_create_users_table.js 
+2026-04-18 13:58:37 [INFO]: Executed migration: 002_create_client_profiles_table.js 
+2026-04-18 13:58:37 [INFO]: Executed migration: 003_create_artisan_profiles_table.js 
+2026-04-18 13:58:38 [INFO]: Executed migration: 004_create_jobs_table.js 
+2026-04-18 13:58:38 [INFO]: Executed migration: 005_create_job_billing_table.js 
+2026-04-18 13:58:38 [INFO]: Executed migration: 006_create_bill_of_quantities_table.js 
+2026-04-18 13:58:39 [INFO]: Executed migration: 007_create_payments_table.js 
+2026-04-18 13:58:39 [INFO]: Executed migration: 008_create_warehous_table.js 
+2026-04-18 13:58:40 [INFO]: Executed migration: 009_create_location_history.js 
+2026-04-18 13:58:40 [INFO]: Executed migration: 010_create_ratings_table.js 
+2026-04-18 13:58:41 [INFO]: Executed migration: 011_create_notifications.js 
+2026-04-18 13:58:41 [INFO]: Executed migration: 012_create_disputes_table.js 
+2026-04-18 13:58:41 [INFO]: Executed migration: 013_create_audit_logs.js 
+2026-04-18 13:58:42 [INFO]: Executed migration: 014_create_escrow_transactions_table.js 
+2026-04-18 13:58:43 [INFO]: Executed migration: 015_create_job_offers_table.js 
+2026-04-18 13:58:43 [INFO]: Executed migration: 016_create_training_table.js 
+2026-04-18 13:58:44 [INFO]: Executed migration: 017_create_promotions_table.js 
+2026-04-18 13:58:44 [INFO]: Executed migration: 018_create_saved_artisans_table.js 
+2026-04-18 13:58:45 [INFO]: Executed migration: 019_create_categories_table.js 
+2026-04-18 13:58:45 [INFO]: Executed migration: 020_create_dispatch_requests_table.js 
+2026-04-18 13:58:45 [INFO]: Executed migration: 021_create_substitution_requests_table.js 
+2026-04-18 13:58:46 [INFO]: Executed migration: 022_create_indexes.js 
+2026-04-18 13:58:46 [INFO]: Executed migration: 023_add_foreign_keys.js 
+2026-04-18 13:58:47 [INFO]: Executed migration: 024_add_soft_delete.js 
+2026-04-18 13:58:47 [INFO]: Executed migration: 025_create_subcategories_table.js 
+2026-04-18 13:58:47 [INFO]: All migrations executed successfully 
