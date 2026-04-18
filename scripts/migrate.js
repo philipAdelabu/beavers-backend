@@ -5,19 +5,35 @@
  * Usage: node scripts/migrate.js [up|down|status|reset]
  */
 
-const { pool, query } = require('../config/database');
 const fs = require('fs');
 const path = require('path');
+const { pool } = require('../config/database');
 const { logger } = require('../config/logger');
 
 const MIGRATIONS_TABLE = 'migrations';
 const MIGRATIONS_DIR = path.join(__dirname, '../database/migrations');
 
 /**
+ * Execute a query using the pool
+ * @param {string} text - SQL query
+ * @param {Array} params - Query parameters
+ * @returns {Promise} Query result
+ */
+const executeQuery = async (text, params = []) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(text, params);
+    return result;
+  } finally {
+    client.release();
+  }
+};
+
+/**
  * Create migrations table if not exists
  */
 async function createMigrationsTable() {
-  await query(`
+  await executeQuery(`
     CREATE TABLE IF NOT EXISTS ${MIGRATIONS_TABLE} (
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL UNIQUE,
@@ -31,7 +47,7 @@ async function createMigrationsTable() {
  * Get executed migrations
  */
 async function getExecutedMigrations() {
-  const result = await query(`SELECT name FROM ${MIGRATIONS_TABLE} ORDER BY id`);
+  const result = await executeQuery(`SELECT name FROM ${MIGRATIONS_TABLE} ORDER BY id`);
   return new Set(result.rows.map(row => row.name));
 }
 
@@ -39,6 +55,11 @@ async function getExecutedMigrations() {
  * Get migration files
  */
 function getMigrationFiles() {
+  if (!fs.existsSync(MIGRATIONS_DIR)) {
+    logger.error(`Migrations directory not found: ${MIGRATIONS_DIR}`);
+    return [];
+  }
+  
   const files = fs.readdirSync(MIGRATIONS_DIR)
     .filter(file => file.endsWith('.js'))
     .sort();
@@ -49,21 +70,36 @@ function getMigrationFiles() {
  * Execute a single migration
  */
 async function executeMigration(migrationFile, direction = 'up') {
-  const migration = require(path.join(MIGRATIONS_DIR, migrationFile));
+  const migrationPath = path.join(MIGRATIONS_DIR, migrationFile);
+  const migration = require(migrationPath);
+  
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
     
     if (direction === 'up') {
-      await migration.up(client);
+      // Call the up function with the client
+      if (typeof migration.up === 'function') {
+        await migration.up(client);
+      } else if (typeof migration.up === 'object' && migration.up.query) {
+        // Handle case where up is exported as an object with query method
+        await client.query(migration.up.query);
+      }
+      
       await client.query(`INSERT INTO ${MIGRATIONS_TABLE} (name) VALUES ($1)`, [migrationFile]);
       logger.info(`Executed migration: ${migrationFile}`);
     } else {
       if (migration.down) {
-        await migration.down(client);
+        if (typeof migration.down === 'function') {
+          await migration.down(client);
+        } else if (typeof migration.down === 'object' && migration.down.query) {
+          await client.query(migration.down.query);
+        }
         await client.query(`DELETE FROM ${MIGRATIONS_TABLE} WHERE name = $1`, [migrationFile]);
         logger.info(`Rolled back migration: ${migrationFile}`);
+      } else {
+        logger.warn(`No down migration for: ${migrationFile}`);
       }
     }
     
@@ -171,10 +207,43 @@ async function migrationStatus() {
 }
 
 /**
+ * Create a new migration file
+ * @param {string} name - Migration name
+ */
+async function createMigration(name) {
+  if (!name) {
+    console.error('Please provide a migration name');
+    console.log('Usage: node scripts/migrate.js create <migration_name>');
+    process.exit(1);
+  }
+  
+  const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '_');
+  const fileName = `${timestamp}_${name}.js`;
+  const filePath = path.join(MIGRATIONS_DIR, fileName);
+  
+  const template = `exports.up = async (queryInterface) => {
+  await queryInterface.query(\`
+    -- Write your migration SQL here
+  \`);
+};
+
+exports.down = async (queryInterface) => {
+  await queryInterface.query(\`
+    -- Write your rollback SQL here
+  \`);
+};
+`;
+  
+  fs.writeFileSync(filePath, template);
+  console.log(`✅ Migration created: ${filePath}`);
+}
+
+/**
  * Main function
  */
 async function main() {
   const command = process.argv[2] || 'up';
+  const migrationName = process.argv[3];
   
   try {
     switch (command) {
@@ -190,15 +259,26 @@ async function main() {
       case 'status':
         await migrationStatus();
         break;
+      case 'create':
+        await createMigration(migrationName);
+        break;
       default:
         console.log(`
-Usage: node scripts/migrate.js [command]
+📋 Migration Script Usage
+=========================
 
 Commands:
   up      - Run pending migrations
   down    - Rollback last migration
   reset   - Rollback all migrations
   status  - Show migration status
+  create  - Create a new migration file
+
+Examples:
+  node scripts/migrate.js up
+  node scripts/migrate.js down
+  node scripts/migrate.js status
+  node scripts/migrate.js create add_users_table
         `);
         break;
     }
@@ -209,5 +289,11 @@ Commands:
     process.exit(1);
   }
 }
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  logger.error('Unhandled rejection:', error);
+  process.exit(1);
+});
 
 main();

@@ -33,13 +33,27 @@ exports.up = async (queryInterface) => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
-    CREATE INDEX idx_artisan_profiles_user_id ON artisan_profiles(user_id);
-    CREATE INDEX idx_artisan_profiles_skill_category ON artisan_profiles(skill_category);
-    CREATE INDEX idx_artisan_profiles_tier_level ON artisan_profiles(tier_level);
-    CREATE INDEX idx_artisan_profiles_star_rating ON artisan_profiles(star_rating);
-    CREATE INDEX idx_artisan_profiles_is_available ON artisan_profiles(is_available);
-    CREATE INDEX idx_artisan_profiles_monthly_fee_status ON artisan_profiles(monthly_fee_status);
-    CREATE INDEX idx_artisan_profiles_current_location ON artisan_profiles USING GIST (current_location);
+    -- Create regular indexes (not GiST on jsonb)
+    CREATE INDEX IF NOT EXISTS idx_artisan_profiles_user_id ON artisan_profiles(user_id);
+    CREATE INDEX IF NOT EXISTS idx_artisan_profiles_skill_category ON artisan_profiles(skill_category);
+    CREATE INDEX IF NOT EXISTS idx_artisan_profiles_tier_level ON artisan_profiles(tier_level);
+    CREATE INDEX IF NOT EXISTS idx_artisan_profiles_star_rating ON artisan_profiles(star_rating);
+    CREATE INDEX IF NOT EXISTS idx_artisan_profiles_is_available ON artisan_profiles(is_available);
+    CREATE INDEX IF NOT EXISTS idx_artisan_profiles_monthly_fee_status ON artisan_profiles(monthly_fee_status);
+    
+    -- For location queries, use PostGIS if available, otherwise skip GiST index on jsonb
+    -- Option 1: If you have PostGIS enabled, create a geometry column
+    -- ALTER TABLE artisan_profiles ADD COLUMN location_geom GEOMETRY(POINT, 4326);
+    -- CREATE INDEX idx_artisan_profiles_location_geom ON artisan_profiles USING GIST (location_geom);
+    
+    -- Option 2: If you want to keep jsonb for location but need efficient queries,
+    -- create separate latitude and longitude columns
+    -- ALTER TABLE artisan_profiles ADD COLUMN latitude DECIMAL(10,8);
+    -- ALTER TABLE artisan_profiles ADD COLUMN longitude DECIMAL(11,8);
+    -- CREATE INDEX idx_artisan_profiles_coordinates ON artisan_profiles(latitude, longitude);
+    
+    -- For now, we'll skip the GiST index on jsonb
+    -- If you need spatial queries, consider adding PostGIS extension and geometry column
   `);
 };
 
