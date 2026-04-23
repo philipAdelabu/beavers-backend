@@ -37,7 +37,6 @@ const locationRoutes = require('./routes/location.routes');
 const boqRoutes = require('./routes/boq.routes');
 const warehouseRoutes = require('./routes/warehouse.routes');
 
-console.log("before services")
 // Import services
 const { initializeDatabase } = require('./config/database');
 const { initializeRedis } = require('./config/redis');

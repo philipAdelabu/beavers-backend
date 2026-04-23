@@ -86,7 +86,15 @@ router.post('/register/client', [
   }
 });
 
+
+
+
+
+
+
+/// * The artisan section begins here */////
 // Artisan registration
+/////////////////////////////////////
 router.post('/register/artisan', [
   body('email').isEmail(),
   body('phone').isMobilePhone(),
