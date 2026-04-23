@@ -11,7 +11,7 @@ exports.up = async (queryInterface) => {
       RETURN NEW;
     END;
     $$ language 'plpgsql';
-    
+     
     -- Create users table
     CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

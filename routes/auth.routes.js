@@ -8,7 +8,7 @@ const { cacheSet, cacheGet } = require('../config/redis');
 const { sendEmail, sendSMS } = require('../services/notification.service');
 
 const router = express.Router();
-
+ 
 // Client registration
 router.post('/register/client', [
   body('email').isEmail().normalizeEmail(),

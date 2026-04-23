@@ -1,5 +1,4 @@
 // server.js
-console.log("Entering point")
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
@@ -28,7 +27,6 @@ app.use(express.urlencoded({ extended: true }));
 console.log("before const routes")
 // Import routes
 const authRoutes = require('./routes/auth.routes');
-console.log("*** ")
 const clientRoutes = require('./routes/client.routes');
 const artisanRoutes = require('./routes/artisan.routes');
 const jobRoutes = require('./routes/job.routes');
@@ -47,15 +45,15 @@ const { setupSocketHandlers } = require('./socket/socket.handlers');
 
 console.log("before routes")
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/clients', clientRoutes);
-app.use('/api/artisans', artisanRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/location', locationRoutes);
-app.use('/api/boq', boqRoutes);
-app.use('/api/warehouse', warehouseRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/clients', clientRoutes);
+app.use('/api/v1/artisans', artisanRoutes);
+app.use('/api/v1/jobs', jobRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/location', locationRoutes);
+app.use('/api/v1/boq', boqRoutes);
+app.use('/api/v1/warehouse', warehouseRoutes);
 
 
 console.log("Health Check")
