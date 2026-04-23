@@ -6,7 +6,7 @@ const { body, validationResult } = require('express-validator');
 const { pool } = require('../config/database');
 const { cacheSet, cacheGet } = require('../config/redis');
 const { sendEmail, sendSMS } = require('../services/notification.service');
-
+const { authenticateToken } = require('../middleware/auth.middleware');
 const router = express.Router();
  
 // Client registration
