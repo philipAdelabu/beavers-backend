@@ -202,3 +202,55 @@
 2026-04-18 13:58:47 [INFO]: Executed migration: 024_add_soft_delete.js 
 2026-04-18 13:58:47 [INFO]: Executed migration: 025_create_subcategories_table.js 
 2026-04-18 13:58:47 [INFO]: All migrations executed successfully 
+2026-04-24 10:33:30 [INFO]: Running pending migrations... 
+2026-04-24 10:33:30 [INFO]: Database pool connected 
+2026-04-24 10:33:31 [INFO]: Migrations table ready 
+2026-04-24 10:33:31 [INFO]: Found 25 pending migration(s) 
+2026-04-24 10:33:32 [INFO]: Executed migration: 001_create_users_table.js 
+2026-04-24 10:33:32 [INFO]: Executed migration: 002_create_client_profiles_table.js 
+2026-04-24 10:33:32 [INFO]: Executed migration: 003_create_artisan_profiles_table.js 
+2026-04-24 10:33:33 [INFO]: Executed migration: 004_create_jobs_table.js 
+2026-04-24 10:33:33 [INFO]: Executed migration: 005_create_job_billing_table.js 
+2026-04-24 10:33:33 [INFO]: Executed migration: 006_create_bill_of_quantities_table.js 
+2026-04-24 10:33:33 [INFO]: Executed migration: 007_create_payments_table.js 
+2026-04-24 10:33:34 [INFO]: Executed migration: 008_create_warehous_table.js 
+2026-04-24 10:33:34 [ERROR]: Failed to execute migration 009_create_location_history.js: extension "postgis" is not available {"length":314,"name":"error","severity":"ERROR","code":"0A000","detail":"Could not open extension control file \"/usr/share/postgresql/16/extension/postgis.control\": No such file or directory.","hint":"The extension must first be installed on the system where PostgreSQL is running.","file":"extension.c","line":"673","routine":"parse_extension_control_file","stack":"error: extension \"postgis\" is not available\n    at /home/philip/beavers/beavers-backend/node_modules/pg/lib/client.js:631:17\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async exports.up (/home/philip/beavers/beavers-backend/database/migrations/009_create_location_history.js:2:3)\n    at async executeMigration (/home/philip/beavers/beavers-backend/scripts/migrate.js:84:9)\n    at async migrateUp (/home/philip/beavers/beavers-backend/scripts/migrate.js:137:5)\n    at async main (/home/philip/beavers/beavers-backend/scripts/migrate.js:251:9)"}
+2026-04-24 10:50:36 [INFO]: Running pending migrations... 
+2026-04-24 10:50:37 [INFO]: Database pool connected 
+2026-04-24 10:50:37 [INFO]: Migrations table ready 
+2026-04-24 10:50:37 [INFO]: Found 17 pending migration(s) 
+2026-04-24 10:50:39 [INFO]: Executed migration: 009_create_location_history.js 
+2026-04-24 10:50:39 [INFO]: Executed migration: 010_create_ratings_table.js 
+2026-04-24 10:50:40 [INFO]: Executed migration: 011_create_notifications.js 
+2026-04-24 10:50:40 [INFO]: Executed migration: 012_create_disputes_table.js 
+2026-04-24 10:50:41 [INFO]: Executed migration: 013_create_audit_logs.js 
+2026-04-24 10:50:41 [INFO]: Executed migration: 014_create_escrow_transactions_table.js 
+2026-04-24 10:50:42 [INFO]: Executed migration: 015_create_job_offers_table.js 
+2026-04-24 10:50:42 [INFO]: Executed migration: 016_create_training_table.js 
+2026-04-24 10:50:43 [INFO]: Executed migration: 017_create_promotions_table.js 
+2026-04-24 10:50:43 [INFO]: Executed migration: 018_create_saved_artisans_table.js 
+2026-04-24 10:50:43 [INFO]: Executed migration: 019_create_categories_table.js 
+2026-04-24 10:50:44 [INFO]: Executed migration: 020_create_dispatch_requests_table.js 
+2026-04-24 10:50:44 [INFO]: Executed migration: 021_create_substitution_requests_table.js 
+2026-04-24 10:50:44 [INFO]: Executed migration: 022_create_indexes.js 
+2026-04-24 10:50:45 [INFO]: Executed migration: 023_add_foreign_keys.js 
+2026-04-24 10:50:45 [INFO]: Executed migration: 024_add_soft_delete.js 
+2026-04-24 10:50:45 [INFO]: Executed migration: 025_create_subcategories_table.js 
+2026-04-24 10:50:45 [INFO]: All migrations executed successfully 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/profile-photos 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/verification-docs 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/job-photos 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/invoices 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/temp 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/certificates 
+2026-04-24 10:53:38 [INFO]: Created upload directory: /home/philip/beavers/beavers-backend/uploads/disputes 
+2026-04-24 10:53:39 [INFO]: Database pool connected 
+2026-04-24 10:53:39 [INFO]: Database extensions initialized 
+2026-04-24 10:53:39 [INFO]: Database connected successfully at Fri Apr 24 2026 10:53:39 GMT+0100 (West Africa Time) 
+2026-04-24 12:01:14 [INFO]: Starting server... 
+2026-04-24 12:01:14 [INFO]: Database pool connected 
+2026-04-24 12:01:14 [INFO]: Database extensions initialized 
+2026-04-24 12:01:14 [INFO]: Database connected successfully at Fri Apr 24 2026 12:01:14 GMT+0100 (West Africa Time) 
+2026-04-24 12:01:14 [INFO]: Database connected successfully 
+2026-04-24 12:01:14 [INFO]: Redis connecting... 
+2026-04-24 12:01:14 [INFO]: Redis connected successfully 

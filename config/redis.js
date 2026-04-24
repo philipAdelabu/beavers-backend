@@ -3,9 +3,9 @@ const { logger } = require('./logger');
 
 const redis = new Redis({
   host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+  port: parseInt(process.env.REDIS_PORT || '6379', 10),
   password: process.env.REDIS_PASSWORD,
-  db: parseInt(process.env.REDIS_DB || '0'),
+  db: parseInt(process.env.REDIS_DB || '0', 10),
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000);
     logger.warn(`Redis connection retry ${times} in ${delay}ms`);
@@ -17,7 +17,7 @@ const redis = new Redis({
   connectTimeout: 10000,
   commandTimeout: 5000,
   keepAlive: 30000,
-  family: 4
+  family: 4,
 });
 
 // Event listeners
@@ -48,12 +48,30 @@ redis.on('end', () => {
 /**
  * Connect to Redis
  */
-const connectRedis = async () => {
+/**
+ * Connect to Redis (initialize)
+ */
+const initializeRedis = async () => {
   try {
     await redis.connect();
+    logger.info('Redis initialized and connected');
     return true;
   } catch (error) {
-    logger.error('Failed to connect to Redis:', error);
+    logger.error('Failed to initialize Redis:', error);
+    return false;
+  }
+};
+
+/**
+ * Test Redis connection
+ */
+const testConnection = async () => {
+  try {
+    await redis.ping();
+    logger.info('Redis connection test successful');
+    return true;
+  } catch (error) {
+    logger.error('Redis connection test failed:', error);
     return false;
   }
 };
@@ -127,9 +145,7 @@ const cacheIncrement = async (key, increment = 1) => {
  * @param {number} ttl - Time to live in seconds
  * @returns {Promise<boolean>} Success status
  */
-const cacheSetEx = async (key, value, ttl) => {
-  return cacheSet(key, value, ttl);
-};
+const cacheSetEx = async (key, value, ttl) => cacheSet(key, value, ttl);
 
 /**
  * Get cache TTL
@@ -168,7 +184,7 @@ const cacheExists = async (key) => {
 const cacheGetMultiple = async (keys) => {
   try {
     const values = await redis.mget(keys);
-    return values.map(v => v ? JSON.parse(v) : null);
+    return values.map((v) => (v ? JSON.parse(v) : null));
   } catch (error) {
     logger.error('Cache get multiple error:', { error: error.message });
     return keys.map(() => null);
@@ -183,9 +199,9 @@ const cacheGetMultiple = async (keys) => {
 const cacheSetMultiple = async (entries) => {
   try {
     const pipeline = redis.pipeline();
-    for (const entry of entries) {
+    entries.forEach((entry) => {
       pipeline.set(entry.key, JSON.stringify(entry.value), 'EX', entry.ttl || 3600);
-    }
+    });
     await pipeline.exec();
     return true;
   } catch (error) {
@@ -233,7 +249,7 @@ const getNearbyArtisans = async (longitude, latitude, radius = 5) => {
       radius,
       'km',
       'WITHDIST',
-      'ASC'
+      'ASC',
     );
     return artisans;
   } catch (error) {
@@ -258,7 +274,7 @@ const getArtisanLocation = async (artisanId) => {
     if (location && location[0] && location[0][0]) {
       return {
         longitude: location[0][0],
-        latitude: location[0][1]
+        latitude: location[0][1],
       };
     }
     return null;
@@ -269,8 +285,9 @@ const getArtisanLocation = async (artisanId) => {
 };
 
 module.exports = {
-  redis,
-  connectRedis,
+  redis: () => redis,
+  initializeRedis,
+  testConnection,
   cacheGet,
   cacheSet,
   cacheDel,
@@ -284,5 +301,5 @@ module.exports = {
   addArtisanLocation,
   getNearbyArtisans,
   removeArtisanLocation,
-  getArtisanLocation
+  getArtisanLocation,
 };
