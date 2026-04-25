@@ -4,20 +4,26 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { pool } = require('../config/database');
-const { cacheSet, cacheGet } = require('../config/redis');
+const { cacheSet, cacheGet, cacheDel } = require('../config/redis');
 const { sendEmail, sendSMS } = require('../services/notification.service');
 const { authenticateToken } = require('../middleware/auth.middleware');
+const { logger } = require('../config/logger');
+
 const router = express.Router();
- 
+
+router.get('/test', (req, res) => {
+  res.status(200).json({ message: 'hello world' });
+});
+
 // Client registration
 router.post('/register/client', [
   body('email').isEmail().normalizeEmail(),
   body('phone').isMobilePhone(),
   body('password').isLength({ min: 6 }),
   body('fullLegalName').notEmpty(),
-  body('nin').notEmpty(),
-  body('streetAddress').notEmpty(),
-  body('serviceAddress').notEmpty()
+  body('nin').isEmpty(),
+  body('streetAddress').isEmpty(),
+  body('serviceAddress').isEmpty(),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -33,7 +39,7 @@ router.post('/register/client', [
     // Check if user exists
     const existingUser = await client.query(
       'SELECT id FROM users WHERE email = $1 OR phone = $2',
-      [email, phone]
+      [email, phone],
     );
     
     if (existingUser.rows.length > 0) {
@@ -48,7 +54,7 @@ router.post('/register/client', [
     const userResult = await client.query(
       `INSERT INTO users (email, phone, password_hash, user_type, verification_status)
        VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [email, phone, hashedPassword, 'client', 'pending']
+      [email, phone, hashedPassword, 'client', 'pending'],
     );
 
     const userId = userResult.rows[0].id;
@@ -79,22 +85,15 @@ router.post('/register/client', [
     });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Registration error:', error);
+    logger.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
   } finally {
     client.release();
   }
 });
 
-
-
-
-
-
-
 /// * The artisan section begins here */////
 // Artisan registration
-/////////////////////////////////////
 router.post('/register/artisan', [
   body('email').isEmail(),
   body('phone').isMobilePhone(),
@@ -141,9 +140,10 @@ router.post('/register/artisan', [
 
     // Create artisan profile
     await client.query(
-      `INSERT INTO artisan_profiles (user_id, full_legal_name, nin, residential_address, skill_category, onboarding_fee_paid)
+      `INSERT INTO artisan_profiles (user_id, full_legal_name, nin, 
+       residential_address, skill_category, onboarding_fee_paid)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [userId, fullLegalName, nin, residentialAddress, skillCategory, onboardingFee === 0]
+      [userId, fullLegalName, nin, residentialAddress, skillCategory, onboardingFee === 0],
     );
 
     await client.query('COMMIT');
@@ -167,7 +167,7 @@ router.post('/register/artisan', [
 // Login
 router.post('/login', [
   body('email').isEmail(),
-  body('password').notEmpty()
+  body('password').notEmpty(),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -186,7 +186,7 @@ router.post('/login', [
        LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
        LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
        WHERE u.email = $1`,
-      [email]
+      [email],
     );
 
     if (userResult.rows.length === 0) {
@@ -231,11 +231,11 @@ router.post('/login', [
         userType: user.user_type,
         fullName: user.full_name,
         isVerified: user.is_verified,
-        verificationStatus: user.verification_status 
-      }
+        verificationStatus: user.verification_status,
+      },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });
   }
 });
@@ -258,7 +258,7 @@ router.post('/refresh', async (req, res) => {
 
     const userResult = await pool.query(
       'SELECT id, email, user_type FROM users WHERE id = $1',
-      [decoded.userId]
+      [decoded.userId],
     );
 
     if (userResult.rows.length === 0) {
@@ -269,7 +269,7 @@ router.post('/refresh', async (req, res) => {
     const newAccessToken = jwt.sign(
       { userId: user.id, email: user.email, userType: user.user_type },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN },
     );
 
     res.json({ accessToken: newAccessToken });
@@ -287,19 +287,17 @@ router.post('/logout', authenticateToken, async (req, res) => {
 // Verify OTP
 router.post('/verify-otp', [
   body('phone').isMobilePhone(),
-  body('otp').isLength({ min: 6, max: 6 })
+  body('otp').isLength({ min: 6, max: 6 }),
 ], async (req, res) => {
   const { phone, otp } = req.body;
-
   const storedOtp = await cacheGet(`otp:${phone}`);
-  
   if (!storedOtp || storedOtp !== otp) {
     return res.status(400).json({ error: 'Invalid or expired OTP' });
   }
-
   await cacheDel(`otp:${phone}`);
-
   res.json({ message: 'OTP verified successfully' });
 });
+
+
 
 module.exports = router;

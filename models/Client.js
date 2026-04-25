@@ -1,4 +1,5 @@
 const { pool } = require('../config/database');
+const Wallet = require('./Wallet');
 
 class Client {
   static async create(clientData) {
@@ -171,6 +172,15 @@ class Client {
       [addressId]
     );
     return result.rows[0];
+  }
+
+  // Add to Client class
+  static async getWalletBalance(clientId) {
+    return Wallet.getBalance(clientId);
+  }
+
+  static async getTransactionHistory(clientId, filters) {
+    return Wallet.getTransactionHistory(clientId, filters);
   }
 }
 

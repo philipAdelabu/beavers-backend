@@ -1,20 +1,14 @@
 // server.js
 const express = require('express');
 const http = require('http');
-const socketIO = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const { initSocket } = require('./socket');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
-});
 
 // Middleware
 app.use(helmet());
@@ -39,7 +33,6 @@ const warehouseRoutes = require('./routes/warehouse.routes');
 const { pool, initializeDatabase } = require('./config/database');
 const { redis, initializeRedis } = require('./config/redis');
 const { logger } = require('./config/logger');
-const { setupSocketHandlers } = require('./socket/socket.handlers');
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
@@ -72,7 +65,10 @@ const startServer = async () => {
       logger.info('Redis connected successfully');
     }
 
-    setupSocketHandlers(io);
+    initSocket(server);
+
+    logger.info('getting to  port ..');
+    // setupSocketHandlers(io);
     const PORT = process.env.PORT || 3000;
     server.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
@@ -104,7 +100,6 @@ const startServer = async () => {
   }
 };
 
-logger.info('Starting server...');
 startServer();
-
-module.exports = { app, io };
+logger.info('... end of ther server call..');
+module.exports = { app };

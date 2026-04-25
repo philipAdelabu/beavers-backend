@@ -18,6 +18,7 @@ const Promotion = require('./Promotion');
 const AuditLog = require('./AuditLog');
 const Category = require('./Category');
 const Subcategory = require('./Subcategory');
+const Wallet = require('./Wallet');
 
 module.exports = {
   User,
@@ -39,5 +40,6 @@ module.exports = {
   Promotion,
   AuditLog,
   Category,
-  Subcategory
+  Subcategory,
+  Wallet,
 };

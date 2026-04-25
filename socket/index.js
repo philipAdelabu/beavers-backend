@@ -6,14 +6,17 @@ const { pool } = require('../config/database');
 const { redis } = require('../config/redis');
 
 let io;
-let connectedUsers = new Map(); // userId -> socketId
-let socketToUser = new Map(); // socketId -> userId
-let userRooms = new Map(); // userId -> Set of room names
+let connectedUsers = new Map();
+let socketToUser = new Map();
+let userRooms = new Map();
+
+// Export these for use in other modules if needed
+const getConnectedUsers = () => connectedUsers;
+const getSocketToUser = () => socketToUser;
+const getUserRooms = () => userRooms;
 
 /**
  * Initialize Socket.IO server
- * @param {http.Server} server - HTTP server instance
- * @returns {socketIO.Server} Socket.IO instance
  */
 const initSocket = (server) => {
   io = socketIO(server, {
@@ -24,9 +27,7 @@ const initSocket = (server) => {
     },
     transports: ['websocket', 'polling'],
     pingTimeout: 60000,
-    pingInterval: 25000,
-    allowEIO3: true,
-    path: '/socket.io/'
+    pingInterval: 25000
   });
 
   // Authentication middleware
@@ -39,10 +40,8 @@ const initSocket = (server) => {
         return next(new Error('Authentication required'));
       }
 
-      // Verify JWT token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Check if user exists and is active
       const userResult = await pool.query(
         'SELECT id, user_type, is_active FROM users WHERE id = $1',
         [decoded.userId]
@@ -52,12 +51,6 @@ const initSocket = (server) => {
         return next(new Error('User not found or inactive'));
       }
       
-      // Check if token is blacklisted
-      const isBlacklisted = await redis.get(`blacklist:${token}`);
-      if (isBlacklisted) {
-        return next(new Error('Token has been revoked'));
-      }
-      
       socket.userId = decoded.userId;
       socket.userType = userResult.rows[0].user_type;
       socket.token = token;
@@ -65,11 +58,9 @@ const initSocket = (server) => {
       next();
     } catch (error) {
       if (error.name === 'JsonWebTokenError') {
-        logger.warn('Invalid socket token:', error.message);
         return next(new Error('Invalid token'));
       }
       if (error.name === 'TokenExpiredError') {
-        logger.warn('Expired socket token');
         return next(new Error('Token expired'));
       }
       logger.error('Socket authentication error:', error);
@@ -87,28 +78,33 @@ const initSocket = (server) => {
     // Store connection
     connectedUsers.set(userId, socket.id);
     socketToUser.set(socket.id, userId);
-    userRooms.set(userId, new Set());
+    
+    if (!userRooms.has(userId)) {
+      userRooms.set(userId, new Set());
+    }
     
     // Join user's personal room
     socket.join(`user:${userId}`);
     userRooms.get(userId).add(`user:${userId}`);
     
-    // Broadcast user online status
+    // Broadcast user online
     io.emit('user:online', { userId, userType, timestamp: new Date() });
     
-    // Setup event handlers
-    setupSocketHandlers(io, socket, { connectedUsers, socketToUser, userRooms });
+    // Setup event handlers - PASS THE MAPS AND IO
+    setupSocketHandlers(io, socket, {
+      connectedUsers,
+      socketToUser,
+      userRooms
+    });
     
     // Handle disconnection
     socket.on('disconnect', async () => {
       logger.info(`Socket disconnected: ${socket.id} - User: ${userId}`);
       
-      // Remove from maps
       connectedUsers.delete(userId);
       socketToUser.delete(socket.id);
       userRooms.delete(userId);
       
-      // Update artisan availability if needed
       if (userType === 'artisan') {
         try {
           await pool.query(
@@ -122,11 +118,9 @@ const initSocket = (server) => {
         }
       }
       
-      // Broadcast user offline status
       io.emit('user:offline', { userId, userType, timestamp: new Date() });
     });
     
-    // Handle errors
     socket.on('error', (error) => {
       logger.error(`Socket error for user ${userId}:`, error);
     });
@@ -139,7 +133,6 @@ const initSocket = (server) => {
 
 /**
  * Get Socket.IO instance
- * @returns {socketIO.Server} Socket.IO instance
  */
 const getIO = () => {
   if (!io) {
@@ -150,10 +143,6 @@ const getIO = () => {
 
 /**
  * Emit event to specific user
- * @param {string} userId - User ID
- * @param {string} event - Event name
- * @param {*} data - Event data
- * @returns {boolean} True if user was connected
  */
 const emitToUser = (userId, event, data) => {
   const socketId = connectedUsers.get(userId);
@@ -165,25 +154,18 @@ const emitToUser = (userId, event, data) => {
 };
 
 /**
- * Emit event to multiple users
- * @param {Array} userIds - Array of user IDs
- * @param {string} event - Event name
- * @param {*} data - Event data
- * @returns {Array} Results for each user
+ * Emit event to job room
  */
-const emitToUsers = (userIds, event, data) => {
-  const results = [];
-  for (const userId of userIds) {
-    const sent = emitToUser(userId, event, data);
-    results.push({ userId, sent });
+const emitToJob = (jobId, event, data) => {
+  if (io) {
+    io.to(`job:${jobId}`).emit(event, data);
+    return true;
   }
-  return results;
+  return false;
 };
 
 /**
  * Emit event to all connected clients
- * @param {string} event - Event name
- * @param {*} data - Event data
  */
 const emitToAll = (event, data) => {
   if (io) {
@@ -191,61 +173,12 @@ const emitToAll = (event, data) => {
   }
 };
 
-/**
- * Emit event to users in specific room
- * @param {string} room - Room name
- * @param {string} event - Event name
- * @param {*} data - Event data
- */
-const emitToRoom = (room, event, data) => {
-  if (io) {
-    io.to(room).emit(event, data);
-  }
-};
-
-/**
- * Get number of connected users
- * @returns {number} Connected users count
- */
-const getConnectedCount = () => {
-  return connectedUsers.size;
-};
-
-/**
- * Get connected user IDs
- * @returns {Array} Array of user IDs
- */
-const getConnectedUsers = () => {
-  return Array.from(connectedUsers.keys());
-};
-
-/**
- * Check if user is connected
- * @param {string} userId - User ID
- * @returns {boolean} True if connected
- */
-const isUserConnected = (userId) => {
-  return connectedUsers.has(userId);
-};
-
-/**
- * Get socket ID for user
- * @param {string} userId - User ID
- * @returns {string|null} Socket ID or null
- */
-const getUserSocketId = (userId) => {
-  return connectedUsers.get(userId) || null;
-};
-
 module.exports = {
   initSocket,
   getIO,
   emitToUser,
-  emitToUsers,
+  emitToJob,
   emitToAll,
-  emitToRoom,
-  getConnectedCount,
-  getConnectedUsers,
-  isUserConnected,
-  getUserSocketId
+  getConnectedUsers: () => Array.from(connectedUsers.keys()),
+  isUserConnected: (userId) => connectedUsers.has(userId)
 };

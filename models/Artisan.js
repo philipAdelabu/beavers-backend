@@ -1,4 +1,5 @@
 const { pool } = require('../config/database');
+const Wallet = require('./Wallet');
 
 class Artisan {
   static async create(artisanData) {
@@ -319,6 +320,21 @@ class Artisan {
     
     return result.rows[0];
   }
+
+  static async getWalletBalance(artisanId) {
+    return Wallet.getBalance(artisanId);
+  }
+
+  /*
+  static async requestWithdrawal(artisanId, amount, bankDetails) {
+    return  Wallet.requestWithdrawal(artisanId, amount, bankDetails);
+  }
+
+  static async getWithdrawalHistory(artisanId, filters) {
+    return Wallet.getWithdrawalRequests(artisanId, filters);
+  }
+  */
+
 }
 
 module.exports = Artisan;

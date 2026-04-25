@@ -4,6 +4,7 @@ const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const { generateArrivalPIN, calculateDistance } = require('../utils/geo.utils');
+const Wallet = require('../models/Wallet');
 
 class JobService {
   static async createJob(clientId, jobData) {
@@ -551,8 +552,11 @@ class JobService {
   }
   
   static async completeJob(jobId, artisanId, completionNotes = null) {
+    const client = await pool.connect();
     const completionTime = new Date();
-    
+    try{ 
+      await client.query('BEGIN');
+
     const result = await pool.query(
       `UPDATE jobs 
        SET job_status = 'completed', 
@@ -589,8 +593,34 @@ class JobService {
     
     logger.info(`Job ${jobId} completed by artisan ${artisanId}`);
     
+    const billing = billingResult.rows[0];
+    const artisanEarnings = billing.workmanship_cost;
+    // Credit artisan's wallet
+  
+    await Wallet.credit(
+      artisanId, 
+      artisanEarnings, 
+      'earning', 
+    { 
+    description: `Payment for job #${jobId.slice(0, 8)}`,
+        jobId 
+      }
+    );
+
+    // if client paid via wallet, debit client's wallet
+    // this would be handle in the payment service 
+
+    await client.query('COMMIT');
     return { job, billing: billingResult.rows[0] };
+     } catch (error) {
+     await client.query('ROLLBACK');
+     throw error;
+    } finally {
+    client.release();
+    }
   }
+
+
   
   static async cancelJob(jobId, userId, userType, reason) {
     const client = await pool.connect();
