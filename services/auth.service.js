@@ -7,9 +7,10 @@ const { generateAndStoreOTP, verifyOTP } = require('../utils/otp.utils');
 const { sendEmail, sendSMS } = require('./notification.service');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
+const { upload } = require('../config/multer');
 
 class AuthService {
-  static async registerClient(userData) {
+  static async registerClient(userData, uploadedFiles = {}) {
     const { email, phone, password, fullLegalName, nin, streetAddress, serviceAddress } = userData;
     
     const client = await pool.connect();
@@ -42,9 +43,9 @@ class AuthService {
       
       // Create client profile
       await client.query(
-        `INSERT INTO client_profiles (user_id, full_legal_name, nin, street_address, service_address)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [user.id, fullLegalName, nin, streetAddress, serviceAddress]
+        `INSERT INTO client_profiles (user_id, full_legal_name, nin, street_address, service_address, verification_documents)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [user.id, fullLegalName, nin, streetAddress, serviceAddress, uploadedFiles],
       );
       
       // Generate OTP for email verification
@@ -76,7 +77,7 @@ class AuthService {
     }
   }
   
-  static async registerArtisan(userData) {
+  static async registerArtisan(userData, uploadedFiles = {}) {
     const { email, phone, password, fullLegalName, nin, residentialAddress, skillCategory, onboardingFee } = userData;
     
     const client = await pool.connect();
@@ -109,16 +110,21 @@ class AuthService {
       
       // Create artisan profile
       await client.query(
-        `INSERT INTO artisan_profiles (user_id, full_legal_name, nin, residential_address, skill_category, onboarding_fee_paid)
+        `INSERT INTO artisan_profiles (user_id, full_legal_name, 
+        nin, residential_address, skill_category,passport_photo_url, onboarding_fee_paid)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [user.id, fullLegalName, nin, residentialAddress, skillCategory, onboardingFee === 0]
+        [
+          user.id, fullLegalName, nin, residentialAddress, skillCategory, 
+          uploadedFiles.passportPhoto || null, onboardingFee === 0,
+        ],
       );
       
       // Generate OTP for email verification
       const otp = await generateAndStoreOTP(`email:${email}`, 600);
       
       // Send verification email
-      await sendEmail(email, 'Verify Your Email', 
+      await sendEmail(email,
+        'Verify Your Email',
         `Your verification code is: ${otp}. This code expires in 10 minutes.`);
       
       await client.query('COMMIT');

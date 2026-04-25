@@ -360,3 +360,9 @@
 2026-04-24 22:32:40 [INFO]: getting to  port .. 
 2026-04-24 22:32:40 [INFO]: Server running on port 3000 
 2026-04-24 23:29:02 [INFO]: ... end of ther server call.. 
+2026-04-25 12:50:10 [INFO]: Running pending migrations... 
+2026-04-25 12:50:10 [INFO]: Database pool connected 
+2026-04-25 12:50:10 [INFO]: Migrations table ready 
+2026-04-25 12:50:11 [INFO]: Found 1 pending migration(s) 
+2026-04-25 12:50:14 [INFO]: Executed migration: 026_create_wallet_table.js 
+2026-04-25 12:50:14 [INFO]: All migrations executed successfully 

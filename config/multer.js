@@ -3,18 +3,57 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const { logger } = require('./logger');
+const sharp = require('sharp'); // For image optimization
 
 // Ensure upload directories exist
 const uploadDir = path.join(__dirname, '../uploads');
-const subDirs = ['profile-photos', 'verification-docs', 'job-photos', 'invoices', 'temp', 'certificates', 'disputes'];
+const subDirs = {
+  'profile-photos': 'profile-photos',
+  'verification-docs': 'verification-docs', 
+  'job-photos': 'job-photos',
+  'invoices': 'invoices',
+  'temp': 'temp',
+  'certificates': 'certificates',
+  'disputes': 'disputes',
+  'nin-photos': 'nin-photos',
+  'utility-bills': 'utility-bills',
+  'passport-photos': 'passport-photos'
+};
 
-subDirs.forEach(dir => {
+Object.values(subDirs).forEach(dir => {
   const dirPath = path.join(uploadDir, dir);
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
     logger.info(`Created upload directory: ${dirPath}`);
   }
 });
+
+// File type configuration
+const fileTypes = {
+  images: {
+    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/heic', 'image/heif'],
+    extensions: ['.jpg', '.jpeg', '.png', '.gif', '.heic', '.heif'],
+    maxSize: 5 * 1024 * 1024, // 5MB
+    processor: async (inputPath, outputPath) => {
+      await sharp(inputPath)
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toFile(outputPath);
+    }
+  },
+  documents: {
+    mimeTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    extensions: ['.pdf', '.doc', '.docx'],
+    maxSize: 10 * 1024 * 1024, // 10MB
+    processor: null
+  },
+  videos: {
+    mimeTypes: ['video/mp4', 'video/mpeg', 'video/quicktime'],
+    extensions: ['.mp4', '.mpeg', '.mov'],
+    maxSize: 50 * 1024 * 1024, // 50MB
+    processor: null
+  }
+};
 
 // Configure storage
 const storage = multer.diskStorage({
@@ -23,14 +62,18 @@ const storage = multer.diskStorage({
     
     if (file.fieldname === 'profilePhoto' || file.fieldname === 'passportPhoto') {
       folder = 'profile-photos';
+    } else if (file.fieldname === 'ninPhoto') {
+      folder = 'nin-photos';
+    } else if (file.fieldname === 'utilityBill') {
+      folder = 'utility-bills';
     } else if (file.fieldname.includes('document') || file.fieldname.includes('verification')) {
       folder = 'verification-docs';
+    } else if (file.fieldname === 'certificate' || file.fieldname === 'certificates') {
+      folder = 'certificates';
     } else if (file.fieldname === 'jobPhoto' || file.fieldname === 'evidence' || file.fieldname === 'jobImages') {
       folder = 'job-photos';
     } else if (file.fieldname === 'invoice') {
       folder = 'invoices';
-    } else if (file.fieldname === 'certificate') {
-      folder = 'certificates';
     } else if (file.fieldname === 'disputeEvidence') {
       folder = 'disputes';
     }
@@ -38,6 +81,7 @@ const storage = multer.diskStorage({
     cb(null, path.join(uploadDir, folder));
   },
   filename: (req, file, cb) => {
+    // Generate unique filename
     const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
   }
@@ -45,14 +89,16 @@ const storage = multer.diskStorage({
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|heic|mp4|mov|avi/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (mimetype && extname) {
+  const allAllowedTypes = [
+    ...fileTypes.images.mimeTypes,
+    ...fileTypes.documents.mimeTypes,
+    ...fileTypes.videos.mimeTypes
+  ];
+  
+  if (allAllowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`File type not allowed. Allowed types: images, PDF, DOC, MP4`));
+    cb(new Error(`File type not allowed. Allowed types: images (JPG, PNG, GIF), documents (PDF, DOC), videos (MP4)`));
   }
 };
 
@@ -60,95 +106,81 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE || '52428800'), // 50MB default
-    files: parseInt(process.env.MAX_FILES_PER_UPLOAD || '20')
+    fileSize: 50 * 1024 * 1024, // 50MB max
+    files: 20
   },
   fileFilter: fileFilter
 });
 
 /**
- * Single file upload middleware
- * @param {string} fieldName - Field name
- * @returns {Function} Multer middleware
+ * Process uploaded image (optimize and resize)
+ * @param {string} filePath - Path to uploaded file
+ * @returns {Promise<string>} Path to processed file
  */
-const uploadSingle = (fieldName) => {
-  return (req, res, next) => {
-    const singleUpload = upload.single(fieldName);
-    singleUpload(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'FILE_TOO_LARGE') {
-          return res.status(400).json({ error: `File too large. Maximum size is ${process.env.MAX_FILE_SIZE / 1024 / 1024}MB.` });
-        }
-        if (err.code === 'LIMIT_FILE_COUNT') {
-          return res.status(400).json({ error: `Too many files. Maximum ${process.env.MAX_FILES_PER_UPLOAD} files allowed.` });
-        }
-        return res.status(400).json({ error: err.message });
-      } else if (err) {
-        return res.status(400).json({ error: err.message });
-      }
-      next();
-    });
-  };
+const processImage = async (filePath) => {
+  const parsedPath = path.parse(filePath);
+  const optimizedPath = path.join(parsedPath.dir, `${parsedPath.name}_optimized${parsedPath.ext}`);
+  
+  try {
+    await sharp(filePath)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(optimizedPath);
+    
+    // Replace original with optimized version
+    fs.unlinkSync(filePath);
+    fs.renameSync(optimizedPath, filePath);
+    
+    return filePath;
+  } catch (error) {
+    logger.error('Image processing error:', error);
+    return filePath;
+  }
 };
 
 /**
- * Multiple file upload middleware
- * @param {string} fieldName - Field name
- * @param {number} maxCount - Maximum number of files
- * @returns {Function} Multer middleware
+ * Delete file from storage
+ * @param {string} filePath - Path to file
+ * @returns {Promise<boolean>} Success status
  */
-const uploadMultiple = (fieldName, maxCount = 10) => {
-  return (req, res, next) => {
-    const multipleUpload = upload.array(fieldName, maxCount);
-    multipleUpload(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'FILE_TOO_LARGE') {
-          return res.status(400).json({ error: `File too large. Maximum size is ${process.env.MAX_FILE_SIZE / 1024 / 1024}MB.` });
-        }
-        if (err.code === 'LIMIT_FILE_COUNT') {
-          return res.status(400).json({ error: `Too many files. Maximum ${maxCount} files allowed.` });
-        }
-        return res.status(400).json({ error: err.message });
-      } else if (err) {
-        return res.status(400).json({ error: err.message });
-      }
-      next();
-    });
-  };
+const deleteFile = async (filePath) => {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      logger.info(`File deleted: ${filePath}`);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    logger.error('Error deleting file:', error);
+    return false;
+  }
 };
 
 /**
- * Multiple fields upload middleware
- * @param {Array} fields - Array of field configurations
- * @returns {Function} Multer middleware
+ * Get file URL
+ * @param {string} filePath - File path
+ * @returns {string} Public URL
  */
-const uploadFields = (fields) => {
-  return (req, res, next) => {
-    const fieldsUpload = upload.fields(fields);
-    fieldsUpload(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'FILE_TOO_LARGE') {
-          return res.status(400).json({ error: `File too large. Maximum size is ${process.env.MAX_FILE_SIZE / 1024 / 1024}MB.` });
-        }
-        return res.status(400).json({ error: err.message });
-      } else if (err) {
-        return res.status(400).json({ error: err.message });
-      }
-      next();
-    });
-  };
+const getFileUrl = (filePath) => {
+  if (!filePath) return null;
+  const relativePath = path.relative(uploadDir, filePath);
+  return `${process.env.APP_URL || 'http://localhost:3000'}/uploads/${relativePath}`;
 };
 
-// Specific upload configurations
-const uploadProfilePhoto = uploadSingle('profilePhoto');
-const uploadVerificationDocs = uploadFields([
-  { name: 'ninPhoto', maxCount: 1 },
-  { name: 'passportPhoto', maxCount: 1 },
-  { name: 'utilityBill', maxCount: 1 },
-  { name: 'certificates', maxCount: 10 }
-]);
-const uploadJobPhotos = uploadMultiple('jobPhotos', 10);
-const uploadDisputeEvidence = uploadMultiple('evidence', 10);
+/**
+ * Batch delete files
+ * @param {Array} filePaths - Array of file paths
+ * @returns {Promise<Object>} Deletion results
+ */
+const deleteFiles = async (filePaths) => {
+  const results = [];
+  for (const filePath of filePaths) {
+    const result = await deleteFile(filePath);
+    results.push({ path: filePath, success: result });
+  }
+  return results;
+};
 
 /**
  * Clean up old temporary files
@@ -159,8 +191,8 @@ const cleanupTempFiles = () => {
     const files = fs.readdirSync(tempDir);
     const now = Date.now();
     const oneHour = 60 * 60 * 1000;
-    
     let deletedCount = 0;
+    
     for (const file of files) {
       const filePath = path.join(tempDir, file);
       try {
@@ -183,33 +215,101 @@ const cleanupTempFiles = () => {
 // Run cleanup every hour
 setInterval(cleanupTempFiles, 60 * 60 * 1000);
 
-/**
- * Delete file from storage
- * @param {string} filePath - Path to file
- * @returns {Promise<boolean>} Success status
- */
-const deleteFile = async (filePath) => {
-  try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      return true;
-    }
-    return false;
-  } catch (error) {
-    logger.error('Error deleting file:', error);
-    return false;
-  }
+// Middleware for single file upload
+const uploadSingle = (fieldName) => {
+  return async (req, res, next) => {
+    const singleUpload = upload.single(fieldName);
+    singleUpload(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'FILE_TOO_LARGE') {
+          return res.status(400).json({ error: `File too large. Maximum size is 50MB.` });
+        }
+        return res.status(400).json({ error: err.message });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      
+      // Process image if uploaded
+      if (req.file && fileTypes.images.mimeTypes.includes(req.file.mimetype)) {
+        try {
+          await processImage(req.file.path);
+        } catch (error) {
+          logger.error('Image processing failed:', error);
+        }
+      }
+      
+      next();
+    });
+  };
 };
 
-/**
- * Get file URL
- * @param {string} filePath - File path
- * @returns {string} File URL
- */
-const getFileUrl = (filePath) => {
-  if (!filePath) return null;
-  const relativePath = path.relative(uploadDir, filePath);
-  return `${process.env.APP_URL}/uploads/${relativePath}`;
+// Middleware for multiple file upload
+const uploadMultiple = (fieldName, maxCount = 10) => {
+  return async (req, res, next) => {
+    const multipleUpload = upload.array(fieldName, maxCount);
+    multipleUpload(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'FILE_TOO_LARGE') {
+          return res.status(400).json({ error: `File too large. Maximum size is 50MB.` });
+        }
+        if (err.code === 'LIMIT_FILE_COUNT') {
+          return res.status(400).json({ error: `Too many files. Maximum ${maxCount} files allowed.` });
+        }
+        return res.status(400).json({ error: err.message });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      
+      // Process images if uploaded
+      if (req.files) {
+        for (const file of req.files) {
+          if (fileTypes.images.mimeTypes.includes(file.mimetype)) {
+            try {
+              await processImage(file.path);
+            } catch (error) {
+              logger.error('Image processing failed:', error);
+            }
+          }
+        }
+      }
+      
+      next();
+    });
+  };
+};
+
+// Middleware for multiple fields
+const uploadFields = (fields) => {
+  return async (req, res, next) => {
+    const fieldsUpload = upload.fields(fields);
+    fieldsUpload(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'FILE_TOO_LARGE') {
+          return res.status(400).json({ error: `File too large. Maximum size is 50MB.` });
+        }
+        return res.status(400).json({ error: err.message });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      
+      // Process uploaded images
+      if (req.files) {
+        for (const field of Object.values(req.files)) {
+          for (const file of field) {
+            if (fileTypes.images.mimeTypes.includes(file.mimetype)) {
+              try {
+                await processImage(file.path);
+              } catch (error) {
+                logger.error('Image processing failed:', error);
+              }
+            }
+          }
+        }
+      }
+      
+      next();
+    });
+  };
 };
 
 module.exports = {
@@ -217,11 +317,10 @@ module.exports = {
   uploadSingle,
   uploadMultiple,
   uploadFields,
-  uploadProfilePhoto,
-  uploadVerificationDocs,
-  uploadJobPhotos,
-  uploadDisputeEvidence,
-  cleanupTempFiles,
   deleteFile,
-  getFileUrl
+  deleteFiles,
+  getFileUrl,
+  cleanupTempFiles,
+  processImage,
+  fileTypes
 };

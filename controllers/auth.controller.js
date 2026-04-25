@@ -1,33 +1,104 @@
 const AuthService = require('../services/auth.service');
 const { sendSuccess, sendError } = require('../utils/response');
-const { AppError } = require('../middleware/error.middleware');
+const { getFileUrl, deleteFile } = require('../config/multer');
 const { validationResult } = require('express-validator');
+const fs = require('fs');
 
 class AuthController {
   static async registerClient(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        // Clean up uploaded files if validation fails
+        if(req.files){
+          for(const field of Object.values(req.files)){
+            for(const file of field){
+               if(fs.existsSync(file.path)){
+                fs.unlinkSync(file.path);
+               }
+            }
+          }
+        }
       return sendError(res, 'Validation error', 400, errors.array());
     }
 
     try {
-      const result = await AuthService.registerClient(req.body);
+
+       // Process uploaded files and get their URLs
+       const uploadedFiles = {};
+       if(req.files){
+         if(req.files.ninPhoto){
+           uploadedFiles.ninPhoto =  getFileUrl(req.files.ninPhoto[0].path);
+         }
+         if(req.files.passportPhoto){
+           uploadedFiles.passportPhoto =  getFileUrl(req.files.passportPhoto[0].path);
+         }
+       }
+
+      const result = await AuthService.registerClient(req.body, uploadedFiles);
       sendSuccess(res, result.user, result.message, 201);
     } catch (error) {
+      // Clean up uploaded files on error
+      if (req.files) {
+        for (const field of Object.values(req.files)) {
+          for (const file of field) {
+            if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+            }
+          }
+        }
+      }
       next(error);
     }
+
   }
 
   static async registerArtisan(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+       // Clean up uploaded files if validation fails
+      if (req.files) {
+        for (const field of Object.values(req.files)) {
+          for (const file of field) {
+            if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+            }
+          }
+        }
+      }
       return sendError(res, 'Validation error', 400, errors.array());
     }
 
     try {
-      const result = await AuthService.registerArtisan(req.body);
+            // Process uploaded files
+      const uploadedFiles = {};
+      
+      if (req.files) {
+        if (req.files.passportPhoto) {
+          uploadedFiles.passportPhoto = getFileUrl(req.files.passportPhoto[0].path);
+        }
+        if (req.files.ninPhoto) {
+          uploadedFiles.ninPhoto = getFileUrl(req.files.ninPhoto[0].path);
+        }
+        if (req.files.certificates) {
+          uploadedFiles.certificates = req.files.certificates.map(f => getFileUrl(f.path));
+        }
+        if (req.files.tradeTestimony) {
+          uploadedFiles.tradeTestimony = req.files.tradeTestimony.map(f => getFileUrl(f.path));
+        }
+      }
+      const result = await AuthService.registerArtisan(req.body, uploadedFiles);
       sendSuccess(res, result.user, result.message, 201);
     } catch (error) {
+            // Clean up uploaded files on error
+      if (req.files) {
+        for (const field of Object.values(req.files)) {
+          for (const file of field) {
+            if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+            }
+          }
+        }
+      }
       next(error);
     }
   }

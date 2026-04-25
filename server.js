@@ -1,10 +1,12 @@
 // server.js
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const { initSocket } = require('./socket');
+
 require('dotenv').config();
 
 const app = express();
@@ -16,6 +18,13 @@ app.use(compression());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '7d', // Cache for 7 days
+  etag: true,
+  lastModified: true,
+}));
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');

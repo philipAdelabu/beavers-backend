@@ -8,6 +8,9 @@ const { cacheSet, cacheGet, cacheDel } = require('../config/redis');
 const { sendEmail, sendSMS } = require('../services/notification.service');
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { logger } = require('../config/logger');
+const AuthController = require('../controllers/auth.controller');
+const { authLimiter } = require('../middleware/rateLimit.middleware');
+const { uploadFields } = require('../config/multer');
 
 const router = express.Router();
 
@@ -16,15 +19,19 @@ router.get('/test', (req, res) => {
 });
 
 // Client registration
-router.post('/register/client', [
-  body('email').isEmail().normalizeEmail(),
+router.post('/register/client', authLimiter, uploadFields([
+{ name: 'ninPhoto', maxCount: 1 },
+{ name: 'passportPhoto', maxCount: 1 },]), [body('email').isEmail().normalizeEmail(),
   body('phone').isMobilePhone(),
   body('password').isLength({ min: 6 }),
   body('fullLegalName').notEmpty(),
   body('nin').isEmpty(),
-  body('streetAddress').isEmpty(),
-  body('serviceAddress').isEmpty(),
-], async (req, res) => {
+  body('streetAddress').notEmpty(),
+  body('serviceAddress').notEmpty(),
+], AuthController.registerClient);
+
+/*
+async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -90,11 +97,16 @@ router.post('/register/client', [
   } finally {
     client.release();
   }
-});
+}  ); */
 
 /// * The artisan section begins here */////
 // Artisan registration
-router.post('/register/artisan', [
+router.post('/register/artisan', authLimiter, uploadFields([
+    { name: 'passportPhoto', maxCount: 1 },
+    { name: 'ninPhoto', maxCount: 1 },
+    { name: 'certificates', maxCount: 10 },
+    { name: 'tradeTestimony', maxCount: 5 },
+  ]),[
   body('email').isEmail(),
   body('phone').isMobilePhone(),
   body('password').isLength({ min: 6 }),
@@ -103,7 +115,9 @@ router.post('/register/artisan', [
   body('residentialAddress').notEmpty(),
   body('skillCategory').notEmpty(),
   body('onboardingFee').isNumeric()
-], async (req, res) => {
+], AuthController.registerArtisan);
+/*
+  async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -162,7 +176,7 @@ router.post('/register/artisan', [
   } finally {
     client.release();
   }
-});
+});  */
 
 // Login
 router.post('/login', [
