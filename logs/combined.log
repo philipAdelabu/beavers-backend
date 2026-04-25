@@ -366,3 +366,9 @@
 2026-04-25 12:50:11 [INFO]: Found 1 pending migration(s) 
 2026-04-25 12:50:14 [INFO]: Executed migration: 026_create_wallet_table.js 
 2026-04-25 12:50:14 [INFO]: All migrations executed successfully 
+2026-04-25 18:25:26 [INFO]: Running pending migrations... 
+2026-04-25 18:25:27 [INFO]: Database pool connected 
+2026-04-25 18:25:27 [INFO]: Migrations table ready 
+2026-04-25 18:25:27 [INFO]: Found 1 pending migration(s) 
+2026-04-25 18:25:28 [INFO]: Executed migration: 027_create_user_files_table.js 
+2026-04-25 18:25:28 [INFO]: All migrations executed successfully 
