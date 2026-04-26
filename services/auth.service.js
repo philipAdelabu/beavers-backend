@@ -34,12 +34,11 @@ class AuthService {
       // Create user
       const userResult = await client.query(
         `INSERT INTO users (email, phone, password_hash, user_type, verification_status)
-         VALUES ($1, $2, $3, $4, 'pending')
-         RETURNING id, email, phone, user_type, is_email_verified, is_phone_verified, verification_status, created_at`,
+         VALUES ($1, $2, $3, $4, 'pending') RETURNING id, email, phone, user_type, is_verified, is_email_verified, is_phone_verified, verification_status, is_active, created_at`,
         [email, phone, hashedPassword, 'client']
       );
       
-      const user = userResult.rows[0];
+      const user = userResult.rows[0] 
       
       // Create client profile
      const userProfileResult = await client.query(
@@ -48,18 +47,31 @@ class AuthService {
          RETURNING user_id, full_legal_name, nin, street_address, service_address, verification_documents, created_at`,
         [user.id, fullLegalName, nin, streetAddress, serviceAddress, uploadedFiles],
       );
-      
       const userProfile = userProfileResult.rows[0];
+
+      //Create the Wallte for the user
+      const userWalletResult = await client.query(
+        `INSERT INTO wallets (user_id, user_type, balance) VALUES ($1, $2, 0) RETURNING * `,
+        [user.id, 'client']
+      );
+      const userWallet = userWalletResult.rows[0];
       // Generate OTP for email verification
-      const otp = await generateAndStoreOTP(`email:${email}`, 600);
+      const mailOtp = await generateAndStoreOTP(`email:${email}`, 1200);
+
+      // Generate OTP for phone verification
+      const phoneOtp = await generateAndStoreOTP(`phone:${phone}`, 600);
       
       // Send verification email
       if(process.env.NODE_ENV === 'production') {
       await sendEmail(email, 'Verify Your Email', 
-        `Your verification code is: ${otp}. This code expires in 10 minutes.`);
-        }else {
-          logger.info(`Test environment - OTP for ${email}: ${otp}`);
+        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`);
+      await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`);
+      }else {
+          logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
+          logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
        }
+
+
       await client.query('COMMIT');
       
       // Log registration
@@ -71,7 +83,13 @@ class AuthService {
           email: user.email,
           phone: user.phone,
           userType: user.user_type,
-          profile: userProfile, 
+          isVerified: user.is_verified,
+          isEmailVerified: user.is_email_verified,
+          isPhoneVerified: user.is_phone_verified,
+          isActive: user.is_active,
+          verificationStatus: user.verification_status,
+          profile: userProfile,
+          wallet: userWallet
         },
         message: 'Registration successful. Please verify your email.'
       };
@@ -304,7 +322,7 @@ class AuthService {
     }
     
     await pool.query(
-      `UPDATE users SET is_verified = true, verification_status = 'verified', verified_at = NOW()
+      `UPDATE users SET is_email_verified = true, is_verified = (is_phone_verified OR true)
        WHERE email = $1`,
       [email]
     );
@@ -322,8 +340,7 @@ class AuthService {
     }
     
     await pool.query(
-      `UPDATE users SET phone_verified = true, phone_verified_at = NOW()
-       WHERE phone = $1`,
+      `UPDATE users SET is_phone_verified = true, is_verified = (is_email_verified OR true) WHERE phone = $1`,
       [phone]
     );
     

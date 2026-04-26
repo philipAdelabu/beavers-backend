@@ -31,6 +31,17 @@ router.post('/register/client', authLimiter, uploadFields([
   body('serviceAddress').notEmpty(),
 ], AuthController.registerClient);
 
+router.post('/verify/email', authLimiter, [
+  body('email').isEmail().normalizeEmail(),
+  body('otp').isLength({ min: 6, max: 6 }),
+], AuthController.verifyEmail);
+
+
+router.post('/verify/phone', authLimiter, [
+  body('phone').isMobilePhone(),
+  body('otp').isLength({ min: 6, max: 6 }),
+], AuthController.verifyPhone);
+
 /*
 async (req, res) => {
   const errors = validationResult(req);
@@ -311,6 +322,33 @@ router.post('/verify-otp', [
   }
   await cacheDel(`otp:${phone}`);
   res.json({ message: 'OTP verified successfully' });
+});
+
+router.post('/send-verification-code', [
+  body('email').optional().isEmail(),
+  body('phone').optional().isMobilePhone(),
+], async (req, res) => {
+  const { email, phone } = req.body;
+
+  if (!email && !phone) {
+    return res.status(400).json({ error: 'Email or phone number is required' });
+  }
+
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    if (email) {
+      await cacheSet(`otp:${email}`, otp, 300);
+      await sendEmail(email, 'Your Verification Code', `Your OTP is: ${otp}`);
+    }
+    if (phone) {
+      await cacheSet(`otp:${phone}`, otp, 300);
+      await sendSMS(phone, `Your OTP is: ${otp}`);
+    }
+    res.json({ message: 'Verification code sent successfully' });
+  } catch (error) {
+    logger.error('Error sending verification code:', error);
+    res.status(500).json({ error: 'Failed to send verification code' });
+  }
 });
 
 
