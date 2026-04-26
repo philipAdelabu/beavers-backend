@@ -2,13 +2,10 @@
 
 URL : 127.0.0.1:3000/api/v1/auth/register/client
 Method: POST
-Body fields: 
- 
- [email, phone, fullLegalName, password, serviceAddress, streetAddress, nin, ninPhoto, passportPhoto]
+Body fields: [email, phone, fullLegalName, password, serviceAddress, streetAddress, nin, ninPhoto, passportPhoto]
 
 
-Response: 
- {
+Response: {
   "success": true,
   "message": "Registration successful. Please verify your email.",
   "timestamp": "2026-04-26T14:57:55.805Z",
@@ -31,3 +28,16 @@ Response:
     }
   }
 }
+
+## Verify Email
+
+URL : 127.0.0.1:3000/api/v1/auth/verify/email
+Method: POST
+Body fields: [email, otp]
+Response : {
+  "success": true,
+  "message": "Email verified successfully",
+  "timestamp": "2026-04-26T16:26:23.005Z"
+}
+
+

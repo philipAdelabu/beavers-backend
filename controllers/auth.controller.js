@@ -158,6 +158,7 @@ class AuthController {
       const result = await AuthService.verifyEmail(email, otp);
       sendSuccess(res, null, result.message);
     } catch (error) {
+       sendError(res, error.message || 'Verification failled', error.statusCode || 500); 
       next(error);
     }
   }
@@ -173,6 +174,7 @@ class AuthController {
       const result = await AuthService.verifyPhone(phone, otp);
       sendSuccess(res, null, result.message);
     } catch (error) {
+      sendError(res, error.message || 'Verification failled', error.statusCode || 500); 
       next(error);
     }
   }
