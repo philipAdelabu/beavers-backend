@@ -18,7 +18,7 @@ class AuthController {
             }
           }
         }
-      return sendError(res, 'Validation error', 400, errors.array());
+      return sendError(res, 'Validation 1 error', 400, errors.array());
     }
 
     try {

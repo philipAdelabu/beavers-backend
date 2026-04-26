@@ -42,30 +42,36 @@ class AuthService {
       const user = userResult.rows[0];
       
       // Create client profile
-      await client.query(
+     const userProfileResult = await client.query(
         `INSERT INTO client_profiles (user_id, full_legal_name, nin, street_address, service_address, verification_documents)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+         VALUES ($1, $2, $3, $4, $5, $6)  
+         RETURNING user_id, full_legal_name, nin, street_address, service_address, verification_documents, created_at`,
         [user.id, fullLegalName, nin, streetAddress, serviceAddress, uploadedFiles],
       );
       
+      const userProfile = userProfileResult.rows[0];
       // Generate OTP for email verification
       const otp = await generateAndStoreOTP(`email:${email}`, 600);
       
       // Send verification email
+      if(process.env.NODE_ENV === 'production') {
       await sendEmail(email, 'Verify Your Email', 
         `Your verification code is: ${otp}. This code expires in 10 minutes.`);
-      
+        }else {
+          logger.info(`Test environment - OTP for ${email}: ${otp}`);
+       }
       await client.query('COMMIT');
       
       // Log registration
       logger.info(`New client registered: ${email}`);
-      
+      logger.info("profile: ",userProfile);
       return {
         user: {
           id: user.id,
           email: user.email,
           phone: user.phone,
-          userType: user.user_type
+          userType: user.user_type,
+          profile: userProfile, 
         },
         message: 'Registration successful. Please verify your email.'
       };
