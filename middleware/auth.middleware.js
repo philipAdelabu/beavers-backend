@@ -3,23 +3,27 @@ const { pool } = require('../config/database');
 const { cacheGet } = require('../config/redis');
 const { logger } = require('../config/logger');
 
+
+
+
 const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({ error: 'Access token required' });
     }
 
-    // Check blacklist
+    // Check if token is blacklisted (logged out)
     const isBlacklisted = await cacheGet(`blacklist:${token}`);
     if (isBlacklisted) {
-      return res.status(401).json({ error: 'Token has been revoked' });
+      return res.status(401).json({ error: 'Token has been revoked. Please login again.' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
+    // Check if user exists and is active
     const userResult = await pool.query(
       `SELECT id, email, user_type, is_verified, is_active 
        FROM users WHERE id = $1`,
@@ -34,6 +38,22 @@ const authenticateToken = async (req, res, next) => {
     
     if (!user.is_active) {
       return res.status(403).json({ error: 'Account is deactivated' });
+    }
+
+    // Check if token was issued before last logout (optional security)
+    const lastLogoutResult = await pool.query(
+      `SELECT last_logout FROM users WHERE id = $1`,
+      [user.id]
+    );
+    
+    if (lastLogoutResult.rows[0]?.last_logout) {
+      const lastLogout = new Date(lastLogoutResult.rows[0].last_logout);
+      const issuedAt = new Date(decoded.iat * 1000);
+      
+      if (issuedAt < lastLogout) {
+        await cacheSet(`blacklist:${token}`, 'true', 3600);
+        return res.status(401).json({ error: 'Session expired. Please login again.' });
+      }
     }
 
     req.user = user;

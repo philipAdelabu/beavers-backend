@@ -1,5 +1,13 @@
 const { body } = require('express-validator');
 
+
+
+// Add phone validation helper
+const isValidPhone = (phone) => {
+  const phoneRegex = /^\+?[0-9]{10,15}$/;
+  return phoneRegex.test(phone);
+};
+
 const registerClient = [
   body('email')
     .isEmail()
@@ -7,7 +15,7 @@ const registerClient = [
     .withMessage('Valid email address is required'),
   
   body('phone')
-    .matches(/^\+?[0-9]{10,15}$/)
+    .custom(isValidPhone)
     .withMessage('Valid phone number is required (10-15 digits, optional + prefix)'),
   
   body('password')
@@ -48,7 +56,7 @@ const registerArtisan = [
     .withMessage('Valid email address is required'),
   
   body('phone')
-    .matches(/^\+?[0-9]{10,15}$/)
+    .custom(isValidPhone)
     .withMessage('Valid phone number is required (10-15 digits, optional + prefix)'),
   
   body('password')
@@ -87,16 +95,6 @@ const registerArtisan = [
     .withMessage('Onboarding fee must be a positive number')
 ];
 
-const login = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email address is required'),
-  
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-];
 
 const refreshToken = [
   body('refreshToken')
@@ -118,7 +116,7 @@ const verifyEmail = [
 
 const verifyPhone = [
   body('phone')
-    .matches(/^\+?[0-9]{10,15}$/)
+    .custom(isValidPhone)
     .withMessage('Valid phone number is required'),
   
   body('otp')
@@ -165,6 +163,44 @@ const sendVerificationCode = [
     .withMessage('Valid email address is required')
 ];
 
+
+
+// Add login validation for identifier
+const login = [
+  body('identifier')
+    .notEmpty()
+    .withMessage('Email or phone number is required')
+    .custom((value) => {
+      const isEmail = value.includes('@') && value.includes('.');
+      const isPhone = isValidPhone(value);
+      if (!isEmail && !isPhone) {
+        throw new Error('Please provide a valid email or phone number');
+      }
+      return true;
+    }),
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+];
+
+// Add OTP login validation
+const loginWithOTP = [
+  body('phone')
+    .custom(isValidPhone)
+    .withMessage('Valid phone number is required'),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .matches(/^[0-9]+$/)
+    .withMessage('OTP must be 6 digits')
+];
+
+// Add request OTP validation
+const requestOTP = [
+  body('phone')
+    .custom(isValidPhone)
+    .withMessage('Valid phone number is required')
+];
+
 module.exports = {
   registerClient,
   registerArtisan,
@@ -175,5 +211,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
-  sendVerificationCode
+  sendVerificationCode,
+  requestOTP,
+  loginWithOTP,
 };

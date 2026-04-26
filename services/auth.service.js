@@ -8,6 +8,7 @@ const { sendEmail, sendSMS } = require('./notification.service');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { upload } = require('../config/multer');
+const { profile } = require('winston');
 
 class AuthService {
   static async registerClient(userData, uploadedFiles = {}) {
@@ -34,7 +35,7 @@ class AuthService {
       // Create user
       const userResult = await client.query(
         `INSERT INTO users (email, phone, password_hash, user_type, verification_status)
-         VALUES ($1, $2, $3, $4, 'pending') RETURNING id, email, phone, user_type, is_verified, is_email_verified, is_phone_verified, verification_status, is_active, created_at`,
+         VALUES ($1, $2, $3, $4, 'pending') RETURNING id, email, phone, user_type, is_verified, is_email_verified, is_phone_verified, verification_status, is_active, is_logged_in, created_at`,
         [email, phone, hashedPassword, 'client']
       );
       
@@ -87,6 +88,7 @@ class AuthService {
           isEmailVerified: user.is_email_verified,
           isPhoneVerified: user.is_phone_verified,
           isActive: user.is_active,
+          is_logged_in: user.is_logged_in,
           verificationStatus: user.verification_status,
           profile: userProfile,
           wallet: userWallet
@@ -172,22 +174,55 @@ class AuthService {
     }
   }
   
-  static async login(email, password, ipAddress, userAgent) {
+
+
+  /**
+   * Login with email OR phone number
+   * @param {string} identifier - Email or phone number
+   * @param {string} password - User password
+   * @param {string} ipAddress - IP address
+   * @param {string} userAgent - User agent
+   * @returns {Promise<Object>} Login result with tokens
+   */
+  static async login(identifier, password, ipAddress, userAgent) {
     const client = await pool.connect();
     
     try {
-      // Get user with profile
-      const userResult = await client.query(
-        `SELECT u.*, 
-                CASE WHEN u.user_type = 'client' THEN cp.full_legal_name 
-                     WHEN u.user_type = 'artisan' THEN ap.full_legal_name 
-                END as full_name
-         FROM users u
-         LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
-         LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
-         WHERE u.email = $1`,
-        [email]
-      );
+      // Determine if identifier is email or phone
+      const isEmail = identifier.includes('@') && identifier.includes('.');
+      
+      let query;
+      let params;
+      
+      if (isEmail) {
+        query = `
+          SELECT u.*, 
+                 CASE WHEN u.user_type = 'client' THEN cp.full_legal_name 
+                      WHEN u.user_type = 'artisan' THEN ap.full_legal_name 
+                 END as full_name
+          FROM users u
+          LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+          LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+          WHERE u.email = $1
+        `;
+        params = [identifier];
+      } else {
+        // Format phone number (remove spaces, ensure consistency)
+        const formattedPhone = this.formatPhoneNumber(identifier);
+        query = `
+          SELECT u.*, 
+                 CASE WHEN u.user_type = 'client' THEN cp.full_legal_name 
+                      WHEN u.user_type = 'artisan' THEN ap.full_legal_name 
+                 END as full_name
+          FROM users u
+          LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+          LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+          WHERE u.phone = $1 OR u.phone = $2
+        `;
+        params = [identifier, formattedPhone];
+      }
+      
+      const userResult = await client.query(query, params);
       
       if (userResult.rows.length === 0) {
         throw new AppError(401, 'Invalid credentials');
@@ -199,7 +234,7 @@ class AuthService {
       const isValidPassword = await bcrypt.compare(password, user.password_hash);
       if (!isValidPassword) {
         // Log failed attempt
-        await this.logFailedAttempt(email, ipAddress);
+        await this.logFailedAttempt(identifier, ipAddress);
         throw new AppError(401, 'Invalid credentials');
       }
       
@@ -208,9 +243,10 @@ class AuthService {
         throw new AppError(403, 'Account is deactivated. Please contact support.');
       }
       
-      // Check if email is verified
+      // Check if email is verified (for first-time login warning only)
       if (!user.is_verified) {
-        throw new AppError(403, 'Email not verified. Please check your email for verification code.');
+        // Don't block login, but send reminder
+        await this.sendVerificationReminder(user.email, user.phone, user.full_name);
       }
       
       // Check artisan monthly fee
@@ -233,18 +269,129 @@ class AuthService {
       
       // Update last login
       await client.query(
-        `UPDATE users SET last_login = NOW(), last_login_ip = $1 WHERE id = $2`,
+        `UPDATE users SET last_login = NOW(), is_logged_in = true, last_login_ip = $1 WHERE id = $2`,
         [ipAddress, user.id]
       );
       
       // Log successful login
       await client.query(
-        `INSERT INTO login_history (user_id, ip_address, user_agent, success)
-         VALUES ($1, $2, $3, true)`,
+        `INSERT INTO login_history (user_id, ip_address, user_agent, success, login_time)
+         VALUES ($1, $2, $3, true, NOW())`,
         [user.id, ipAddress, userAgent]
       );
       
-      logger.info(`User logged in: ${email}`);
+      const userProfileResult = await client.query(
+        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1 RETURNING *`,
+        [user.id],
+      );
+      const userProfile = userProfileResult.rows[0];
+      logger.info(`User logged in: ${user.email} / ${user.phone}`);
+      
+      return {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          userType: user.user_type,
+          fullName: user.full_name,
+          isLoggedIn: user.is_logged_in,
+          isVerified: user.is_verified,
+          verificationStatus: user.verification_status,
+          profile: userProfile,
+        }
+      };
+    } catch (error) {
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Login with phone number and OTP (no password)
+   * @param {string} phone - Phone number
+   * @param {string} otp - One-time password
+   * @param {string} ipAddress - IP address
+   * @param {string} userAgent - User agent
+   * @returns {Promise<Object>} Login result with tokens
+   */
+  static async loginWithOTP(phone, otp, ipAddress, userAgent) {
+    const client = await pool.connect();
+    
+    try {
+      // Format phone number
+      const formattedPhone = this.formatPhoneNumber(phone);
+      
+      // Verify OTP
+      const isValidOTP = await verifyOTP(`phone:${formattedPhone}`, otp);
+      if (!isValidOTP) {
+        throw new AppError(401, 'Invalid or expired OTP');
+      }
+      
+      // Find user by phone
+      const userResult = await client.query(
+        `SELECT u.*, 
+                CASE WHEN u.user_type = 'client' THEN cp.full_legal_name 
+                     WHEN u.user_type = 'artisan' THEN ap.full_legal_name 
+                END as full_name
+         FROM users u
+         LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+         LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+         WHERE u.phone = $1 OR u.phone = $2`,
+        [phone, formattedPhone]
+      );
+      
+      if (userResult.rows.length === 0) {
+        throw new AppError(404, 'No account found with this phone number');
+      }
+      
+      const user = userResult.rows[0];
+      
+      // Check if account is active
+      if (!user.is_active) {
+        throw new AppError(403, 'Account is deactivated. Please contact support.');
+      }
+      
+      // Check artisan monthly fee
+      if (user.user_type === 'artisan') {
+        const artisanResult = await client.query(
+          `SELECT monthly_fee_status FROM artisan_profiles WHERE user_id = $1`,
+          [user.id]
+        );
+        
+        if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
+          throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
+        }
+      }
+      
+      // Generate tokens
+      const { accessToken, refreshToken } = generateTokens(user.id, user.email, user.user_type);
+      
+      // Store refresh token in Redis
+      await cacheSet(`refresh_token:${user.id}`, refreshToken, 2592000);
+      
+      // Update last login
+      await client.query(
+        `UPDATE users SET last_login = NOW(), is_logged_in = true,last_login_ip = $1 WHERE id = $2`,
+        [ipAddress, user.id]
+      );
+      
+      // Log successful login
+      await client.query(
+        `INSERT INTO login_history (user_id, ip_address, user_agent, success, login_time)
+         VALUES ($1, $2, $3, true, NOW())`,
+        [user.id, ipAddress, userAgent]
+      );
+
+      const userProfileResult = await client.query(
+        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1 RETURNING *`,
+        [user.id]
+      );
+      const userProfile = userProfileResult.rows[0];
+
+      logger.info(`User logged in with OTP: ${user.email} / ${user.phone}`);
       
       return {
         accessToken,
@@ -256,7 +403,9 @@ class AuthService {
           userType: user.user_type,
           fullName: user.full_name,
           isVerified: user.is_verified,
-          verificationStatus: user.verification_status
+          isLoggedIn: user.is_logged_in,
+          verificationStatus: user.verification_status,
+          profile: userProfile,
         }
       };
     } catch (error) {
@@ -265,27 +414,152 @@ class AuthService {
       client.release();
     }
   }
-  
-  static async logout(userId, accessToken) {
+
+  /**
+   * Request OTP for phone login
+   * @param {string} phone - Phone number
+   * @returns {Promise<Object>} Result message
+   */
+  static async requestOTP(phone) {
     try {
-      // Blacklist the access token
-      const decoded = jwt.decode(accessToken);
-      const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+      const formattedPhone = this.formatPhoneNumber(phone);
       
-      if (expiresIn > 0) {
-        await cacheSet(`blacklist:${accessToken}`, 'true', expiresIn);
+      // Check if user exists
+      const userResult = await pool.query(
+        'SELECT user_id, email, full_legal_name FROM users u LEFT JOIN client_profiles cp ON u.id = cp.user_id WHERE u.phone = $1 OR u.phone = $2',
+        [phone, formattedPhone]
+      );
+      
+      if (userResult.rows.length === 0) {
+        // Don't reveal that user doesn't exist for security
+        return { message: 'If an account exists, an OTP will be sent' };
       }
       
-      // Delete refresh token
-      await cacheDel(`refresh_token:${userId}`);
+      const user = userResult.rows[0];
       
-      logger.info(`User logged out: ${userId}`);
+      // Generate and send OTP
+      const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
+      if(process.env.NODE_ENV === 'production') {
+      await sendSMS(formattedPhone, `Your BeaverWorks login OTP is: ${otp}. This code expires in 10 minutes.`);
+      }else{
+         logger.info(`Test environment - OTP for ${formattedPhone}: ${otp}`);
+      }
+      logger.info(`OTP requested for phone: ${formattedPhone}`);
       
-      return { message: 'Logged out successfully' };
+      return { message: 'OTP sent successfully' };
     } catch (error) {
-      throw error;
+      logger.error('OTP request error:', error);
+      throw new AppError(500, 'Failed to send OTP');
     }
   }
+
+  /**
+   * Format phone number to standard format
+   * @param {string} phone - Raw phone number
+   * @returns {string} Formatted phone number
+   */
+  static formatPhoneNumber(phone) {
+    // Remove all non-digit characters
+    let cleaned = phone.replace(/\D/g, '');
+    
+    // Handle Nigerian numbers
+    if (cleaned.startsWith('0') && cleaned.length === 11) {
+      cleaned = '234' + cleaned.substring(1);
+    } else if (cleaned.startsWith('234') && cleaned.length === 13) {
+      // Already in international format
+    } else if (cleaned.length === 10) {
+      cleaned = '234' + cleaned;
+    }
+    
+    // Add + prefix
+    return '+' + cleaned;
+  }
+
+ // Add this method to the existing AuthService class
+
+static async logout(userId, accessToken) {
+  try {
+    // Blacklist the access token
+    const decoded = jwt.decode(accessToken);
+    if (decoded && decoded.exp) {
+      const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+      if (expiresIn > 0) {
+        await cacheSet(`blacklist:${accessToken}`, 'true', expiresIn);
+        logger.info(`Access token blacklisted for user: ${userId}`);
+      }
+    }
+    
+    // Delete refresh token from Redis
+    await cacheDel(`refresh_token:${userId}`);
+    
+    // Update last logout time in database (optional)
+    await pool.query(
+      `UPDATE users SET last_logout = NOW(), is_logged_in = false WHERE id = $1`,
+      [userId]
+    );
+    
+    // Log logout activity
+    await pool.query(
+      `INSERT INTO user_activity_logs (user_id, action, created_at)
+       VALUES ($1, 'logout', NOW())`,
+      [userId]
+    );
+    
+    logger.info(`User logged out: ${userId}`);
+    
+    return { 
+      success: true, 
+      message: 'Logged out successfully' 
+    };
+  } catch (error) {
+    logger.error('Logout error:', error);
+    throw error;
+  }
+}
+
+// Optional: Add method to logout from all devices
+static async logoutAllDevices(userId, currentAccessToken = null) {
+  try {
+    // Blacklist current token if provided
+    if (currentAccessToken) {
+      const decoded = jwt.decode(currentAccessToken);
+      if (decoded && decoded.exp) {
+        const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+        if (expiresIn > 0) {
+          await cacheSet(`blacklist:${currentAccessToken}`, 'true', expiresIn);
+        }
+      }
+    }
+    
+    // Delete all refresh tokens for this user
+    await cacheDel(`refresh_token:${userId}`);
+    await cacheDel(`refresh_tokens:${userId}`); // If storing multiple tokens
+    
+    // Update last logout time and logged-in status
+    await pool.query(
+      `UPDATE users SET last_logout = NOW(), is_logged_in = false WHERE id = $1`,
+      [userId]
+    );
+    
+    // Log logout from all devices
+    await pool.query(
+      `INSERT INTO user_activity_logs (user_id, action, metadata, created_at)
+       VALUES ($1, 'logout_all', $2, NOW())`,
+      [userId, JSON.stringify({ message: 'Logged out from all devices' })]
+    );
+    
+    logger.info(`User logged out from all devices: ${userId}`);
+    
+    return { 
+      success: true, 
+      message: 'Logged out from all devices successfully' 
+    };
+  } catch (error) {
+    logger.error('Logout all devices error:', error);
+    throw error;
+  }
+}
+
   
   static async refreshToken(refreshToken) {
     try {
@@ -349,20 +623,35 @@ class AuthService {
     return { message: 'Phone verified successfully' };
   }
   
-  static async sendVerificationCode(email) {
-    const userResult = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email]
-    );
+
+
+  static async sendVerificationCode(identifier) {
+    // Determine if identifier is email or phone
+    const isEmail = identifier.includes('@') && identifier.includes('.');
     
-    if (userResult.rows.length === 0) {
-      throw new AppError(404, 'User not found');
+    if (isEmail) {
+      const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [identifier]);
+      if (userResult.rows.length === 0) {
+        throw new AppError(404, 'User not found');
+      }
+      
+      const otp = await generateAndStoreOTP(`email:${identifier}`, 600);
+      await sendEmail(identifier, 'Your Verification Code', `Your verification code is: ${otp}`);
+      
+      return { message: 'Verification code sent' };
+    } else {
+      const formattedPhone = this.formatPhoneNumber(identifier);
+      const userResult = await pool.query('SELECT id FROM users WHERE phone = $1 OR phone = $2', [identifier, formattedPhone]);
+      
+      if (userResult.rows.length === 0) {
+        throw new AppError(404, 'User not found');
+      }
+      
+      const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
+      await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`);
+      
+      return { message: 'Verification code sent' };
     }
-    
-    const otp = await generateAndStoreOTP(`email:${email}`, 600);
-    await sendEmail(email, 'Your Verification Code', `Your verification code is: ${otp}`);
-    
-    return { message: 'Verification code sent' };
   }
   
   static async forgotPassword(email) {
@@ -409,18 +698,14 @@ class AuthService {
       if (storedToken !== token) {
         throw new AppError(400, 'Invalid or expired reset token');
       }
-      
       const hashedPassword = await bcrypt.hash(newPassword, 12);
-      
       await pool.query(
         `UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2`,
         [hashedPassword, decoded.userId]
       );
       
       await cacheDel(`password_reset:${decoded.userId}`);
-      
       logger.info(`Password reset for user: ${decoded.userId}`);
-      
       return { message: 'Password reset successfully' };
     } catch (error) {
       throw new AppError(400, 'Invalid or expired reset token');
@@ -480,6 +765,28 @@ class AuthService {
     const blocked = await cacheGet(`login_block:${email}`);
     return !!blocked;
   }
+
+
+
+
+  static async sendVerificationReminder(email, phone, name) {
+    // Send reminder email
+    await sendEmail(
+      email,
+      'Complete Your Verification',
+      `Hi ${name || 'there'},\n\nPlease complete your account verification to access all features on BeaverWorks.\n\nThank you!`
+    );
+    
+    // Send reminder SMS
+    if (phone) {
+      await sendSMS(
+        phone,
+        `BeaverWorks: Please complete your account verification to access all features. Thank you!`
+      );
+    }
+  }
+
+
   
   static async validateSession(userId, token) {
     const isBlacklisted = await cacheGet(`blacklist:${token}`);

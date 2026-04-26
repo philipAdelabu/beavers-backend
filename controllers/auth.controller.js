@@ -105,6 +105,7 @@ class AuthController {
     }
   }
 
+  
   static async login(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -112,20 +113,77 @@ class AuthController {
     }
 
     try {
-      const { email, password } = req.body;
+      const { identifier, password } = req.body;
       const ipAddress = req.ip;
       const userAgent = req.get('user-agent');
       
-      const result = await AuthService.login(email, password, ipAddress, userAgent);
+      const result = await AuthService.login(identifier, password, ipAddress, userAgent);
       sendSuccess(res, result, 'Login successful');
     } catch (error) {
       next(error);
     }
   }
 
+  static async requestOTP(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const { phone } = req.body;
+      const result = await AuthService.requestOTP(phone);
+      sendSuccess(res, null, result.message);
+    } catch (error) {
+       sendError(res, error.message || 'OTP request failed', error.statusCode || 500); 
+      next(error);
+    }
+  }
+
+  static async loginWithOTP(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const { phone, otp } = req.body;
+      const ipAddress = req.ip;
+      const userAgent = req.get('user-agent');
+      
+      const result = await AuthService.loginWithOTP(phone, otp, ipAddress, userAgent);
+      sendSuccess(res, result, 'Login successful');
+    } catch (error) {
+      sendError(res, error.message || 'Login failed', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+ 
+  /**
+   * Logout from current device
+   * @route POST /api/v1/auth/logout
+   */
   static async logout(req, res, next) {
     try {
-      const result = await AuthService.logout(req.user.id, req.token);
+      const userId = req.user.id;
+      const accessToken = req.token || req.headers.authorization?.split(' ')[1];
+      const result = await AuthService.logout(userId, accessToken);
+      sendSuccess(res, null, result.message);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Logout from all devices
+   * @route POST /api/v1/auth/logout-all
+   */
+  static async logoutAll(req, res, next) {
+    try {
+      const userId = req.user.id;
+      const accessToken = req.token || req.headers.authorization?.split(' ')[1];
+      const result = await AuthService.logoutAllDevices(userId, accessToken);
       sendSuccess(res, null, result.message);
     } catch (error) {
       next(error);
@@ -143,6 +201,7 @@ class AuthController {
       const result = await AuthService.refreshToken(refreshToken);
       sendSuccess(res, result, 'Token refreshed successfully');
     } catch (error) {
+      sendError(res, error.message || 'Token refresh failed', error.statusCode || 500);
       next(error);
     }
   }

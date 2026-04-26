@@ -31,17 +31,6 @@ router.post('/register/client', authLimiter, uploadFields([
   body('serviceAddress').notEmpty(),
 ], AuthController.registerClient);
 
-router.post('/verify/email', authLimiter, [
-  body('email').isEmail().normalizeEmail(),
-  body('otp').isLength({ min: 6, max: 6 }),
-], AuthController.verifyEmail);
-
-
-router.post('/verify/phone', authLimiter, [
-  body('phone').isMobilePhone(),
-  body('otp').isLength({ min: 6, max: 6 }),
-], AuthController.verifyPhone);
-
 /*
 async (req, res) => {
   const errors = validationResult(req);
@@ -110,6 +99,44 @@ async (req, res) => {
     client.release();
   }
 }  ); */
+
+
+router.post('/verify/email', authLimiter, [
+  body('email').isEmail().normalizeEmail(),
+  body('otp').isLength({ min: 6, max: 6 }),
+], AuthController.verifyEmail);
+
+
+router.post('/verify/phone', authLimiter, [
+  body('phone').isMobilePhone(),
+  body('otp').isLength({ min: 6, max: 6 }),
+], AuthController.verifyPhone);
+
+
+// Login with email/phone and password
+router.post('/login', authLimiter, [
+  body('identifier').notEmpty().withMessage('Email or phone number is required'),
+  body('password').notEmpty().withMessage('Password is required'),
+], AuthController.login);
+
+// Request OTP for phone login
+router.post('/request-otp', authLimiter, [
+  body('phone').matches(/^\+?[0-9]{10,15}$/).withMessage('Valid phone number is required')
+], AuthController.requestOTP);
+
+// Login with phone and OTP
+router.post('/login-otp', authLimiter, [
+  body('phone').matches(/^\+?[0-9]{10,15}$/).withMessage('Valid phone number is required'),
+  body('otp').isLength({ min: 6, max: 6 }).matches(/^[0-9]+$/).withMessage('OTP must be 6 digits')
+], AuthController.loginWithOTP);
+
+
+// Logout from current device (protected route)
+router.post('/logout', authenticateToken, AuthController.logout);
+
+// Logout from all devices (protected route)
+router.post('/logout-all', authenticateToken, AuthController.logoutAll);
+
 
 /// * The artisan section begins here */////
 // Artisan registration
@@ -191,80 +218,6 @@ router.post('/register/artisan', authLimiter, uploadFields([
 });  */
 
 // Login
-router.post('/login', [
-  body('email').isEmail(),
-  body('password').notEmpty(),
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  try {
-    const { email, password } = req.body;
-
-    const userResult = await pool.query(
-      `SELECT u.*, 
-              CASE WHEN u.user_type = 'client' THEN cp.full_legal_name 
-                   WHEN u.user_type = 'artisan' THEN ap.full_legal_name 
-              END as full_name
-       FROM users u
-       LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
-       LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
-       WHERE u.email = $1`,
-      [email],
-    );
-
-    if (userResult.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    const user = userResult.rows[0];
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
-
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Check if account is active
-    if (!user.is_active) {
-      return res.status(403).json({ error: 'Account is deactivated' });
-    }
-
-    // Generate tokens
-    const accessToken = jwt.sign(
-      { userId: user.id, email: user.email, userType: user.user_type },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
-
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '30d' }
-    );
-
-    // Store refresh token in Redis
-    await cacheSet(`refresh_token:${user.id}`, refreshToken, 2592000);
-
-    res.json({
-      message: 'Login successful',
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        userType: user.user_type,
-        fullName: user.full_name,
-        isVerified: user.is_verified,
-        verificationStatus: user.verification_status,
-      },
-    });
-  } catch (error) {
-    logger.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
-  }
-});
 
 // Refresh token
 router.post('/refresh', async (req, res) => {

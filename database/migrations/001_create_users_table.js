@@ -25,7 +25,9 @@ exports.up = async (queryInterface) => {
       verification_status VARCHAR(20) DEFAULT 'pending',
       verification_notes TEXT,
       is_active BOOLEAN DEFAULT TRUE,
+      is_logged_in BOOLEAN DEFAULT FALSE,
       last_login TIMESTAMP,
+      last_logout TIMESTAMP,
       last_login_ip INET,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
