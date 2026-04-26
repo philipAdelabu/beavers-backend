@@ -20,6 +20,8 @@ exports.up = async (queryInterface) => {
       password_hash VARCHAR(255) NOT NULL,
       user_type VARCHAR(20) NOT NULL CHECK (user_type IN ('client', 'artisan', 'admin')),
       is_verified BOOLEAN DEFAULT FALSE,
+      is_email_verified BOOLEAN DEFAULT FALSE,
+      is_phone_verified BOOLEAN DEFAULT FALSE,
       verification_status VARCHAR(20) DEFAULT 'pending',
       verification_notes TEXT,
       is_active BOOLEAN DEFAULT TRUE,

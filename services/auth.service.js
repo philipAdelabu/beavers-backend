@@ -35,7 +35,7 @@ class AuthService {
       const userResult = await client.query(
         `INSERT INTO users (email, phone, password_hash, user_type, verification_status)
          VALUES ($1, $2, $3, $4, 'pending')
-         RETURNING id, email, phone, user_type, created_at`,
+         RETURNING id, email, phone, user_type, is_email_verified, is_phone_verified, verification_status, created_at`,
         [email, phone, hashedPassword, 'client']
       );
       

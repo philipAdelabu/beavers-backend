@@ -18,7 +18,7 @@ class AuthController {
             }
           }
         }
-      return sendError(res, 'Validation 1 error', 400, errors.array());
+      return sendError(res, 'Validation error', 400, errors.array());
     }
 
     try {
@@ -47,6 +47,7 @@ class AuthController {
           }
         }
       }
+      sendError(res, error.message || 'Registration failed', error.statusCode || 500);  
       next(error);
     }
 
@@ -99,6 +100,7 @@ class AuthController {
           }
         }
       }
+      sendError(res, error.message || 'Registration failed', error.statusCode || 500); 
       next(error);
     }
   }

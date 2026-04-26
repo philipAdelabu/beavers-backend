@@ -660,3 +660,231 @@
 2026-04-26 15:34:28 [INFO]: Socket.IO server initialized 
 2026-04-26 15:34:28 [INFO]: getting to  port .. 
 2026-04-26 15:34:28 [INFO]: Server running on port 3000 
+2026-04-26 15:37:52 [INFO]: ... end of ther server call.. 
+2026-04-26 15:37:52 [INFO]: Database pool connected 
+2026-04-26 15:37:52 [INFO]: Database extensions initialized 
+2026-04-26 15:37:52 [INFO]: Database connected successfully at Sun Apr 26 2026 15:37:52 GMT+0100 (West Africa Time) 
+2026-04-26 15:37:52 [INFO]: Database connected successfully 
+2026-04-26 15:37:52 [INFO]: Redis connecting... 
+2026-04-26 15:37:52 [INFO]: Redis connected successfully 
+2026-04-26 15:37:52 [INFO]: Redis initialized and connected 
+2026-04-26 15:37:52 [INFO]: Redis connected successfully 
+2026-04-26 15:37:52 [INFO]: Socket.IO server initialized 
+2026-04-26 15:37:52 [INFO]: getting to  port .. 
+2026-04-26 15:37:52 [INFO]: Server running on port 3000 
+2026-04-26 15:39:08 [INFO]: SIGINT received. Starting graceful shutdown... 
+2026-04-26 15:39:25 [INFO]: Resetting all migrations... 
+2026-04-26 15:39:25 [INFO]: Database pool connected 
+2026-04-26 15:39:25 [INFO]: Migrations table ready 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 027_create_user_files_table.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 026_create_wallet_table.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 025_create_subcategories_table.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 024_add_soft_delete.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 023_add_foreign_keys.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 022_create_indexes.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 021_create_substitution_requests_table.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 020_create_dispatch_requests_table.js 
+2026-04-26 15:39:26 [INFO]: Rolled back migration: 019_create_categories_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 018_create_saved_artisans_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 017_create_promotions_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 016_create_training_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 015_create_job_offers_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 014_create_escrow_transactions_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 013_create_audit_logs.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 012_create_disputes_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 011_create_notifications.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 010_create_ratings_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 009_create_location_history.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 008_create_warehous_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 007_create_payments_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 006_create_bill_of_quantities_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 005_create_job_billing_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 004_create_jobs_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 003_create_artisan_profiles_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 002_create_client_profiles_table.js 
+2026-04-26 15:39:27 [INFO]: Rolled back migration: 001_create_users_table.js 
+2026-04-26 15:39:27 [INFO]: All migrations rolled back successfully 
+2026-04-26 15:39:35 [INFO]: Running pending migrations... 
+2026-04-26 15:39:35 [INFO]: Database pool connected 
+2026-04-26 15:39:35 [INFO]: Migrations table ready 
+2026-04-26 15:39:35 [INFO]: Found 27 pending migration(s) 
+2026-04-26 15:39:36 [INFO]: Executed migration: 001_create_users_table.js 
+2026-04-26 15:39:36 [INFO]: Executed migration: 002_create_client_profiles_table.js 
+2026-04-26 15:39:37 [INFO]: Executed migration: 003_create_artisan_profiles_table.js 
+2026-04-26 15:39:37 [INFO]: Executed migration: 004_create_jobs_table.js 
+2026-04-26 15:39:38 [INFO]: Executed migration: 005_create_job_billing_table.js 
+2026-04-26 15:39:38 [INFO]: Executed migration: 006_create_bill_of_quantities_table.js 
+2026-04-26 15:39:38 [INFO]: Executed migration: 007_create_payments_table.js 
+2026-04-26 15:39:39 [INFO]: Executed migration: 008_create_warehous_table.js 
+2026-04-26 15:39:40 [INFO]: Executed migration: 009_create_location_history.js 
+2026-04-26 15:39:40 [INFO]: Executed migration: 010_create_ratings_table.js 
+2026-04-26 15:39:41 [INFO]: Executed migration: 011_create_notifications.js 
+2026-04-26 15:39:41 [INFO]: Executed migration: 012_create_disputes_table.js 
+2026-04-26 15:39:42 [INFO]: Executed migration: 013_create_audit_logs.js 
+2026-04-26 15:39:43 [INFO]: Executed migration: 014_create_escrow_transactions_table.js 
+2026-04-26 15:39:43 [INFO]: Executed migration: 015_create_job_offers_table.js 
+2026-04-26 15:39:44 [INFO]: Executed migration: 016_create_training_table.js 
+2026-04-26 15:39:44 [INFO]: Executed migration: 017_create_promotions_table.js 
+2026-04-26 15:39:45 [INFO]: Executed migration: 018_create_saved_artisans_table.js 
+2026-04-26 15:39:45 [INFO]: Executed migration: 019_create_categories_table.js 
+2026-04-26 15:39:46 [INFO]: Executed migration: 020_create_dispatch_requests_table.js 
+2026-04-26 15:39:46 [INFO]: Executed migration: 021_create_substitution_requests_table.js 
+2026-04-26 15:39:47 [INFO]: Executed migration: 022_create_indexes.js 
+2026-04-26 15:39:47 [INFO]: Executed migration: 023_add_foreign_keys.js 
+2026-04-26 15:39:47 [INFO]: Executed migration: 024_add_soft_delete.js 
+2026-04-26 15:39:48 [INFO]: Executed migration: 025_create_subcategories_table.js 
+2026-04-26 15:39:49 [INFO]: Executed migration: 026_create_wallet_table.js 
+2026-04-26 15:39:49 [INFO]: Executed migration: 027_create_user_files_table.js 
+2026-04-26 15:39:49 [INFO]: All migrations executed successfully 
+2026-04-26 15:55:47 [INFO]: ... end of ther server call.. 
+2026-04-26 15:55:47 [INFO]: Database pool connected 
+2026-04-26 15:55:47 [INFO]: Database extensions initialized 
+2026-04-26 15:55:47 [INFO]: Database connected successfully at Sun Apr 26 2026 15:55:47 GMT+0100 (West Africa Time) 
+2026-04-26 15:55:47 [INFO]: Database connected successfully 
+2026-04-26 15:55:47 [INFO]: Redis connecting... 
+2026-04-26 15:55:47 [INFO]: Redis connected successfully 
+2026-04-26 15:55:47 [INFO]: Redis initialized and connected 
+2026-04-26 15:55:47 [INFO]: Redis connected successfully 
+2026-04-26 15:55:47 [INFO]: Socket.IO server initialized 
+2026-04-26 15:55:47 [INFO]: getting to  port .. 
+2026-04-26 15:55:47 [INFO]: Server running on port 3000 
+2026-04-26 15:55:58 [INFO]: Test environment - OTP for shola@gmail.com: 191382 
+2026-04-26 15:55:58 [INFO]: New client registered: shola@gmail.com 
+2026-04-26 15:55:58 [INFO]: profile:  {"user_id":"d3b5cde2-e25f-4902-aec4-5cf8021e8537","full_legal_name":"Joe Marting","nin":"1234567890","street_address":"5, Lagos Agogo","service_address":"23, Aina street","verification_documents":{"ninPhoto":"https://api.beaverworks.com/uploads/nin-photos/f29912a7-8eeb-4e08-9621-4229a7801201.png","passportPhoto":"https://api.beaverworks.com/uploads/profile-photos/da8dafc8-94f5-4323-946e-fcc006497f1a.png"},"created_at":"2026-04-26T14:55:57.798Z"}
+2026-04-26 15:56:46 [INFO]: ... end of ther server call.. 
+2026-04-26 15:56:46 [INFO]: Database pool connected 
+2026-04-26 15:56:46 [INFO]: Database extensions initialized 
+2026-04-26 15:56:46 [INFO]: Database connected successfully at Sun Apr 26 2026 15:56:46 GMT+0100 (West Africa Time) 
+2026-04-26 15:56:46 [INFO]: Database connected successfully 
+2026-04-26 15:56:46 [INFO]: Redis connecting... 
+2026-04-26 15:56:46 [INFO]: Redis connected successfully 
+2026-04-26 15:56:46 [INFO]: Redis initialized and connected 
+2026-04-26 15:56:46 [INFO]: Redis connected successfully 
+2026-04-26 15:56:46 [INFO]: Socket.IO server initialized 
+2026-04-26 15:56:46 [INFO]: getting to  port .. 
+2026-04-26 15:56:46 [INFO]: Server running on port 3000 
+2026-04-26 15:57:55 [INFO]: Database pool connected 
+2026-04-26 15:57:55 [INFO]: Test environment - OTP for kola@gmail.com: 738067 
+2026-04-26 15:57:55 [INFO]: New client registered: kola@gmail.com 
+2026-04-26 15:57:55 [INFO]: profile:  {"user_id":"f102bde6-81eb-4d75-9076-b12252eede04","full_legal_name":"Bola Kareem","nin":"1234567890","street_address":"5, Lagos Agogo","service_address":"23, Aina street","verification_documents":{"ninPhoto":"https://api.beaverworks.com/uploads/nin-photos/4eca9ac0-ee5e-4ce4-926e-a22f1b50c479.png","passportPhoto":"https://api.beaverworks.com/uploads/profile-photos/db6645e4-908d-4993-8ac5-960587df6da3.png"},"created_at":"2026-04-26T14:57:55.274Z"}
+2026-04-26 15:59:31 [INFO]: ... end of ther server call.. 
+2026-04-26 15:59:31 [INFO]: Database pool connected 
+2026-04-26 15:59:31 [INFO]: Database extensions initialized 
+2026-04-26 15:59:31 [INFO]: Database connected successfully at Sun Apr 26 2026 15:59:31 GMT+0100 (West Africa Time) 
+2026-04-26 15:59:31 [INFO]: Database connected successfully 
+2026-04-26 15:59:31 [INFO]: Redis connecting... 
+2026-04-26 15:59:31 [INFO]: Redis connected successfully 
+2026-04-26 15:59:31 [INFO]: Redis initialized and connected 
+2026-04-26 15:59:31 [INFO]: Redis connected successfully 
+2026-04-26 15:59:31 [INFO]: Socket.IO server initialized 
+2026-04-26 15:59:31 [INFO]: getting to  port .. 
+2026-04-26 15:59:31 [INFO]: Server running on port 3000 
+2026-04-26 16:06:12 [INFO]: Database pool connected 
+2026-04-26 16:10:57 [INFO]: ... end of ther server call.. 
+2026-04-26 16:10:57 [INFO]: Database pool connected 
+2026-04-26 16:10:57 [INFO]: Database extensions initialized 
+2026-04-26 16:10:57 [INFO]: Database connected successfully at Sun Apr 26 2026 16:10:57 GMT+0100 (West Africa Time) 
+2026-04-26 16:10:57 [INFO]: Database connected successfully 
+2026-04-26 16:10:57 [INFO]: Redis connecting... 
+2026-04-26 16:10:57 [INFO]: Redis connected successfully 
+2026-04-26 16:10:57 [INFO]: Redis initialized and connected 
+2026-04-26 16:10:57 [INFO]: Redis connected successfully 
+2026-04-26 16:10:57 [INFO]: Socket.IO server initialized 
+2026-04-26 16:10:57 [INFO]: getting to  port .. 
+2026-04-26 16:10:57 [INFO]: Server running on port 3000 
+2026-04-26 16:12:19 [INFO]: ... end of ther server call.. 
+2026-04-26 16:12:19 [INFO]: Database pool connected 
+2026-04-26 16:12:19 [INFO]: Database extensions initialized 
+2026-04-26 16:12:19 [INFO]: Database connected successfully at Sun Apr 26 2026 16:12:19 GMT+0100 (West Africa Time) 
+2026-04-26 16:12:19 [INFO]: Database connected successfully 
+2026-04-26 16:12:19 [INFO]: Redis connecting... 
+2026-04-26 16:12:19 [INFO]: Redis connected successfully 
+2026-04-26 16:12:19 [INFO]: Redis initialized and connected 
+2026-04-26 16:12:19 [INFO]: Redis connected successfully 
+2026-04-26 16:12:19 [INFO]: Socket.IO server initialized 
+2026-04-26 16:12:19 [INFO]: getting to  port .. 
+2026-04-26 16:12:19 [INFO]: Server running on port 3000 
+2026-04-26 16:15:50 [INFO]: ... end of ther server call.. 
+2026-04-26 16:15:50 [INFO]: Database pool connected 
+2026-04-26 16:15:50 [INFO]: Database extensions initialized 
+2026-04-26 16:15:50 [INFO]: Database connected successfully at Sun Apr 26 2026 16:15:50 GMT+0100 (West Africa Time) 
+2026-04-26 16:15:50 [INFO]: Database connected successfully 
+2026-04-26 16:15:50 [INFO]: Redis connecting... 
+2026-04-26 16:15:50 [INFO]: Redis connected successfully 
+2026-04-26 16:15:50 [INFO]: Redis initialized and connected 
+2026-04-26 16:15:50 [INFO]: Redis connected successfully 
+2026-04-26 16:15:50 [INFO]: Socket.IO server initialized 
+2026-04-26 16:15:50 [INFO]: getting to  port .. 
+2026-04-26 16:15:50 [INFO]: Server running on port 3000 
+2026-04-26 16:18:36 [INFO]: ... end of ther server call.. 
+2026-04-26 16:18:37 [INFO]: Database pool connected 
+2026-04-26 16:18:37 [INFO]: Database extensions initialized 
+2026-04-26 16:18:37 [INFO]: Database connected successfully at Sun Apr 26 2026 16:18:37 GMT+0100 (West Africa Time) 
+2026-04-26 16:18:37 [INFO]: Database connected successfully 
+2026-04-26 16:18:37 [INFO]: Redis connecting... 
+2026-04-26 16:18:37 [INFO]: Redis connected successfully 
+2026-04-26 16:18:37 [INFO]: Redis initialized and connected 
+2026-04-26 16:18:37 [INFO]: Redis connected successfully 
+2026-04-26 16:18:37 [INFO]: Socket.IO server initialized 
+2026-04-26 16:18:37 [INFO]: getting to  port .. 
+2026-04-26 16:18:37 [INFO]: Server running on port 3000 
+2026-04-26 16:19:06 [INFO]: ... end of ther server call.. 
+2026-04-26 16:19:06 [INFO]: Database pool connected 
+2026-04-26 16:19:06 [INFO]: Database extensions initialized 
+2026-04-26 16:19:06 [INFO]: Database connected successfully at Sun Apr 26 2026 16:19:06 GMT+0100 (West Africa Time) 
+2026-04-26 16:19:06 [INFO]: Database connected successfully 
+2026-04-26 16:19:06 [INFO]: Redis connecting... 
+2026-04-26 16:19:06 [INFO]: Redis connected successfully 
+2026-04-26 16:19:06 [INFO]: Redis initialized and connected 
+2026-04-26 16:19:06 [INFO]: Redis connected successfully 
+2026-04-26 16:19:06 [INFO]: Socket.IO server initialized 
+2026-04-26 16:19:06 [INFO]: getting to  port .. 
+2026-04-26 16:19:06 [INFO]: Server running on port 3000 
+2026-04-26 16:20:41 [INFO]: ... end of ther server call.. 
+2026-04-26 16:20:41 [INFO]: Database pool connected 
+2026-04-26 16:20:41 [INFO]: Database extensions initialized 
+2026-04-26 16:20:41 [INFO]: Database connected successfully at Sun Apr 26 2026 16:20:41 GMT+0100 (West Africa Time) 
+2026-04-26 16:20:41 [INFO]: Database connected successfully 
+2026-04-26 16:20:41 [INFO]: Redis connecting... 
+2026-04-26 16:20:41 [INFO]: Redis connected successfully 
+2026-04-26 16:20:41 [INFO]: Redis initialized and connected 
+2026-04-26 16:20:41 [INFO]: Redis connected successfully 
+2026-04-26 16:20:41 [INFO]: Socket.IO server initialized 
+2026-04-26 16:20:41 [INFO]: getting to  port .. 
+2026-04-26 16:20:41 [INFO]: Server running on port 3000 
+2026-04-26 16:24:24 [INFO]: ... end of ther server call.. 
+2026-04-26 16:24:24 [INFO]: Database pool connected 
+2026-04-26 16:24:24 [INFO]: Database extensions initialized 
+2026-04-26 16:24:24 [INFO]: Database connected successfully at Sun Apr 26 2026 16:24:24 GMT+0100 (West Africa Time) 
+2026-04-26 16:24:24 [INFO]: Database connected successfully 
+2026-04-26 16:24:24 [INFO]: Redis connecting... 
+2026-04-26 16:24:24 [INFO]: Redis connected successfully 
+2026-04-26 16:24:24 [INFO]: Redis initialized and connected 
+2026-04-26 16:24:24 [INFO]: Redis connected successfully 
+2026-04-26 16:24:24 [INFO]: Socket.IO server initialized 
+2026-04-26 16:24:24 [INFO]: getting to  port .. 
+2026-04-26 16:24:24 [INFO]: Server running on port 3000 
+2026-04-26 16:25:37 [INFO]: ... end of ther server call.. 
+2026-04-26 16:25:37 [INFO]: Database pool connected 
+2026-04-26 16:25:37 [INFO]: Database extensions initialized 
+2026-04-26 16:25:37 [INFO]: Database connected successfully at Sun Apr 26 2026 16:25:37 GMT+0100 (West Africa Time) 
+2026-04-26 16:25:37 [INFO]: Database connected successfully 
+2026-04-26 16:25:37 [INFO]: Redis connecting... 
+2026-04-26 16:25:37 [INFO]: Redis connected successfully 
+2026-04-26 16:25:37 [INFO]: Redis initialized and connected 
+2026-04-26 16:25:37 [INFO]: Redis connected successfully 
+2026-04-26 16:25:37 [INFO]: Socket.IO server initialized 
+2026-04-26 16:25:37 [INFO]: getting to  port .. 
+2026-04-26 16:25:37 [INFO]: Server running on port 3000 
+2026-04-26 16:26:25 [INFO]: ... end of ther server call.. 
+2026-04-26 16:26:25 [INFO]: Database pool connected 
+2026-04-26 16:26:25 [INFO]: Database extensions initialized 
+2026-04-26 16:26:25 [INFO]: Database connected successfully at Sun Apr 26 2026 16:26:25 GMT+0100 (West Africa Time) 
+2026-04-26 16:26:25 [INFO]: Database connected successfully 
+2026-04-26 16:26:25 [INFO]: Redis connecting... 
+2026-04-26 16:26:25 [INFO]: Redis connected successfully 
+2026-04-26 16:26:25 [INFO]: Redis initialized and connected 
+2026-04-26 16:26:25 [INFO]: Redis connected successfully 
+2026-04-26 16:26:25 [INFO]: Socket.IO server initialized 
+2026-04-26 16:26:25 [INFO]: getting to  port .. 
+2026-04-26 16:26:25 [INFO]: Server running on port 3000 
