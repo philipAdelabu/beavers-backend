@@ -281,7 +281,7 @@ class AuthService {
       );
       
       const userProfileResult = await client.query(
-        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1 RETURNING *`,
+        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1`,
         [user.id],
       );
       const userProfile = userProfileResult.rows[0];

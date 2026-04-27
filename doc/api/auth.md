@@ -113,15 +113,11 @@ curl -X POST http://localhost:3000/api/v1/auth/logout \
 
 # Response
 
-# {
-
-# "success": true,
-
-# "message": "Logged out successfully",
-
-# "timestamp": "2024-01-01T00:00:00.000Z"
-
-# }
+{
+"success": true,
+"message": "Logged out successfully",
+"timestamp": "2024-01-01T00:00:00.000Z"
+}
 
 # Logout from all devices
 
@@ -131,12 +127,8 @@ curl -X POST http://localhost:3000/api/v1/auth/logout-all \
 
 # Response
 
-# {
-
-# "success": true,
-
-# "message": "Logged out from all devices successfully",
-
-# "timestamp": "2024-01-01T00:00:00.000Z"
-
-# }
+{
+"success": true,
+"message": "Logged out from all devices successfully",
+"timestamp": "2024-01-01T00:00:00.000Z"
+}

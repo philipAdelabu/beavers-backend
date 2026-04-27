@@ -131,6 +131,7 @@ router.post('/login-otp', authLimiter, [
 ], AuthController.loginWithOTP);
 
 
+
 // Logout from current device (protected route)
 router.post('/logout', authenticateToken, AuthController.logout);
 

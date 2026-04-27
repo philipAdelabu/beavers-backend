@@ -120,6 +120,7 @@ class AuthController {
       const result = await AuthService.login(identifier, password, ipAddress, userAgent);
       sendSuccess(res, result, 'Login successful');
     } catch (error) {
+      sendError(res, error.message || 'Login failed, internal problem.', error.statusCode || 500); 
       next(error);
     }
   }
@@ -159,7 +160,7 @@ class AuthController {
     }
   }
 
- 
+  
   /**
    * Logout from current device
    * @route POST /api/v1/auth/logout
