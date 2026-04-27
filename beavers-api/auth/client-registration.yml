@@ -1,0 +1,46 @@
+info:
+  name: client-registration
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: 127.0.0.1:3000/api/v1/auth/register/client
+  body:
+    type: multipart-form
+    data:
+      - name: email
+        type: text
+        value: ade@gmail.com
+      - name: phone
+        type: text
+        value: "+2348022688674"
+      - name: fullLegalName
+        type: text
+        value: Ade Paul
+      - name: nin
+        type: text
+        value: "1234567890"
+      - name: streetAddress
+        type: text
+        value: 12, Lagos street
+      - name: serviceAddress
+        type: text
+        value: 64, Ibadan road
+      - name: ninPhoto
+        type: file
+        value:
+          - /home/philip/Pictures/ninphoto.jpeg
+      - name: passportPhoto
+        type: text
+        value: ""
+      - name: password
+        type: text
+        value: "1234567890"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
