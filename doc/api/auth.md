@@ -1,137 +1,357 @@
- # New User Creation for client
+## Authentication
 
-URL : 127.0.0.1:3000/api/v1/auth/register/client
-Method: POST
-Body fields: [email, phone, fullLegalName, password, serviceAddress, streetAddress, nin, ninPhoto, passportPhoto]
+### Base URL : localhost:3000/api/v1/auth
 
-Response: {
-"success": true,
-"message": "Registration successful. Please verify your email.",
-"timestamp": "2026-04-26T14:57:55.805Z",
-"data": {
-"id": "f102bde6-81eb-4d75-9076-b12252eede04",
-"email": "kola@gmail.com",
-"phone": "+2348032688674",
-"userType": "client",
-"profile": {
-"user_id": "f102bde6-81eb-4d75-9076-b12252eede04",
-"full_legal_name": "Bola Kareem",
-"nin": "1234567890",
-"street_address": "5, Lagos Agogo",
-"service_address": "23, Aina street",
-"verification_documents": {
-"ninPhoto": "https://api.beaverworks.com/uploads/nin-photos/4eca9ac0-ee5e-4ce4-926e-a22f1b50c479.png",
-"passportPhoto": "https://api.beaverworks.com/uploads/profile-photos/db6645e4-908d-4993-8ac5-960587df6da3.png"
-},
-"created_at": "2026-04-26T14:57:55.274Z"
+· POST /auth/register/client
+· POST /auth/register/artisan
+· POST /auth/login
+· POST /auth/logout
+· POST /auth/refresh
+· POST /auth/verify-email
+· POST /auth/forgot-password
+· POST /auth/reset-password
+· POST /auth/change-password
+
+## Register Client
+
+Creates a new client account.
+
+**Endpoint:** `POST /auth/register/client`
+
+**Request Body:**
+
+```json
+{
+  "email": "client@example.com",
+  "phone": "+2348012345678",
+  "password": "securepassword",
+  "fullLegalName": "John Doe",
+  "nin": "12345678901",
+  "streetAddress": "123 Main Street, Lagos",
+  "serviceAddress": "123 Main Street, Lagos"
 }
-}
-}
+```
 
+**Response:** `201 Created`
 
-# Create new Artisan
+```json
+{
+  "success": true,
+  "message": "Registration successful. Please verify your email.",
+  "data": {
+    "user": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "client@example.com",
+      "phone": "+2348012345678",
+      "userType": "client"
+    }
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Register Artisan
+
+Creates a new artisan account.
+
+**Endpoint:** `POST /auth/register/artisan`
+
+**Request Body:**
+
+```json
+{
+  "email": "artisan@example.com",
+  "phone": "+2348012345678",
+  "password": "securepassword",
+  "fullLegalName": "Jane Smith",
+  "nin": "12345678901",
+  "residentialAddress": "456 Artisan Avenue, Lagos",
+  "skillCategory": "plumbing",
+  "onboardingFee": 5000
+}
+```
+
+**Response:** `201 Created`
+
+```json
+{
+  "success": true,
+  "message": "Registration successful. Please verify your email and pay onboarding fee.",
+  "data": {
+    "user": {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "email": "artisan@example.com",
+      "phone": "+2348012345678",
+      "userType": "artisan"
+    }
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Login
+
+Authenticates a user and returns access tokens.
+
+**Endpoint:** `POST /auth/login`
+
+**Request Body:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
+    "user": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "user@example.com",
+      "userType": "client",
+      "fullName": "John Doe",
+      "isVerified": true,
+      "verificationStatus": "verified"
+    }
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Logout
+
+Invalidates the current access token.
+
+**Endpoint:** `POST /auth/logout`
+
+**Headers:** `Authorization: Bearer <access_token>`
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Logged out successfully",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Refresh Token
+
+Obtains a new access token using a refresh token.
+
+**Endpoint:** `POST /auth/refresh`
+
+**Request Body:**
+
+```json
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
 
 ## Verify Email
 
-URL : 127.0.0.1:3000/api/v1/auth/verify/email
-Method: POST
-Body fields: [email, otp]
-Response : {
-"success": true,
-"message": "Email verified successfully",
-"timestamp": "2026-04-26T16:26:23.005Z"
-}
+Verifies a user's email address with OTP.
 
-## Verify Phone
+**Endpoint:** `POST /auth/verify-email`
 
-## Login With Email
+**Request Body:**
 
-curl -X POST http://localhost:3000/api/v1/auth/login \
- -H "Content-Type: application/json" \
- -d '{
-"identifier": "user@example.com",
-"password": "password123"
-}'
-
-## Login with Phone number and password
-
-curl -X POST http://localhost:3000/api/v1/auth/login \
- -H "Content-Type: application/json" \
- -d '{
-"identifier": "+2348012345678",
-"password": "password123"
-}'
-
-## Request Login OTP
-
-curl -X POST http://localhost:3000/api/v1/auth/request-otp \
- -H "Content-Type: application/json" \
- -d '{
-"phone": "+2348012345678"
-}'
-
-## Login with phone and OTP
-
-curl -X POST http://localhost:3000/api/v1/auth/login-otp \
- -H "Content-Type: application/json" \
- -d '{
-"phone": "+2348012345678",
-"otp": "123456"
-}'
-
-## Logout user
-
-# First, login to get token
-
-curl -X POST http://localhost:3000/api/v1/auth/login \
- -H "Content-Type: application/json" \
- -d '{
-"identifier": "user@example.com",
-"password": "password123"
-}'
-
-# Response will contain accessToken
-
-# {
-
-# "success": true,
-
-# "data": {
-
-# "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-
-# "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-
-# "user": {...}
-
-# }
-
-# }
-
-# Logout from current device
-
-curl -X POST http://localhost:3000/api/v1/auth/logout \
- -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
- -H "Content-Type: application/json"
-
-# Response
-
+```json
 {
-"success": true,
-"message": "Logged out successfully",
-"timestamp": "2024-01-01T00:00:00.000Z"
+  "email": "user@example.com",
+  "otp": "123456"
 }
+```
 
-# Logout from all devices
+**Response:** `200 OK`
 
-curl -X POST http://localhost:3000/api/v1/auth/logout-all \
- -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
- -H "Content-Type: application/json"
-
-# Response
-
+```json
 {
-"success": true,
-"message": "Logged out from all devices successfully",
-"timestamp": "2024-01-01T00:00:00.000Z"
+  "success": true,
+  "message": "Email verified successfully",
+  "timestamp": "2024-01-01T00:00:00.000Z"
 }
+```
+
+## Send Verification Code
+
+Sends a verification code to the user's email.
+
+**Endpoint:** `POST /auth/send-verification`
+
+**Request Body:**
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Verification code sent",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Forgot Password
+
+Sends a password reset link to the user's email.
+
+**Endpoint:** `POST /auth/forgot-password`
+
+**Request Body:**
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "If an account exists, a reset link will be sent",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Reset Password
+
+Resets the user's password using a reset token.
+
+**Endpoint:** `POST /auth/reset-password`
+
+**Request Body:**
+
+```json
+{
+  "token": "reset_token_here",
+  "newPassword": "newSecurePassword123"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Password reset successfully",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Change Password
+
+Changes the authenticated user's password.
+
+**Endpoint:** `POST /auth/change-password`
+
+**Headers:** `Authorization: Bearer <access_token>`
+
+**Request Body:**
+
+```json
+{
+  "currentPassword": "oldPassword123",
+  "newPassword": "newPassword456"
+}
+```
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Password changed successfully",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Get Current User
+
+Retrieves the authenticated user's information.
+
+**Endpoint:** `GET /auth/me`
+
+**Headers:** `Authorization: Bearer <access_token>`
+
+**Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "User profile retrieved",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "user@example.com",
+    "phone": "+2348012345678",
+    "userType": "client",
+    "isVerified": true
+  },
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+## Error Responses
+
+### Invalid Credentials
+
+```json
+{
+  "success": false,
+  "error": "AuthenticationError",
+  "message": "Invalid credentials",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Account Not Verified
+
+```json
+{
+  "success": false,
+  "error": "AuthorizationError",
+  "message": "Account not verified. Please check your email for verification code.",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### Account Deactivated
+
+```json
+{
+  "success": false,
+  "error": "AuthorizationError",
+  "message": "Account is deactivated. Please contact support.",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```

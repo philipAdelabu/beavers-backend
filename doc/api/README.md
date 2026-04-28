@@ -10,11 +10,12 @@ I'll provide all the API documentation markdown files for the BeaverWorks backen
 Welcome to the BeaverWorks API documentation. This API powers the BeaverWorks platform, connecting clients with verified artisans for construction, maintenance, repairs, and technical services.
 
 ## Base URL
-
 ```
+
 Production: https://api.beaverworks.com/api/v1
 Staging: https://staging-api.beaverworks.com/api/v1
 Development: http://localhost:3000/api/v1
+
 ```
 
 ## Authentication
@@ -22,8 +23,10 @@ Development: http://localhost:3000/api/v1
 Most endpoints require authentication using JWT tokens. Include the token in the Authorization header:
 
 ```
+
 Authorization: Bearer <your_access_token>
-```
+
+````
 
 ## API Response Format
 
@@ -38,7 +41,7 @@ All responses follow a consistent format:
   "data": { ... },
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
-```
+````
 
 ### Paginated Response
 
@@ -72,23 +75,24 @@ All responses follow a consistent format:
 
 ## HTTP Status Codes
 
-| Code | Description |
-|------|-------------|
-| 200 | Success |
-| 201 | Created |
-| 204 | No Content |
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Not Found |
-| 409 | Conflict |
-| 422 | Unprocessable Entity |
-| 429 | Too Many Requests |
-| 500 | Internal Server Error |
+| Code | Description           |
+| ---- | --------------------- |
+| 200  | Success               |
+| 201  | Created               |
+| 204  | No Content            |
+| 400  | Bad Request           |
+| 401  | Unauthorized          |
+| 403  | Forbidden             |
+| 404  | Not Found             |
+| 409  | Conflict              |
+| 422  | Unprocessable Entity  |
+| 429  | Too Many Requests     |
+| 500  | Internal Server Error |
 
 ## API Endpoints
 
 ### Authentication
+
 - [POST /auth/register/client](./auth.md#register-client)
 - [POST /auth/register/artisan](./auth.md#register-artisan)
 - [POST /auth/login](./auth.md#login)
@@ -99,6 +103,7 @@ All responses follow a consistent format:
 - [POST /auth/reset-password](./auth.md#reset-password)
 
 ### Clients
+
 - [GET /clients/profile](./clients.md#get-profile)
 - [PUT /clients/profile](./clients.md#update-profile)
 - [GET /clients/addresses](./clients.md#get-addresses)
@@ -107,6 +112,7 @@ All responses follow a consistent format:
 - [GET /clients/jobs](./clients.md#get-job-history)
 
 ### Artisans
+
 - [GET /artisans/profile](./artisans.md#get-profile)
 - [PUT /artisans/profile](./artisans.md#update-profile)
 - [POST /artisans/availability](./artisans.md#update-availability)
@@ -115,6 +121,7 @@ All responses follow a consistent format:
 - [GET /artisans/ratings](./artisans.md#get-ratings)
 
 ### Jobs
+
 - [POST /jobs/create](./jobs.md#create-job)
 - [POST /jobs/:jobId/accept](./jobs.md#accept-job)
 - [POST /jobs/:jobId/confirm-arrival](./jobs.md#confirm-arrival)
@@ -125,6 +132,7 @@ All responses follow a consistent format:
 - [GET /jobs/:jobId](./jobs.md#get-job-details)
 
 ### Payments
+
 - [POST /payments/initialize/:jobId](./payments.md#initialize-payment)
 - [GET /payments/methods](./payments.md#get-payment-methods)
 - [POST /payments/methods](./payments.md#add-payment-method)
@@ -132,6 +140,7 @@ All responses follow a consistent format:
 - [POST /payments/dispute/:jobId](./payments.md#create-dispute)
 
 ### Location
+
 - [POST /location/update](./locations.md#update-location)
 - [GET /location/nearby](./locations.md#get-nearby-artisans)
 - [GET /location/artisan/:artisanId](./locations.md#get-artisan-location)
@@ -139,19 +148,20 @@ All responses follow a consistent format:
 - [GET /location/eta/:jobId](./locations.md#get-eta)
 
 ### Webhooks
+
 - [POST /webhooks/stripe](./webhooks.md#stripe-webhook)
 - [POST /webhooks/paystack](./webhooks.md#paystack-webhook)
 - [POST /webhooks/flutterwave](./webhooks.md#flutterwave-webhook)
 
 ## Rate Limits
 
-| Endpoint Category | Limit | Window |
-|------------------|-------|--------|
-| Authentication | 5 requests | 15 minutes |
-| Job Creation | 10 requests | 1 hour |
-| Location Updates | 60 requests | 1 minute |
-| Payment Endpoints | 20 requests | 1 hour |
-| Admin Endpoints | 100 requests | 1 minute |
+| Endpoint Category | Limit        | Window     |
+| ----------------- | ------------ | ---------- |
+| Authentication    | 5 requests   | 15 minutes |
+| Job Creation      | 10 requests  | 1 hour     |
+| Location Updates  | 60 requests  | 1 minute   |
+| Payment Endpoints | 20 requests  | 1 hour     |
+| Admin Endpoints   | 100 requests | 1 minute   |
 
 ## WebSocket Events
 
@@ -161,11 +171,13 @@ The API also supports real-time communication via WebSockets:
 - Authentication: Include token in connection query: `?token=<your_token>`
 
 ### Client Events
+
 - `job:join` - Join a job room
 - `job:leave` - Leave a job room
 - `location:request` - Request artisan location
 
 ### Artisan Events
+
 - `location:update` - Update real-time location
 - `artisan:availability` - Set online/offline status
 - `job:accept` - Accept a job offer
@@ -173,10 +185,12 @@ The API also supports real-time communication via WebSockets:
 ## Support
 
 For API support, contact:
+
 - Email: api-support@beaverworks.com
 - Documentation: https://docs.beaverworks.com
 - Status Page: https://status.beaverworks.com
-```
+
+````
 
 ### `docs/api/auth.md`
 
@@ -201,7 +215,7 @@ Creates a new client account.
   "streetAddress": "123 Main Street, Lagos",
   "serviceAddress": "123 Main Street, Lagos"
 }
-```
+````
 
 **Response:** `201 Created`
 
@@ -526,7 +540,8 @@ Retrieves the authenticated user's information.
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
-```
+
+````
 
 ### `docs/api/clients.md`
 
@@ -562,7 +577,7 @@ Retrieves the authenticated client's profile.
   },
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
-```
+````
 
 ## Update Profile
 
@@ -609,11 +624,11 @@ Uploads verification documents.
 
 **Form Data:**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| ninPhoto | File | Yes | NIN document photo |
-| utilityBill | File | Yes | Recent utility bill |
-| passportPhoto | File | Yes | Passport photograph |
+| Field         | Type | Required | Description         |
+| ------------- | ---- | -------- | ------------------- |
+| ninPhoto      | File | Yes      | NIN document photo  |
+| utilityBill   | File | Yes      | Recent utility bill |
+| passportPhoto | File | Yes      | Passport photograph |
 
 **Response:** `200 OK`
 
@@ -832,11 +847,11 @@ Retrieves the client's job history with pagination.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| status | string | No | Filter by job status |
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 10, max: 100) |
+| Parameter | Type    | Required | Description                            |
+| --------- | ------- | -------- | -------------------------------------- |
+| status    | string  | No       | Filter by job status                   |
+| page      | integer | No       | Page number (default: 1)               |
+| limit     | integer | No       | Items per page (default: 10, max: 100) |
 
 **Response:** `200 OK`
 
@@ -1008,12 +1023,12 @@ Retrieves client notifications.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| isRead | boolean | No | Filter by read status |
-| type | string | No | Filter by notification type |
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 20) |
+| Parameter | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| isRead    | boolean | No       | Filter by read status        |
+| type      | string  | No       | Filter by notification type  |
+| page      | integer | No       | Page number (default: 1)     |
+| limit     | integer | No       | Items per page (default: 20) |
 
 **Response:** `200 OK`
 
@@ -1105,7 +1120,8 @@ Gets the number of unread notifications.
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
-```
+
+````
 
 ### `docs/api/artisans.md`
 
@@ -1149,7 +1165,7 @@ Retrieves the authenticated artisan's profile.
   },
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
-```
+````
 
 ## Update Profile
 
@@ -1231,12 +1247,12 @@ Uploads verification and certification documents.
 
 **Form Data:**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| passportPhoto | File | Yes | Passport photograph |
-| ninPhoto | File | Yes | NIN document |
-| certificates | File[] | No | Professional certificates |
-| tradeTestimony | File[] | No | Trade testimonies |
+| Field          | Type   | Required | Description               |
+| -------------- | ------ | -------- | ------------------------- |
+| passportPhoto  | File   | Yes      | Passport photograph       |
+| ninPhoto       | File   | Yes      | NIN document              |
+| certificates   | File[] | No       | Professional certificates |
+| tradeTestimony | File[] | No       | Trade testimonies         |
 
 **Response:** `200 OK`
 
@@ -1266,10 +1282,10 @@ Retrieves the artisan's earnings summary.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| startDate | string | No | Start date (ISO format) |
-| endDate | string | No | End date (ISO format) |
+| Parameter | Type   | Required | Description             |
+| --------- | ------ | -------- | ----------------------- |
+| startDate | string | No       | Start date (ISO format) |
+| endDate   | string | No       | End date (ISO format)   |
 
 **Response:** `200 OK`
 
@@ -1343,10 +1359,10 @@ Retrieves withdrawal history.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 20) |
+| Parameter | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| page      | integer | No       | Page number (default: 1)     |
+| limit     | integer | No       | Items per page (default: 20) |
 
 **Response:** `200 OK`
 
@@ -1451,10 +1467,10 @@ Retrieves ratings received by the artisan.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 20) |
+| Parameter | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| page      | integer | No       | Page number (default: 1)     |
+| limit     | integer | No       | Items per page (default: 20) |
 
 **Response:** `200 OK`
 
@@ -1496,9 +1512,9 @@ Retrieves the artisan's work schedule.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| date | string | No | Date to retrieve (YYYY-MM-DD) |
+| Parameter | Type   | Required | Description                   |
+| --------- | ------ | -------- | ----------------------------- |
+| date      | string | No       | Date to retrieve (YYYY-MM-DD) |
 
 **Response:** `200 OK`
 
@@ -1662,9 +1678,9 @@ Retrieves upcoming jobs for the artisan.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| limit | integer | No | Maximum jobs to return (default: 10) |
+| Parameter | Type    | Required | Description                          |
+| --------- | ------- | -------- | ------------------------------------ |
+| limit     | integer | No       | Maximum jobs to return (default: 10) |
 
 **Response:** `200 OK`
 
@@ -1775,9 +1791,9 @@ Retrieves available training courses.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| tier | integer | No | Filter by tier level |
+| Parameter | Type    | Required | Description          |
+| --------- | ------- | -------- | -------------------- |
+| tier      | integer | No       | Filter by tier level |
 
 **Response:** `200 OK`
 
@@ -1956,7 +1972,8 @@ Checks the monthly fee payment status.
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
-```
+
+````
 
 ### `docs/api/jobs.md`
 
@@ -1984,7 +2001,7 @@ Creates a new job request.
     "longitude": 3.3792
   }
 }
-```
+````
 
 **Response:** `201 Created`
 
@@ -2469,11 +2486,11 @@ Retrieves jobs for the authenticated client.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| status | string | No | Filter by job status |
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 10) |
+| Parameter | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| status    | string  | No       | Filter by job status         |
+| page      | integer | No       | Page number (default: 1)     |
+| limit     | integer | No       | Items per page (default: 10) |
 
 **Response:** `200 OK`
 
@@ -2512,11 +2529,11 @@ Retrieves jobs for the authenticated artisan.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| status | string | No | Filter by job status |
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 10) |
+| Parameter | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| status    | string  | No       | Filter by job status         |
+| page      | integer | No       | Page number (default: 1)     |
+| limit     | integer | No       | Items per page (default: 10) |
 
 **Response:** `200 OK`
 
@@ -2719,7 +2736,8 @@ Reports an issue with a job.
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
-```
+
+````
 
 ### `docs/api/payments.md`
 
@@ -2740,7 +2758,7 @@ Initializes a payment for a job.
 {
   "paymentMethodId": "pm_card_visa"
 }
-```
+````
 
 **Response:** `200 OK`
 
@@ -2902,10 +2920,10 @@ Retrieves payment history.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 20) |
+| Parameter | Type    | Required | Description                  |
+| --------- | ------- | -------- | ---------------------------- |
+| page      | integer | No       | Page number (default: 1)     |
+| limit     | integer | No       | Items per page (default: 20) |
 
 **Response:** `200 OK`
 
@@ -3145,9 +3163,9 @@ Retrieves payment summary for the authenticated user.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| period | string | No | Period (day, week, month, year) |
+| Parameter | Type   | Required | Description                     |
+| --------- | ------ | -------- | ------------------------------- |
+| period    | string | No       | Period (day, week, month, year) |
 
 **Response:** `200 OK`
 
@@ -3189,7 +3207,8 @@ Content-Disposition: attachment; filename="receipt_550e8400.pdf"
 
 [PDF binary data]
 ```
-```
+
+````
 
 ### `docs/api/locations.md`
 
@@ -3215,7 +3234,7 @@ Updates the artisan's current location (artisan only).
   "accuracy": 10,
   "jobId": "550e8400-e29b-41d4-a716-446655440300"
 }
-```
+````
 
 **Response:** `200 OK`
 
@@ -3262,13 +3281,13 @@ Retrieves artisans near a location.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| latitude | float | Yes | Latitude |
-| longitude | float | Yes | Longitude |
-| radius | integer | No | Radius in km (default: 5) |
-| category | string | No | Filter by category |
-| limit | integer | No | Maximum results (default: 20) |
+| Parameter | Type    | Required | Description                   |
+| --------- | ------- | -------- | ----------------------------- |
+| latitude  | float   | Yes      | Latitude                      |
+| longitude | float   | Yes      | Longitude                     |
+| radius    | integer | No       | Radius in km (default: 5)     |
+| category  | string  | No       | Filter by category            |
+| limit     | integer | No       | Maximum results (default: 20) |
 
 **Response:** `200 OK`
 
@@ -3336,12 +3355,12 @@ Retrieves location history for a job.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| startTime | string | No | Start time (ISO format) |
-| endTime | string | No | End time (ISO format) |
-| page | integer | No | Page number (default: 1) |
-| limit | integer | No | Items per page (default: 100) |
+| Parameter | Type    | Required | Description                   |
+| --------- | ------- | -------- | ----------------------------- |
+| startTime | string  | No       | Start time (ISO format)       |
+| endTime   | string  | No       | End time (ISO format)         |
+| page      | integer | No       | Page number (default: 1)      |
+| limit     | integer | No       | Items per page (default: 100) |
 
 **Response:** `200 OK`
 
@@ -3516,9 +3535,9 @@ Retrieves all active artisans (admin only).
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| category | string | No | Filter by category |
+| Parameter | Type   | Required | Description        |
+| --------- | ------ | -------- | ------------------ |
+| category  | string | No       | Filter by category |
 
 **Response:** `200 OK`
 
@@ -3554,10 +3573,10 @@ Retrieves the total distance traveled by an artisan.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| startDate | string | No | Start date (ISO format) |
-| endDate | string | No | End date (ISO format) |
+| Parameter | Type   | Required | Description             |
+| --------- | ------ | -------- | ----------------------- |
+| startDate | string | No       | Start date (ISO format) |
+| endDate   | string | No       | End date (ISO format)   |
 
 **Response:** `200 OK`
 
@@ -3585,11 +3604,11 @@ Retrieves traffic conditions for an area.
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| latitude | float | Yes | Latitude |
-| longitude | float | Yes | Longitude |
-| radius | integer | No | Radius in km (default: 5) |
+| Parameter | Type    | Required | Description               |
+| --------- | ------- | -------- | ------------------------- |
+| latitude  | float   | Yes      | Latitude                  |
+| longitude | float   | Yes      | Longitude                 |
+| radius    | integer | No       | Radius in km (default: 5) |
 
 **Response:** `200 OK`
 
@@ -3613,7 +3632,8 @@ Retrieves traffic conditions for an area.
   "timestamp": "2024-01-01T00:00:00.000Z"
 }
 ```
-```
+
+````
 
 ### `docs/api/webhooks.md`
 
@@ -3652,7 +3672,7 @@ Receives webhook events from Stripe.
     }
   }
 }
-```
+````
 
 **Response:** `200 OK`
 
@@ -3733,6 +3753,7 @@ Receives webhook events from Paystack.
 **Endpoint:** `POST /webhooks/paystack`
 
 **Headers:**
+
 - `x-paystack-signature`: Paystack signature header for verification
 
 ### Charge Success
@@ -3816,6 +3837,7 @@ Receives webhook events from Flutterwave.
 **Endpoint:** `POST /webhooks/flutterwave`
 
 **Headers:**
+
 - `verif-hash`: Flutterwave verification hash
 
 ### Charge Completed
@@ -3862,6 +3884,7 @@ Test endpoint for webhook integration.
 **Endpoint:** `POST /webhooks/test`
 
 **Headers:**
+
 - `x-webhook-secret`: Test webhook secret
 
 **Request Body:**
@@ -3937,9 +3960,7 @@ const sig = req.headers['stripe-signature'];
 const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
 
 // Paystack
-const hash = crypto.createHmac('sha512', secretKey)
-  .update(JSON.stringify(req.body))
-  .digest('hex');
+const hash = crypto.createHmac('sha512', secretKey).update(JSON.stringify(req.body)).digest('hex');
 if (hash !== signature) {
   throw new Error('Invalid signature');
 }
@@ -3989,31 +4010,32 @@ Payment providers automatically retry failed webhooks:
 
 ### Stripe Events
 
-| Event Type | Description |
-|------------|-------------|
-| `payment_intent.succeeded` | Payment succeeded |
-| `payment_intent.payment_failed` | Payment failed |
-| `charge.refunded` | Payment was refunded |
+| Event Type                      | Description              |
+| ------------------------------- | ------------------------ |
+| `payment_intent.succeeded`      | Payment succeeded        |
+| `payment_intent.payment_failed` | Payment failed           |
+| `charge.refunded`               | Payment was refunded     |
 | `customer.subscription.created` | New subscription created |
-| `customer.subscription.updated` | Subscription updated |
-| `customer.subscription.deleted` | Subscription cancelled |
+| `customer.subscription.updated` | Subscription updated     |
+| `customer.subscription.deleted` | Subscription cancelled   |
 
 ### Paystack Events
 
-| Event Type | Description |
-|------------|-------------|
-| `charge.success` | Payment succeeded |
-| `transfer.success` | Transfer completed |
-| `transfer.failed` | Transfer failed |
-| `charge.dispute.create` | Dispute created |
-| `charge.dispute.resolve` | Dispute resolved |
+| Event Type               | Description        |
+| ------------------------ | ------------------ |
+| `charge.success`         | Payment succeeded  |
+| `transfer.success`       | Transfer completed |
+| `transfer.failed`        | Transfer failed    |
+| `charge.dispute.create`  | Dispute created    |
+| `charge.dispute.resolve` | Dispute resolved   |
 
 ### Flutterwave Events
 
-| Event Type | Description |
-|------------|-------------|
-| `charge.completed` | Payment completed |
+| Event Type           | Description        |
+| -------------------- | ------------------ |
+| `charge.completed`   | Payment completed  |
 | `transfer.completed` | Transfer completed |
+
 ```
 
 This completes all the API documentation markdown files for the BeaverWorks backend. The documentation provides:
@@ -4026,3 +4048,4 @@ This completes all the API documentation markdown files for the BeaverWorks back
 6. **payments.md** - Payment processing, refunds, disputes, escrow
 7. **locations.md** - Real-time location tracking, geofencing, routing, ETA
 8. **webhooks.md** - Stripe, Paystack, and Flutterwave webhook integration
+```

@@ -305,7 +305,7 @@ class AuthController {
 
   static async getMe(req, res, next) {
     try {
-      sendSuccess(res, req.user, 'User profile retrieved');
+      sendSuccess(res, req.user, 'User information retrieved');
     } catch (error) {
       next(error);
     }

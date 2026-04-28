@@ -108,6 +108,11 @@ router.post('/change-password', authenticateToken, [
   body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
 ], AuthController.changePassword);
 
+// Get current user profile (protected route)
+router.get('/me', authenticateToken, AuthController.getMe);
+
+
+
 
 
 
