@@ -100,7 +100,7 @@ class AuthController {
           }
         }
       }
-      sendError(res, error.message || 'Registration failed', error.statusCode || 500); 
+       sendError(res, error.message || 'Registration failed', error.statusCode || 500); 
       next(error);
     }
   }
@@ -244,12 +244,14 @@ class AuthController {
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
     }
-
+     
     try {
       const { email } = req.body;
-      const result = await AuthService.sendVerificationCode(email);
-      sendSuccess(res, null, result.message);
+      const { phone } = req.body;
+      const result = await AuthService.sendVerificationCode(email || phone);
+     return sendSuccess(res, null, result.message);
     } catch (error) {
+      sendError(res, error.message || 'Failed to send verification code', error.statusCode || 500);
       next(error);
     }
   }
@@ -280,6 +282,7 @@ class AuthController {
       const result = await AuthService.resetPassword(token, newPassword);
       sendSuccess(res, null, result.message);
     } catch (error) {
+      sendError(res, error.message || 'Password reset failed', error.statusCode || 500);
       next(error);
     }
   }
@@ -295,6 +298,7 @@ class AuthController {
       const result = await AuthService.changePassword(req.user.id, currentPassword, newPassword);
       sendSuccess(res, null, result.message);
     } catch (error) {
+      sendError(res, error.message || 'Password change failed', error.statusCode || 500);
       next(error);
     }
   }

@@ -1,4 +1,4 @@
-## New User Creation for client
+ # New User Creation for client
 
 URL : 127.0.0.1:3000/api/v1/auth/register/client
 Method: POST
@@ -27,6 +27,9 @@ Response: {
 }
 }
 }
+
+
+# Create new Artisan
 
 ## Verify Email
 

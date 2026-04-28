@@ -3073,3 +3073,2639 @@
 2026-04-27 10:09:01 [INFO]: Access token blacklisted for user: c1bf3b62-b5d1-4a4e-9edb-087b0f963132 
 2026-04-27 10:09:02 [INFO]: User logged out: c1bf3b62-b5d1-4a4e-9edb-087b0f963132 
 2026-04-27 10:24:25 [INFO]: SIGINT received. Starting graceful shutdown... 
+2026-04-27 15:56:59 [INFO]: ... end of ther server call.. 
+2026-04-27 15:56:59 [INFO]: Database pool connected 
+2026-04-27 15:56:59 [INFO]: Database extensions initialized 
+2026-04-27 15:56:59 [INFO]: Database connected successfully at Mon Apr 27 2026 15:56:59 GMT+0100 (West Africa Time) 
+2026-04-27 15:56:59 [INFO]: Database connected successfully 
+2026-04-27 15:56:59 [INFO]: Redis connecting... 
+2026-04-27 15:56:59 [INFO]: Redis connected successfully 
+2026-04-27 15:56:59 [INFO]: Redis initialized and connected 
+2026-04-27 15:56:59 [INFO]: Redis connected successfully 
+2026-04-27 15:56:59 [INFO]: Socket.IO server initialized 
+2026-04-27 15:56:59 [INFO]: getting to  port .. 
+2026-04-27 15:56:59 [INFO]: Server running on port 3000 
+2026-04-27 15:57:05 [INFO]: User logged in: ade@gmail.com / +2348022688674 
+2026-04-27 15:57:42 [INFO]: Database pool connected 
+2026-04-27 15:57:42 [INFO]: Access token blacklisted for user: c1bf3b62-b5d1-4a4e-9edb-087b0f963132 
+2026-04-27 15:57:42 [INFO]: User logged out: c1bf3b62-b5d1-4a4e-9edb-087b0f963132 
+2026-04-27 15:58:34 [INFO]: Database pool connected 
+2026-04-27 15:58:34 [INFO]: User logged in: ade@gmail.com / +2348022688674 
+2026-04-27 16:09:14 [INFO]: ... end of ther server call.. 
+2026-04-27 16:09:14 [INFO]: Database pool connected 
+2026-04-27 16:09:14 [INFO]: Database extensions initialized 
+2026-04-27 16:09:14 [INFO]: Database connected successfully at Mon Apr 27 2026 16:09:14 GMT+0100 (West Africa Time) 
+2026-04-27 16:09:14 [INFO]: Database connected successfully 
+2026-04-27 16:09:14 [INFO]: Redis connecting... 
+2026-04-27 16:09:14 [INFO]: Redis connected successfully 
+2026-04-27 16:09:14 [INFO]: Redis initialized and connected 
+2026-04-27 16:09:14 [INFO]: Redis connected successfully 
+2026-04-27 16:09:14 [INFO]: Socket.IO server initialized 
+2026-04-27 16:09:14 [INFO]: getting to  port .. 
+2026-04-27 16:09:14 [INFO]: Server running on port 3000 
+2026-04-27 16:10:08 [INFO]: ... end of ther server call.. 
+2026-04-27 16:10:08 [INFO]: Database pool connected 
+2026-04-27 16:10:08 [INFO]: Database extensions initialized 
+2026-04-27 16:10:08 [INFO]: Database connected successfully at Mon Apr 27 2026 16:10:08 GMT+0100 (West Africa Time) 
+2026-04-27 16:10:08 [INFO]: Database connected successfully 
+2026-04-27 16:10:08 [INFO]: Redis connecting... 
+2026-04-27 16:10:08 [INFO]: Redis connected successfully 
+2026-04-27 16:10:08 [INFO]: Redis initialized and connected 
+2026-04-27 16:10:08 [INFO]: Redis connected successfully 
+2026-04-27 16:10:08 [INFO]: Socket.IO server initialized 
+2026-04-27 16:10:08 [INFO]: getting to  port .. 
+2026-04-27 16:10:08 [INFO]: Server running on port 3000 
+2026-04-27 16:10:09 [INFO]: ... end of ther server call.. 
+2026-04-27 16:10:09 [INFO]: Database pool connected 
+2026-04-27 16:10:09 [INFO]: Database extensions initialized 
+2026-04-27 16:10:09 [INFO]: Database connected successfully at Mon Apr 27 2026 16:10:09 GMT+0100 (West Africa Time) 
+2026-04-27 16:10:09 [INFO]: Database connected successfully 
+2026-04-27 16:10:09 [INFO]: Redis connecting... 
+2026-04-27 16:10:09 [INFO]: Redis connected successfully 
+2026-04-27 16:10:09 [INFO]: Redis initialized and connected 
+2026-04-27 16:10:09 [INFO]: Redis connected successfully 
+2026-04-27 16:10:09 [INFO]: Socket.IO server initialized 
+2026-04-27 16:10:09 [INFO]: getting to  port .. 
+2026-04-27 16:10:09 [INFO]: Server running on port 3000 
+2026-04-27 16:10:29 [INFO]: ... end of ther server call.. 
+2026-04-27 16:10:29 [INFO]: Database pool connected 
+2026-04-27 16:10:29 [INFO]: Database extensions initialized 
+2026-04-27 16:10:29 [INFO]: Database connected successfully at Mon Apr 27 2026 16:10:29 GMT+0100 (West Africa Time) 
+2026-04-27 16:10:29 [INFO]: Database connected successfully 
+2026-04-27 16:10:29 [INFO]: Redis connecting... 
+2026-04-27 16:10:29 [INFO]: Redis connected successfully 
+2026-04-27 16:10:29 [INFO]: Redis initialized and connected 
+2026-04-27 16:10:29 [INFO]: Redis connected successfully 
+2026-04-27 16:10:29 [INFO]: Socket.IO server initialized 
+2026-04-27 16:10:29 [INFO]: getting to  port .. 
+2026-04-27 16:10:29 [INFO]: Server running on port 3000 
+2026-04-27 16:12:21 [INFO]: ... end of ther server call.. 
+2026-04-27 16:12:21 [INFO]: Database pool connected 
+2026-04-27 16:12:21 [INFO]: Database extensions initialized 
+2026-04-27 16:12:21 [INFO]: Database connected successfully at Mon Apr 27 2026 16:12:21 GMT+0100 (West Africa Time) 
+2026-04-27 16:12:21 [INFO]: Database connected successfully 
+2026-04-27 16:12:21 [INFO]: Redis connecting... 
+2026-04-27 16:12:21 [INFO]: Redis connected successfully 
+2026-04-27 16:12:21 [INFO]: Redis initialized and connected 
+2026-04-27 16:12:21 [INFO]: Redis connected successfully 
+2026-04-27 16:12:21 [INFO]: Socket.IO server initialized 
+2026-04-27 16:12:21 [INFO]: getting to  port .. 
+2026-04-27 16:12:21 [INFO]: Server running on port 3000 
+2026-04-27 18:16:14 [INFO]: ... end of ther server call.. 
+2026-04-27 21:39:41 [INFO]: ... end of ther server call.. 
+2026-04-27 21:39:41 [INFO]: Database pool connected 
+2026-04-27 21:39:41 [INFO]: Database extensions initialized 
+2026-04-27 21:39:41 [INFO]: Database connected successfully at Mon Apr 27 2026 21:39:41 GMT+0100 (West Africa Time) 
+2026-04-27 21:39:41 [INFO]: Database connected successfully 
+2026-04-27 21:39:41 [INFO]: Redis connecting... 
+2026-04-27 21:39:41 [INFO]: Redis connected successfully 
+2026-04-27 21:39:41 [INFO]: Redis initialized and connected 
+2026-04-27 21:39:41 [INFO]: Redis connected successfully 
+2026-04-27 21:39:41 [INFO]: Socket.IO server initialized 
+2026-04-27 21:39:41 [INFO]: getting to  port .. 
+2026-04-27 21:39:41 [INFO]: Server running on port 3000 
+2026-04-27 21:44:49 [INFO]: ... end of ther server call.. 
+2026-04-27 21:44:50 [INFO]: Database pool connected 
+2026-04-27 21:44:50 [INFO]: Database extensions initialized 
+2026-04-27 21:44:50 [INFO]: Database connected successfully at Mon Apr 27 2026 21:44:50 GMT+0100 (West Africa Time) 
+2026-04-27 21:44:50 [INFO]: Database connected successfully 
+2026-04-27 21:44:50 [INFO]: Redis connecting... 
+2026-04-27 21:44:50 [INFO]: Redis connected successfully 
+2026-04-27 21:44:50 [INFO]: Redis initialized and connected 
+2026-04-27 21:44:50 [INFO]: Redis connected successfully 
+2026-04-27 21:44:50 [INFO]: Socket.IO server initialized 
+2026-04-27 21:44:50 [INFO]: getting to  port .. 
+2026-04-27 21:44:50 [INFO]: Server running on port 3000 
+2026-04-27 21:44:56 [INFO]: ... end of ther server call.. 
+2026-04-27 21:44:56 [INFO]: Database pool connected 
+2026-04-27 21:44:56 [INFO]: Database extensions initialized 
+2026-04-27 21:44:56 [INFO]: Database connected successfully at Mon Apr 27 2026 21:44:56 GMT+0100 (West Africa Time) 
+2026-04-27 21:44:56 [INFO]: Database connected successfully 
+2026-04-27 21:44:56 [INFO]: Redis connecting... 
+2026-04-27 21:44:56 [INFO]: Redis connected successfully 
+2026-04-27 21:44:56 [INFO]: Redis initialized and connected 
+2026-04-27 21:44:56 [INFO]: Redis connected successfully 
+2026-04-27 21:44:56 [INFO]: Socket.IO server initialized 
+2026-04-27 21:44:56 [INFO]: getting to  port .. 
+2026-04-27 21:44:56 [INFO]: Server running on port 3000 
+2026-04-27 21:47:03 [INFO]: ... end of ther server call.. 
+2026-04-27 21:47:03 [INFO]: Database pool connected 
+2026-04-27 21:47:03 [INFO]: Database extensions initialized 
+2026-04-27 21:47:03 [INFO]: Database connected successfully at Mon Apr 27 2026 21:47:03 GMT+0100 (West Africa Time) 
+2026-04-27 21:47:03 [INFO]: Database connected successfully 
+2026-04-27 21:47:03 [INFO]: Redis connecting... 
+2026-04-27 21:47:03 [INFO]: Redis connected successfully 
+2026-04-27 21:47:03 [INFO]: Redis initialized and connected 
+2026-04-27 21:47:03 [INFO]: Redis connected successfully 
+2026-04-27 21:47:03 [INFO]: Socket.IO server initialized 
+2026-04-27 21:47:03 [INFO]: getting to  port .. 
+2026-04-27 21:47:03 [INFO]: Server running on port 3000 
+2026-04-27 23:01:45 [INFO]: Database pool connected 
+2026-04-27 23:03:33 [INFO]: ... end of ther server call.. 
+2026-04-27 23:03:33 [INFO]: Database pool connected 
+2026-04-27 23:03:33 [INFO]: Database extensions initialized 
+2026-04-27 23:03:33 [INFO]: Database connected successfully at Mon Apr 27 2026 23:03:33 GMT+0100 (West Africa Time) 
+2026-04-27 23:03:33 [INFO]: Database connected successfully 
+2026-04-27 23:03:33 [INFO]: Redis connecting... 
+2026-04-27 23:03:33 [INFO]: Redis connected successfully 
+2026-04-27 23:03:33 [INFO]: Redis initialized and connected 
+2026-04-27 23:03:33 [INFO]: Redis connected successfully 
+2026-04-27 23:03:33 [INFO]: Socket.IO server initialized 
+2026-04-27 23:03:33 [INFO]: getting to  port .. 
+2026-04-27 23:03:33 [INFO]: Server running on port 3000 
+2026-04-27 23:03:34 [INFO]: ... end of ther server call.. 
+2026-04-27 23:03:34 [INFO]: Database pool connected 
+2026-04-27 23:03:34 [INFO]: Database extensions initialized 
+2026-04-27 23:03:34 [INFO]: Database connected successfully at Mon Apr 27 2026 23:03:34 GMT+0100 (West Africa Time) 
+2026-04-27 23:03:34 [INFO]: Database connected successfully 
+2026-04-27 23:03:34 [INFO]: Redis connecting... 
+2026-04-27 23:03:34 [INFO]: Redis connected successfully 
+2026-04-27 23:03:34 [INFO]: Redis initialized and connected 
+2026-04-27 23:03:34 [INFO]: Redis connected successfully 
+2026-04-27 23:03:34 [INFO]: Socket.IO server initialized 
+2026-04-27 23:03:34 [INFO]: getting to  port .. 
+2026-04-27 23:03:34 [INFO]: Server running on port 3000 
+2026-04-27 23:03:56 [INFO]: ... end of ther server call.. 
+2026-04-27 23:03:56 [INFO]: Database pool connected 
+2026-04-27 23:03:56 [INFO]: Database extensions initialized 
+2026-04-27 23:03:56 [INFO]: Database connected successfully at Mon Apr 27 2026 23:03:56 GMT+0100 (West Africa Time) 
+2026-04-27 23:03:56 [INFO]: Database connected successfully 
+2026-04-27 23:03:56 [INFO]: Redis connecting... 
+2026-04-27 23:03:56 [INFO]: Redis connected successfully 
+2026-04-27 23:03:56 [INFO]: Redis initialized and connected 
+2026-04-27 23:03:56 [INFO]: Redis connected successfully 
+2026-04-27 23:03:56 [INFO]: Socket.IO server initialized 
+2026-04-27 23:03:56 [INFO]: getting to  port .. 
+2026-04-27 23:03:56 [INFO]: Server running on port 3000 
+2026-04-27 23:03:57 [INFO]: ... end of ther server call.. 
+2026-04-27 23:03:57 [INFO]: Database pool connected 
+2026-04-27 23:03:57 [INFO]: Database extensions initialized 
+2026-04-27 23:03:57 [INFO]: Database connected successfully at Mon Apr 27 2026 23:03:57 GMT+0100 (West Africa Time) 
+2026-04-27 23:03:57 [INFO]: Database connected successfully 
+2026-04-27 23:03:57 [INFO]: Redis connecting... 
+2026-04-27 23:03:57 [INFO]: Redis connected successfully 
+2026-04-27 23:03:57 [INFO]: Redis initialized and connected 
+2026-04-27 23:03:57 [INFO]: Redis connected successfully 
+2026-04-27 23:03:57 [INFO]: Socket.IO server initialized 
+2026-04-27 23:03:57 [INFO]: getting to  port .. 
+2026-04-27 23:03:57 [INFO]: Server running on port 3000 
+2026-04-27 23:04:56 [INFO]: ... end of ther server call.. 
+2026-04-27 23:04:56 [INFO]: Database pool connected 
+2026-04-27 23:04:56 [INFO]: Database extensions initialized 
+2026-04-27 23:04:56 [INFO]: Database connected successfully at Mon Apr 27 2026 23:04:56 GMT+0100 (West Africa Time) 
+2026-04-27 23:04:56 [INFO]: Database connected successfully 
+2026-04-27 23:04:56 [INFO]: Redis connecting... 
+2026-04-27 23:04:56 [INFO]: Redis connected successfully 
+2026-04-27 23:04:56 [INFO]: Redis initialized and connected 
+2026-04-27 23:04:56 [INFO]: Redis connected successfully 
+2026-04-27 23:04:56 [INFO]: Socket.IO server initialized 
+2026-04-27 23:04:56 [INFO]: getting to  port .. 
+2026-04-27 23:04:56 [INFO]: Server running on port 3000 
+2026-04-27 23:04:57 [INFO]: ... end of ther server call.. 
+2026-04-27 23:04:57 [INFO]: Database pool connected 
+2026-04-27 23:04:57 [INFO]: Database extensions initialized 
+2026-04-27 23:04:57 [INFO]: Database connected successfully at Mon Apr 27 2026 23:04:57 GMT+0100 (West Africa Time) 
+2026-04-27 23:04:57 [INFO]: Database connected successfully 
+2026-04-27 23:04:57 [INFO]: Redis connecting... 
+2026-04-27 23:04:57 [INFO]: Redis connected successfully 
+2026-04-27 23:04:57 [INFO]: Redis initialized and connected 
+2026-04-27 23:04:57 [INFO]: Redis connected successfully 
+2026-04-27 23:04:57 [INFO]: Socket.IO server initialized 
+2026-04-27 23:04:57 [INFO]: getting to  port .. 
+2026-04-27 23:04:57 [INFO]: Server running on port 3000 
+2026-04-27 23:05:59 [INFO]: ... end of ther server call.. 
+2026-04-27 23:05:59 [INFO]: Database pool connected 
+2026-04-27 23:05:59 [INFO]: Database extensions initialized 
+2026-04-27 23:05:59 [INFO]: Database connected successfully at Mon Apr 27 2026 23:05:59 GMT+0100 (West Africa Time) 
+2026-04-27 23:05:59 [INFO]: Database connected successfully 
+2026-04-27 23:05:59 [INFO]: Redis connecting... 
+2026-04-27 23:05:59 [INFO]: Redis connected successfully 
+2026-04-27 23:05:59 [INFO]: Redis initialized and connected 
+2026-04-27 23:05:59 [INFO]: Redis connected successfully 
+2026-04-27 23:05:59 [INFO]: Socket.IO server initialized 
+2026-04-27 23:05:59 [INFO]: getting to  port .. 
+2026-04-27 23:05:59 [INFO]: Server running on port 3000 
+2026-04-27 23:06:02 [INFO]: ... end of ther server call.. 
+2026-04-27 23:06:02 [INFO]: Database pool connected 
+2026-04-27 23:06:02 [INFO]: Database extensions initialized 
+2026-04-27 23:06:02 [INFO]: Database connected successfully at Mon Apr 27 2026 23:06:02 GMT+0100 (West Africa Time) 
+2026-04-27 23:06:02 [INFO]: Database connected successfully 
+2026-04-27 23:06:02 [INFO]: Redis connecting... 
+2026-04-27 23:06:02 [INFO]: Redis connected successfully 
+2026-04-27 23:06:02 [INFO]: Redis initialized and connected 
+2026-04-27 23:06:02 [INFO]: Redis connected successfully 
+2026-04-27 23:06:02 [INFO]: Socket.IO server initialized 
+2026-04-27 23:06:02 [INFO]: getting to  port .. 
+2026-04-27 23:06:02 [INFO]: Server running on port 3000 
+2026-04-27 23:07:35 [INFO]: Database pool connected 
+2026-04-27 23:08:30 [INFO]: ... end of ther server call.. 
+2026-04-27 23:08:30 [INFO]: Database pool connected 
+2026-04-27 23:08:30 [INFO]: Database extensions initialized 
+2026-04-27 23:08:30 [INFO]: Database connected successfully at Mon Apr 27 2026 23:08:30 GMT+0100 (West Africa Time) 
+2026-04-27 23:08:30 [INFO]: Database connected successfully 
+2026-04-27 23:08:30 [INFO]: Redis connecting... 
+2026-04-27 23:08:30 [INFO]: Redis connected successfully 
+2026-04-27 23:08:30 [INFO]: Redis initialized and connected 
+2026-04-27 23:08:30 [INFO]: Redis connected successfully 
+2026-04-27 23:08:30 [INFO]: Socket.IO server initialized 
+2026-04-27 23:08:30 [INFO]: getting to  port .. 
+2026-04-27 23:08:30 [INFO]: Server running on port 3000 
+2026-04-27 23:08:52 [INFO]: ... end of ther server call.. 
+2026-04-27 23:08:52 [INFO]: Database pool connected 
+2026-04-27 23:08:52 [INFO]: Database extensions initialized 
+2026-04-27 23:08:52 [INFO]: Database connected successfully at Mon Apr 27 2026 23:08:52 GMT+0100 (West Africa Time) 
+2026-04-27 23:08:52 [INFO]: Database connected successfully 
+2026-04-27 23:08:52 [INFO]: Redis connecting... 
+2026-04-27 23:08:52 [INFO]: Redis connected successfully 
+2026-04-27 23:08:52 [INFO]: Redis initialized and connected 
+2026-04-27 23:08:52 [INFO]: Redis connected successfully 
+2026-04-27 23:08:52 [INFO]: Socket.IO server initialized 
+2026-04-27 23:08:52 [INFO]: getting to  port .. 
+2026-04-27 23:08:52 [INFO]: Server running on port 3000 
+2026-04-27 23:08:56 [INFO]: ... end of ther server call.. 
+2026-04-27 23:08:56 [INFO]: Database pool connected 
+2026-04-27 23:08:56 [INFO]: Database extensions initialized 
+2026-04-27 23:08:56 [INFO]: Database connected successfully at Mon Apr 27 2026 23:08:56 GMT+0100 (West Africa Time) 
+2026-04-27 23:08:56 [INFO]: Database connected successfully 
+2026-04-27 23:08:56 [INFO]: Redis connecting... 
+2026-04-27 23:08:56 [INFO]: Redis connected successfully 
+2026-04-27 23:08:56 [INFO]: Redis initialized and connected 
+2026-04-27 23:08:56 [INFO]: Redis connected successfully 
+2026-04-27 23:08:56 [INFO]: Socket.IO server initialized 
+2026-04-27 23:08:56 [INFO]: getting to  port .. 
+2026-04-27 23:08:56 [INFO]: Server running on port 3000 
+2026-04-27 23:09:14 [INFO]: ... end of ther server call.. 
+2026-04-27 23:09:14 [INFO]: Database pool connected 
+2026-04-27 23:09:14 [INFO]: Database extensions initialized 
+2026-04-27 23:09:14 [INFO]: Database connected successfully at Mon Apr 27 2026 23:09:14 GMT+0100 (West Africa Time) 
+2026-04-27 23:09:14 [INFO]: Database connected successfully 
+2026-04-27 23:09:14 [INFO]: Redis connecting... 
+2026-04-27 23:09:14 [INFO]: Redis connected successfully 
+2026-04-27 23:09:14 [INFO]: Redis initialized and connected 
+2026-04-27 23:09:14 [INFO]: Redis connected successfully 
+2026-04-27 23:09:14 [INFO]: Socket.IO server initialized 
+2026-04-27 23:09:14 [INFO]: getting to  port .. 
+2026-04-27 23:09:14 [INFO]: Server running on port 3000 
+2026-04-27 23:09:28 [INFO]: ... end of ther server call.. 
+2026-04-27 23:09:28 [INFO]: Database pool connected 
+2026-04-27 23:09:28 [INFO]: Database extensions initialized 
+2026-04-27 23:09:28 [INFO]: Database connected successfully at Mon Apr 27 2026 23:09:28 GMT+0100 (West Africa Time) 
+2026-04-27 23:09:28 [INFO]: Database connected successfully 
+2026-04-27 23:09:28 [INFO]: Redis connecting... 
+2026-04-27 23:09:28 [INFO]: Redis connected successfully 
+2026-04-27 23:09:28 [INFO]: Redis initialized and connected 
+2026-04-27 23:09:28 [INFO]: Redis connected successfully 
+2026-04-27 23:09:28 [INFO]: Socket.IO server initialized 
+2026-04-27 23:09:28 [INFO]: getting to  port .. 
+2026-04-27 23:09:28 [INFO]: Server running on port 3000 
+2026-04-27 23:24:24 [INFO]: ... end of ther server call.. 
+2026-04-27 23:24:24 [INFO]: Database pool connected 
+2026-04-27 23:24:24 [INFO]: Database extensions initialized 
+2026-04-27 23:24:24 [INFO]: Database connected successfully at Mon Apr 27 2026 23:24:24 GMT+0100 (West Africa Time) 
+2026-04-27 23:24:24 [INFO]: Database connected successfully 
+2026-04-27 23:24:24 [INFO]: Redis connecting... 
+2026-04-27 23:24:24 [INFO]: Redis connected successfully 
+2026-04-27 23:24:24 [INFO]: Redis initialized and connected 
+2026-04-27 23:24:24 [INFO]: Redis connected successfully 
+2026-04-27 23:24:24 [INFO]: Socket.IO server initialized 
+2026-04-27 23:24:24 [INFO]: getting to  port .. 
+2026-04-27 23:24:24 [INFO]: Server running on port 3000 
+2026-04-27 23:24:47 [INFO]: ... end of ther server call.. 
+2026-04-27 23:24:47 [INFO]: Database pool connected 
+2026-04-27 23:24:47 [INFO]: Database extensions initialized 
+2026-04-27 23:24:47 [INFO]: Database connected successfully at Mon Apr 27 2026 23:24:47 GMT+0100 (West Africa Time) 
+2026-04-27 23:24:47 [INFO]: Database connected successfully 
+2026-04-27 23:24:47 [INFO]: Redis connecting... 
+2026-04-27 23:24:47 [INFO]: Redis connected successfully 
+2026-04-27 23:24:47 [INFO]: Redis initialized and connected 
+2026-04-27 23:24:47 [INFO]: Redis connected successfully 
+2026-04-27 23:24:47 [INFO]: Socket.IO server initialized 
+2026-04-27 23:24:47 [INFO]: getting to  port .. 
+2026-04-27 23:24:47 [INFO]: Server running on port 3000 
+2026-04-27 23:24:50 [INFO]: ... end of ther server call.. 
+2026-04-27 23:24:50 [INFO]: Database pool connected 
+2026-04-27 23:24:50 [INFO]: Database extensions initialized 
+2026-04-27 23:24:50 [INFO]: Database connected successfully at Mon Apr 27 2026 23:24:50 GMT+0100 (West Africa Time) 
+2026-04-27 23:24:50 [INFO]: Database connected successfully 
+2026-04-27 23:24:50 [INFO]: Redis connecting... 
+2026-04-27 23:24:50 [INFO]: Redis connected successfully 
+2026-04-27 23:24:50 [INFO]: Redis initialized and connected 
+2026-04-27 23:24:50 [INFO]: Redis connected successfully 
+2026-04-27 23:24:50 [INFO]: Socket.IO server initialized 
+2026-04-27 23:24:50 [INFO]: getting to  port .. 
+2026-04-27 23:24:50 [INFO]: Server running on port 3000 
+2026-04-27 23:24:52 [INFO]: ... end of ther server call.. 
+2026-04-27 23:24:52 [INFO]: Database pool connected 
+2026-04-27 23:24:52 [INFO]: Database extensions initialized 
+2026-04-27 23:24:52 [INFO]: Database connected successfully at Mon Apr 27 2026 23:24:52 GMT+0100 (West Africa Time) 
+2026-04-27 23:24:52 [INFO]: Database connected successfully 
+2026-04-27 23:24:52 [INFO]: Redis connecting... 
+2026-04-27 23:24:52 [INFO]: Redis connected successfully 
+2026-04-27 23:24:52 [INFO]: Redis initialized and connected 
+2026-04-27 23:24:52 [INFO]: Redis connected successfully 
+2026-04-27 23:24:52 [INFO]: Socket.IO server initialized 
+2026-04-27 23:24:52 [INFO]: getting to  port .. 
+2026-04-27 23:24:52 [INFO]: Server running on port 3000 
+2026-04-27 23:25:53 [INFO]: ... end of ther server call.. 
+2026-04-27 23:25:53 [INFO]: Database pool connected 
+2026-04-27 23:25:53 [INFO]: Database extensions initialized 
+2026-04-27 23:25:53 [INFO]: Database connected successfully at Mon Apr 27 2026 23:25:53 GMT+0100 (West Africa Time) 
+2026-04-27 23:25:53 [INFO]: Database connected successfully 
+2026-04-27 23:25:53 [INFO]: Redis connecting... 
+2026-04-27 23:25:53 [INFO]: Redis connected successfully 
+2026-04-27 23:25:53 [INFO]: Redis initialized and connected 
+2026-04-27 23:25:53 [INFO]: Redis connected successfully 
+2026-04-27 23:25:53 [INFO]: Socket.IO server initialized 
+2026-04-27 23:25:53 [INFO]: getting to  port .. 
+2026-04-27 23:25:53 [INFO]: Server running on port 3000 
+2026-04-27 23:25:55 [INFO]: ... end of ther server call.. 
+2026-04-27 23:25:55 [INFO]: Database pool connected 
+2026-04-27 23:25:55 [INFO]: Database extensions initialized 
+2026-04-27 23:25:55 [INFO]: Database connected successfully at Mon Apr 27 2026 23:25:55 GMT+0100 (West Africa Time) 
+2026-04-27 23:25:55 [INFO]: Database connected successfully 
+2026-04-27 23:25:55 [INFO]: Redis connecting... 
+2026-04-27 23:25:55 [INFO]: Redis connected successfully 
+2026-04-27 23:25:55 [INFO]: Redis initialized and connected 
+2026-04-27 23:25:55 [INFO]: Redis connected successfully 
+2026-04-27 23:25:55 [INFO]: Socket.IO server initialized 
+2026-04-27 23:25:55 [INFO]: getting to  port .. 
+2026-04-27 23:25:55 [INFO]: Server running on port 3000 
+2026-04-27 23:26:55 [INFO]: ... end of ther server call.. 
+2026-04-27 23:26:55 [INFO]: Database pool connected 
+2026-04-27 23:26:55 [INFO]: Database extensions initialized 
+2026-04-27 23:26:55 [INFO]: Database connected successfully at Mon Apr 27 2026 23:26:55 GMT+0100 (West Africa Time) 
+2026-04-27 23:26:55 [INFO]: Database connected successfully 
+2026-04-27 23:26:55 [INFO]: Redis connecting... 
+2026-04-27 23:26:55 [INFO]: Redis connected successfully 
+2026-04-27 23:26:55 [INFO]: Redis initialized and connected 
+2026-04-27 23:26:55 [INFO]: Redis connected successfully 
+2026-04-27 23:26:55 [INFO]: Socket.IO server initialized 
+2026-04-27 23:26:55 [INFO]: getting to  port .. 
+2026-04-27 23:26:55 [INFO]: Server running on port 3000 
+2026-04-27 23:27:07 [INFO]: ... end of ther server call.. 
+2026-04-27 23:27:07 [INFO]: Database pool connected 
+2026-04-27 23:27:07 [INFO]: Database extensions initialized 
+2026-04-27 23:27:07 [INFO]: Database connected successfully at Mon Apr 27 2026 23:27:07 GMT+0100 (West Africa Time) 
+2026-04-27 23:27:07 [INFO]: Database connected successfully 
+2026-04-27 23:27:07 [INFO]: Redis connecting... 
+2026-04-27 23:27:07 [INFO]: Redis connected successfully 
+2026-04-27 23:27:07 [INFO]: Redis initialized and connected 
+2026-04-27 23:27:07 [INFO]: Redis connected successfully 
+2026-04-27 23:27:07 [INFO]: Socket.IO server initialized 
+2026-04-27 23:27:07 [INFO]: getting to  port .. 
+2026-04-27 23:27:07 [INFO]: Server running on port 3000 
+2026-04-27 23:27:10 [INFO]: ... end of ther server call.. 
+2026-04-27 23:27:10 [INFO]: Database pool connected 
+2026-04-27 23:27:10 [INFO]: Database extensions initialized 
+2026-04-27 23:27:10 [INFO]: Database connected successfully at Mon Apr 27 2026 23:27:10 GMT+0100 (West Africa Time) 
+2026-04-27 23:27:10 [INFO]: Database connected successfully 
+2026-04-27 23:27:10 [INFO]: Redis connecting... 
+2026-04-27 23:27:10 [INFO]: Redis connected successfully 
+2026-04-27 23:27:10 [INFO]: Redis initialized and connected 
+2026-04-27 23:27:10 [INFO]: Redis connected successfully 
+2026-04-27 23:27:10 [INFO]: Socket.IO server initialized 
+2026-04-27 23:27:10 [INFO]: getting to  port .. 
+2026-04-27 23:27:10 [INFO]: Server running on port 3000 
+2026-04-27 23:28:30 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:30 [INFO]: Database pool connected 
+2026-04-27 23:28:30 [INFO]: Database extensions initialized 
+2026-04-27 23:28:30 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:30 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:30 [INFO]: Database connected successfully 
+2026-04-27 23:28:30 [INFO]: Redis connecting... 
+2026-04-27 23:28:30 [INFO]: Redis connected successfully 
+2026-04-27 23:28:30 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:30 [INFO]: Redis connected successfully 
+2026-04-27 23:28:30 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:30 [INFO]: getting to  port .. 
+2026-04-27 23:28:30 [INFO]: Server running on port 3000 
+2026-04-27 23:28:32 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:32 [INFO]: Database pool connected 
+2026-04-27 23:28:32 [INFO]: Database extensions initialized 
+2026-04-27 23:28:32 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:32 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:32 [INFO]: Database connected successfully 
+2026-04-27 23:28:32 [INFO]: Redis connecting... 
+2026-04-27 23:28:32 [INFO]: Redis connected successfully 
+2026-04-27 23:28:32 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:32 [INFO]: Redis connected successfully 
+2026-04-27 23:28:32 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:32 [INFO]: getting to  port .. 
+2026-04-27 23:28:32 [INFO]: Server running on port 3000 
+2026-04-27 23:28:34 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:35 [INFO]: Database pool connected 
+2026-04-27 23:28:35 [INFO]: Database extensions initialized 
+2026-04-27 23:28:35 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:35 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:35 [INFO]: Database connected successfully 
+2026-04-27 23:28:35 [INFO]: Redis connecting... 
+2026-04-27 23:28:35 [INFO]: Redis connected successfully 
+2026-04-27 23:28:35 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:35 [INFO]: Redis connected successfully 
+2026-04-27 23:28:35 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:35 [INFO]: getting to  port .. 
+2026-04-27 23:28:35 [INFO]: Server running on port 3000 
+2026-04-27 23:28:42 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:42 [INFO]: Database pool connected 
+2026-04-27 23:28:42 [INFO]: Database extensions initialized 
+2026-04-27 23:28:42 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:42 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:42 [INFO]: Database connected successfully 
+2026-04-27 23:28:42 [INFO]: Redis connecting... 
+2026-04-27 23:28:42 [INFO]: Redis connected successfully 
+2026-04-27 23:28:42 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:42 [INFO]: Redis connected successfully 
+2026-04-27 23:28:42 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:42 [INFO]: getting to  port .. 
+2026-04-27 23:28:42 [INFO]: Server running on port 3000 
+2026-04-27 23:28:45 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:45 [INFO]: Database pool connected 
+2026-04-27 23:28:45 [INFO]: Database extensions initialized 
+2026-04-27 23:28:45 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:45 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:45 [INFO]: Database connected successfully 
+2026-04-27 23:28:45 [INFO]: Redis connecting... 
+2026-04-27 23:28:45 [INFO]: Redis connected successfully 
+2026-04-27 23:28:45 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:45 [INFO]: Redis connected successfully 
+2026-04-27 23:28:45 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:45 [INFO]: getting to  port .. 
+2026-04-27 23:28:45 [INFO]: Server running on port 3000 
+2026-04-27 23:28:50 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:50 [INFO]: Database pool connected 
+2026-04-27 23:28:50 [INFO]: Database extensions initialized 
+2026-04-27 23:28:50 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:50 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:50 [INFO]: Database connected successfully 
+2026-04-27 23:28:50 [INFO]: Redis connecting... 
+2026-04-27 23:28:50 [INFO]: Redis connected successfully 
+2026-04-27 23:28:50 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:50 [INFO]: Redis connected successfully 
+2026-04-27 23:28:50 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:50 [INFO]: getting to  port .. 
+2026-04-27 23:28:50 [INFO]: Server running on port 3000 
+2026-04-27 23:28:58 [INFO]: ... end of ther server call.. 
+2026-04-27 23:28:58 [INFO]: Database pool connected 
+2026-04-27 23:28:58 [INFO]: Database extensions initialized 
+2026-04-27 23:28:58 [INFO]: Database connected successfully at Mon Apr 27 2026 23:28:58 GMT+0100 (West Africa Time) 
+2026-04-27 23:28:58 [INFO]: Database connected successfully 
+2026-04-27 23:28:58 [INFO]: Redis connecting... 
+2026-04-27 23:28:58 [INFO]: Redis connected successfully 
+2026-04-27 23:28:58 [INFO]: Redis initialized and connected 
+2026-04-27 23:28:58 [INFO]: Redis connected successfully 
+2026-04-27 23:28:58 [INFO]: Socket.IO server initialized 
+2026-04-27 23:28:58 [INFO]: getting to  port .. 
+2026-04-27 23:28:58 [INFO]: Server running on port 3000 
+2026-04-27 23:30:31 [INFO]: ... end of ther server call.. 
+2026-04-27 23:30:31 [INFO]: Database pool connected 
+2026-04-27 23:30:31 [INFO]: Database extensions initialized 
+2026-04-27 23:30:31 [INFO]: Database connected successfully at Mon Apr 27 2026 23:30:31 GMT+0100 (West Africa Time) 
+2026-04-27 23:30:31 [INFO]: Database connected successfully 
+2026-04-27 23:30:31 [INFO]: Redis connecting... 
+2026-04-27 23:30:31 [INFO]: Redis connected successfully 
+2026-04-27 23:30:31 [INFO]: Redis initialized and connected 
+2026-04-27 23:30:31 [INFO]: Redis connected successfully 
+2026-04-27 23:30:31 [INFO]: Socket.IO server initialized 
+2026-04-27 23:30:31 [INFO]: getting to  port .. 
+2026-04-27 23:30:31 [INFO]: Server running on port 3000 
+2026-04-27 23:30:34 [INFO]: ... end of ther server call.. 
+2026-04-27 23:30:34 [INFO]: Database pool connected 
+2026-04-27 23:30:34 [INFO]: Database extensions initialized 
+2026-04-27 23:30:34 [INFO]: Database connected successfully at Mon Apr 27 2026 23:30:34 GMT+0100 (West Africa Time) 
+2026-04-27 23:30:34 [INFO]: Database connected successfully 
+2026-04-27 23:30:34 [INFO]: Redis connecting... 
+2026-04-27 23:30:34 [INFO]: Redis connected successfully 
+2026-04-27 23:30:34 [INFO]: Redis initialized and connected 
+2026-04-27 23:30:34 [INFO]: Redis connected successfully 
+2026-04-27 23:30:34 [INFO]: Socket.IO server initialized 
+2026-04-27 23:30:34 [INFO]: getting to  port .. 
+2026-04-27 23:30:34 [INFO]: Server running on port 3000 
+2026-04-27 23:30:36 [INFO]: ... end of ther server call.. 
+2026-04-27 23:30:36 [INFO]: Database pool connected 
+2026-04-27 23:30:36 [INFO]: Database extensions initialized 
+2026-04-27 23:30:36 [INFO]: Database connected successfully at Mon Apr 27 2026 23:30:36 GMT+0100 (West Africa Time) 
+2026-04-27 23:30:36 [INFO]: Database connected successfully 
+2026-04-27 23:30:36 [INFO]: Redis connecting... 
+2026-04-27 23:30:36 [INFO]: Redis connected successfully 
+2026-04-27 23:30:36 [INFO]: Redis initialized and connected 
+2026-04-27 23:30:36 [INFO]: Redis connected successfully 
+2026-04-27 23:30:36 [INFO]: Socket.IO server initialized 
+2026-04-27 23:30:36 [INFO]: getting to  port .. 
+2026-04-27 23:30:36 [INFO]: Server running on port 3000 
+2026-04-27 23:30:41 [INFO]: ... end of ther server call.. 
+2026-04-27 23:30:41 [INFO]: Database pool connected 
+2026-04-27 23:30:41 [INFO]: Database extensions initialized 
+2026-04-27 23:30:41 [INFO]: Database connected successfully at Mon Apr 27 2026 23:30:41 GMT+0100 (West Africa Time) 
+2026-04-27 23:30:41 [INFO]: Database connected successfully 
+2026-04-27 23:30:41 [INFO]: Redis connecting... 
+2026-04-27 23:30:41 [INFO]: Redis connected successfully 
+2026-04-27 23:30:41 [INFO]: Redis initialized and connected 
+2026-04-27 23:30:41 [INFO]: Redis connected successfully 
+2026-04-27 23:30:41 [INFO]: Socket.IO server initialized 
+2026-04-27 23:30:41 [INFO]: getting to  port .. 
+2026-04-27 23:30:41 [INFO]: Server running on port 3000 
+2026-04-27 23:31:09 [INFO]: ... end of ther server call.. 
+2026-04-27 23:31:09 [INFO]: Database pool connected 
+2026-04-27 23:31:09 [INFO]: Database extensions initialized 
+2026-04-27 23:31:09 [INFO]: Database connected successfully at Mon Apr 27 2026 23:31:09 GMT+0100 (West Africa Time) 
+2026-04-27 23:31:09 [INFO]: Database connected successfully 
+2026-04-27 23:31:09 [INFO]: Redis connecting... 
+2026-04-27 23:31:09 [INFO]: Redis connected successfully 
+2026-04-27 23:31:09 [INFO]: Redis initialized and connected 
+2026-04-27 23:31:09 [INFO]: Redis connected successfully 
+2026-04-27 23:31:09 [INFO]: Socket.IO server initialized 
+2026-04-27 23:31:09 [INFO]: getting to  port .. 
+2026-04-27 23:31:09 [INFO]: Server running on port 3000 
+2026-04-27 23:31:38 [INFO]: ... end of ther server call.. 
+2026-04-27 23:31:38 [INFO]: Database pool connected 
+2026-04-27 23:31:38 [INFO]: Database extensions initialized 
+2026-04-27 23:31:38 [INFO]: Database connected successfully at Mon Apr 27 2026 23:31:38 GMT+0100 (West Africa Time) 
+2026-04-27 23:31:38 [INFO]: Database connected successfully 
+2026-04-27 23:31:38 [INFO]: Redis connecting... 
+2026-04-27 23:31:38 [INFO]: Redis connected successfully 
+2026-04-27 23:31:38 [INFO]: Redis initialized and connected 
+2026-04-27 23:31:38 [INFO]: Redis connected successfully 
+2026-04-27 23:31:38 [INFO]: Socket.IO server initialized 
+2026-04-27 23:31:38 [INFO]: getting to  port .. 
+2026-04-27 23:31:38 [INFO]: Server running on port 3000 
+2026-04-27 23:31:53 [INFO]: ... end of ther server call.. 
+2026-04-27 23:31:53 [INFO]: Database pool connected 
+2026-04-27 23:31:53 [INFO]: Database extensions initialized 
+2026-04-27 23:31:53 [INFO]: Database connected successfully at Mon Apr 27 2026 23:31:53 GMT+0100 (West Africa Time) 
+2026-04-27 23:31:53 [INFO]: Database connected successfully 
+2026-04-27 23:31:53 [INFO]: Redis connecting... 
+2026-04-27 23:31:53 [INFO]: Redis connected successfully 
+2026-04-27 23:31:53 [INFO]: Redis initialized and connected 
+2026-04-27 23:31:53 [INFO]: Redis connected successfully 
+2026-04-27 23:31:53 [INFO]: Socket.IO server initialized 
+2026-04-27 23:31:53 [INFO]: getting to  port .. 
+2026-04-27 23:31:53 [INFO]: Server running on port 3000 
+2026-04-27 23:32:06 [INFO]: ... end of ther server call.. 
+2026-04-27 23:32:06 [INFO]: Database pool connected 
+2026-04-27 23:32:06 [INFO]: Database extensions initialized 
+2026-04-27 23:32:06 [INFO]: Database connected successfully at Mon Apr 27 2026 23:32:06 GMT+0100 (West Africa Time) 
+2026-04-27 23:32:06 [INFO]: Database connected successfully 
+2026-04-27 23:32:06 [INFO]: Redis connecting... 
+2026-04-27 23:32:06 [INFO]: Redis connected successfully 
+2026-04-27 23:32:06 [INFO]: Redis initialized and connected 
+2026-04-27 23:32:06 [INFO]: Redis connected successfully 
+2026-04-27 23:32:06 [INFO]: Socket.IO server initialized 
+2026-04-27 23:32:06 [INFO]: getting to  port .. 
+2026-04-27 23:32:06 [INFO]: Server running on port 3000 
+2026-04-27 23:32:11 [INFO]: ... end of ther server call.. 
+2026-04-27 23:32:11 [INFO]: Database pool connected 
+2026-04-27 23:32:11 [INFO]: Database extensions initialized 
+2026-04-27 23:32:11 [INFO]: Database connected successfully at Mon Apr 27 2026 23:32:11 GMT+0100 (West Africa Time) 
+2026-04-27 23:32:11 [INFO]: Database connected successfully 
+2026-04-27 23:32:11 [INFO]: Redis connecting... 
+2026-04-27 23:32:11 [INFO]: Redis connected successfully 
+2026-04-27 23:32:11 [INFO]: Redis initialized and connected 
+2026-04-27 23:32:11 [INFO]: Redis connected successfully 
+2026-04-27 23:32:11 [INFO]: Socket.IO server initialized 
+2026-04-27 23:32:11 [INFO]: getting to  port .. 
+2026-04-27 23:32:11 [INFO]: Server running on port 3000 
+2026-04-27 23:32:34 [INFO]: ... end of ther server call.. 
+2026-04-27 23:32:34 [INFO]: Database pool connected 
+2026-04-27 23:32:34 [INFO]: Database extensions initialized 
+2026-04-27 23:32:34 [INFO]: Database connected successfully at Mon Apr 27 2026 23:32:34 GMT+0100 (West Africa Time) 
+2026-04-27 23:32:34 [INFO]: Database connected successfully 
+2026-04-27 23:32:34 [INFO]: Redis connecting... 
+2026-04-27 23:32:34 [INFO]: Redis connected successfully 
+2026-04-27 23:32:34 [INFO]: Redis initialized and connected 
+2026-04-27 23:32:34 [INFO]: Redis connected successfully 
+2026-04-27 23:32:34 [INFO]: Socket.IO server initialized 
+2026-04-27 23:32:34 [INFO]: getting to  port .. 
+2026-04-27 23:32:34 [INFO]: Server running on port 3000 
+2026-04-27 23:32:43 [INFO]: ... end of ther server call.. 
+2026-04-27 23:32:43 [INFO]: Database pool connected 
+2026-04-27 23:32:43 [INFO]: Database extensions initialized 
+2026-04-27 23:32:43 [INFO]: Database connected successfully at Mon Apr 27 2026 23:32:43 GMT+0100 (West Africa Time) 
+2026-04-27 23:32:43 [INFO]: Database connected successfully 
+2026-04-27 23:32:43 [INFO]: Redis connecting... 
+2026-04-27 23:32:43 [INFO]: Redis connected successfully 
+2026-04-27 23:32:43 [INFO]: Redis initialized and connected 
+2026-04-27 23:32:43 [INFO]: Redis connected successfully 
+2026-04-27 23:32:43 [INFO]: Socket.IO server initialized 
+2026-04-27 23:32:43 [INFO]: getting to  port .. 
+2026-04-27 23:32:43 [INFO]: Server running on port 3000 
+2026-04-27 23:33:41 [INFO]: ... end of ther server call.. 
+2026-04-27 23:33:41 [INFO]: Database pool connected 
+2026-04-27 23:33:42 [INFO]: Database extensions initialized 
+2026-04-27 23:33:42 [INFO]: Database connected successfully at Mon Apr 27 2026 23:33:42 GMT+0100 (West Africa Time) 
+2026-04-27 23:33:42 [INFO]: Database connected successfully 
+2026-04-27 23:33:42 [INFO]: Redis connecting... 
+2026-04-27 23:33:42 [INFO]: Redis connected successfully 
+2026-04-27 23:33:42 [INFO]: Redis initialized and connected 
+2026-04-27 23:33:42 [INFO]: Redis connected successfully 
+2026-04-27 23:33:42 [INFO]: Socket.IO server initialized 
+2026-04-27 23:33:42 [INFO]: getting to  port .. 
+2026-04-27 23:33:42 [INFO]: Server running on port 3000 
+2026-04-27 23:33:44 [INFO]: ... end of ther server call.. 
+2026-04-27 23:33:44 [INFO]: Database pool connected 
+2026-04-27 23:33:44 [INFO]: Database extensions initialized 
+2026-04-27 23:33:44 [INFO]: Database connected successfully at Mon Apr 27 2026 23:33:44 GMT+0100 (West Africa Time) 
+2026-04-27 23:33:44 [INFO]: Database connected successfully 
+2026-04-27 23:33:44 [INFO]: Redis connecting... 
+2026-04-27 23:33:44 [INFO]: Redis connected successfully 
+2026-04-27 23:33:44 [INFO]: Redis initialized and connected 
+2026-04-27 23:33:44 [INFO]: Redis connected successfully 
+2026-04-27 23:33:44 [INFO]: Socket.IO server initialized 
+2026-04-27 23:33:44 [INFO]: getting to  port .. 
+2026-04-27 23:33:44 [INFO]: Server running on port 3000 
+2026-04-27 23:34:06 [INFO]: Test environment - Email OTP for joe@gmail.com: 403277 
+2026-04-27 23:34:06 [INFO]: Test environment - Phone OTP for +2348137121340: 555679 
+2026-04-27 23:34:06 [INFO]: New artisan registered: joe@gmail.com 
+2026-04-27 23:37:13 [INFO]: ... end of ther server call.. 
+2026-04-27 23:37:13 [INFO]: Database pool connected 
+2026-04-27 23:37:13 [INFO]: Database extensions initialized 
+2026-04-27 23:37:13 [INFO]: Database connected successfully at Mon Apr 27 2026 23:37:13 GMT+0100 (West Africa Time) 
+2026-04-27 23:37:13 [INFO]: Database connected successfully 
+2026-04-27 23:37:13 [INFO]: Redis connecting... 
+2026-04-27 23:37:13 [INFO]: Redis connected successfully 
+2026-04-27 23:37:13 [INFO]: Redis initialized and connected 
+2026-04-27 23:37:13 [INFO]: Redis connected successfully 
+2026-04-27 23:37:13 [INFO]: Socket.IO server initialized 
+2026-04-27 23:37:13 [INFO]: getting to  port .. 
+2026-04-27 23:37:13 [INFO]: Server running on port 3000 
+2026-04-27 23:37:19 [INFO]: ... end of ther server call.. 
+2026-04-27 23:37:19 [INFO]: Database pool connected 
+2026-04-27 23:37:19 [INFO]: Database extensions initialized 
+2026-04-27 23:37:19 [INFO]: Database connected successfully at Mon Apr 27 2026 23:37:19 GMT+0100 (West Africa Time) 
+2026-04-27 23:37:19 [INFO]: Database connected successfully 
+2026-04-27 23:37:19 [INFO]: Redis connecting... 
+2026-04-27 23:37:19 [INFO]: Redis connected successfully 
+2026-04-27 23:37:19 [INFO]: Redis initialized and connected 
+2026-04-27 23:37:19 [INFO]: Redis connected successfully 
+2026-04-27 23:37:19 [INFO]: Socket.IO server initialized 
+2026-04-27 23:37:19 [INFO]: getting to  port .. 
+2026-04-27 23:37:19 [INFO]: Server running on port 3000 
+2026-04-27 23:37:42 [INFO]: ... end of ther server call.. 
+2026-04-27 23:37:42 [INFO]: Database pool connected 
+2026-04-27 23:37:42 [INFO]: Database extensions initialized 
+2026-04-27 23:37:42 [INFO]: Database connected successfully at Mon Apr 27 2026 23:37:42 GMT+0100 (West Africa Time) 
+2026-04-27 23:37:42 [INFO]: Database connected successfully 
+2026-04-27 23:37:42 [INFO]: Redis connecting... 
+2026-04-27 23:37:42 [INFO]: Redis connected successfully 
+2026-04-27 23:37:42 [INFO]: Redis initialized and connected 
+2026-04-27 23:37:42 [INFO]: Redis connected successfully 
+2026-04-27 23:37:42 [INFO]: Socket.IO server initialized 
+2026-04-27 23:37:42 [INFO]: getting to  port .. 
+2026-04-27 23:37:42 [INFO]: Server running on port 3000 
+2026-04-27 23:39:00 [INFO]: Database pool connected 
+2026-04-27 23:39:00 [INFO]: Phone verified: +2348137121340 
+2026-04-27 23:39:40 [INFO]: Database pool connected 
+2026-04-27 23:39:40 [INFO]: Email verified: joe@gmail.com 
+2026-04-27 23:40:18 [INFO]: Database pool connected 
+2026-04-27 23:40:18 [INFO]: Test environment - OTP for +2348137121340: 989092 
+2026-04-27 23:40:18 [INFO]: OTP requested for phone: +2348137121340 
+2026-04-27 23:41:19 [INFO]: Database pool connected 
+2026-04-27 23:55:30 [INFO]: ... end of ther server call.. 
+2026-04-27 23:55:30 [INFO]: Database pool connected 
+2026-04-27 23:55:30 [INFO]: Database extensions initialized 
+2026-04-27 23:55:30 [INFO]: Database connected successfully at Mon Apr 27 2026 23:55:30 GMT+0100 (West Africa Time) 
+2026-04-27 23:55:30 [INFO]: Database connected successfully 
+2026-04-27 23:55:30 [INFO]: Redis connecting... 
+2026-04-27 23:55:30 [INFO]: Redis connected successfully 
+2026-04-27 23:55:30 [INFO]: Redis initialized and connected 
+2026-04-27 23:55:30 [INFO]: Redis connected successfully 
+2026-04-27 23:55:30 [INFO]: Socket.IO server initialized 
+2026-04-27 23:55:30 [INFO]: getting to  port .. 
+2026-04-27 23:55:30 [INFO]: Server running on port 3000 
+2026-04-27 23:55:39 [INFO]: ... end of ther server call.. 
+2026-04-27 23:55:39 [INFO]: Database pool connected 
+2026-04-27 23:55:39 [INFO]: Database extensions initialized 
+2026-04-27 23:55:39 [INFO]: Database connected successfully at Mon Apr 27 2026 23:55:39 GMT+0100 (West Africa Time) 
+2026-04-27 23:55:39 [INFO]: Database connected successfully 
+2026-04-27 23:55:39 [INFO]: Redis connecting... 
+2026-04-27 23:55:39 [INFO]: Redis connected successfully 
+2026-04-27 23:55:39 [INFO]: Redis initialized and connected 
+2026-04-27 23:55:39 [INFO]: Redis connected successfully 
+2026-04-27 23:55:39 [INFO]: Socket.IO server initialized 
+2026-04-27 23:55:39 [INFO]: getting to  port .. 
+2026-04-27 23:55:39 [INFO]: Server running on port 3000 
+2026-04-27 23:55:48 [INFO]: ... end of ther server call.. 
+2026-04-27 23:55:48 [INFO]: Database pool connected 
+2026-04-27 23:55:48 [INFO]: Database extensions initialized 
+2026-04-27 23:55:48 [INFO]: Database connected successfully at Mon Apr 27 2026 23:55:48 GMT+0100 (West Africa Time) 
+2026-04-27 23:55:48 [INFO]: Database connected successfully 
+2026-04-27 23:55:48 [INFO]: Redis connecting... 
+2026-04-27 23:55:48 [INFO]: Redis connected successfully 
+2026-04-27 23:55:48 [INFO]: Redis initialized and connected 
+2026-04-27 23:55:48 [INFO]: Redis connected successfully 
+2026-04-27 23:55:48 [INFO]: Socket.IO server initialized 
+2026-04-27 23:55:48 [INFO]: getting to  port .. 
+2026-04-27 23:55:48 [INFO]: Server running on port 3000 
+2026-04-28 00:00:04 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:04 [INFO]: Database pool connected 
+2026-04-28 00:00:04 [INFO]: Database extensions initialized 
+2026-04-28 00:00:04 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:04 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:04 [INFO]: Database connected successfully 
+2026-04-28 00:00:04 [INFO]: Redis connecting... 
+2026-04-28 00:00:04 [INFO]: Redis connected successfully 
+2026-04-28 00:00:04 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:04 [INFO]: Redis connected successfully 
+2026-04-28 00:00:04 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:04 [INFO]: getting to  port .. 
+2026-04-28 00:00:04 [INFO]: Server running on port 3000 
+2026-04-28 00:00:11 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:11 [INFO]: Database pool connected 
+2026-04-28 00:00:11 [INFO]: Database extensions initialized 
+2026-04-28 00:00:11 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:11 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:11 [INFO]: Database connected successfully 
+2026-04-28 00:00:11 [INFO]: Redis connecting... 
+2026-04-28 00:00:11 [INFO]: Redis connected successfully 
+2026-04-28 00:00:11 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:11 [INFO]: Redis connected successfully 
+2026-04-28 00:00:11 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:11 [INFO]: getting to  port .. 
+2026-04-28 00:00:11 [INFO]: Server running on port 3000 
+2026-04-28 00:00:15 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:15 [INFO]: Database pool connected 
+2026-04-28 00:00:15 [INFO]: Database extensions initialized 
+2026-04-28 00:00:15 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:15 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:15 [INFO]: Database connected successfully 
+2026-04-28 00:00:15 [INFO]: Redis connecting... 
+2026-04-28 00:00:15 [INFO]: Redis connected successfully 
+2026-04-28 00:00:15 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:15 [INFO]: Redis connected successfully 
+2026-04-28 00:00:15 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:15 [INFO]: getting to  port .. 
+2026-04-28 00:00:15 [INFO]: Server running on port 3000 
+2026-04-28 00:00:21 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:21 [INFO]: Database pool connected 
+2026-04-28 00:00:21 [INFO]: Database extensions initialized 
+2026-04-28 00:00:21 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:21 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:21 [INFO]: Database connected successfully 
+2026-04-28 00:00:21 [INFO]: Redis connecting... 
+2026-04-28 00:00:21 [INFO]: Redis connected successfully 
+2026-04-28 00:00:21 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:21 [INFO]: Redis connected successfully 
+2026-04-28 00:00:21 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:21 [INFO]: getting to  port .. 
+2026-04-28 00:00:21 [INFO]: Server running on port 3000 
+2026-04-28 00:00:24 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:24 [INFO]: Database pool connected 
+2026-04-28 00:00:24 [INFO]: Database extensions initialized 
+2026-04-28 00:00:24 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:24 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:24 [INFO]: Database connected successfully 
+2026-04-28 00:00:24 [INFO]: Redis connecting... 
+2026-04-28 00:00:24 [INFO]: Redis connected successfully 
+2026-04-28 00:00:24 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:24 [INFO]: Redis connected successfully 
+2026-04-28 00:00:24 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:24 [INFO]: getting to  port .. 
+2026-04-28 00:00:24 [INFO]: Server running on port 3000 
+2026-04-28 00:00:28 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:28 [INFO]: Database pool connected 
+2026-04-28 00:00:28 [INFO]: Database extensions initialized 
+2026-04-28 00:00:28 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:28 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:28 [INFO]: Database connected successfully 
+2026-04-28 00:00:28 [INFO]: Redis connecting... 
+2026-04-28 00:00:28 [INFO]: Redis connected successfully 
+2026-04-28 00:00:28 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:28 [INFO]: Redis connected successfully 
+2026-04-28 00:00:28 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:28 [INFO]: getting to  port .. 
+2026-04-28 00:00:28 [INFO]: Server running on port 3000 
+2026-04-28 00:00:31 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:31 [INFO]: Database pool connected 
+2026-04-28 00:00:31 [INFO]: Database extensions initialized 
+2026-04-28 00:00:31 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:31 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:31 [INFO]: Database connected successfully 
+2026-04-28 00:00:31 [INFO]: Redis connecting... 
+2026-04-28 00:00:31 [INFO]: Redis connected successfully 
+2026-04-28 00:00:31 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:31 [INFO]: Redis connected successfully 
+2026-04-28 00:00:31 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:31 [INFO]: getting to  port .. 
+2026-04-28 00:00:31 [INFO]: Server running on port 3000 
+2026-04-28 00:00:33 [INFO]: ... end of ther server call.. 
+2026-04-28 00:00:33 [INFO]: Database pool connected 
+2026-04-28 00:00:33 [INFO]: Database extensions initialized 
+2026-04-28 00:00:33 [INFO]: Database connected successfully at Tue Apr 28 2026 00:00:33 GMT+0100 (West Africa Time) 
+2026-04-28 00:00:33 [INFO]: Database connected successfully 
+2026-04-28 00:00:33 [INFO]: Redis connecting... 
+2026-04-28 00:00:33 [INFO]: Redis connected successfully 
+2026-04-28 00:00:33 [INFO]: Redis initialized and connected 
+2026-04-28 00:00:33 [INFO]: Redis connected successfully 
+2026-04-28 00:00:33 [INFO]: Socket.IO server initialized 
+2026-04-28 00:00:33 [INFO]: getting to  port .. 
+2026-04-28 00:00:33 [INFO]: Server running on port 3000 
+2026-04-28 00:10:00 [INFO]: Database pool connected 
+2026-04-28 00:10:00 [INFO]: Test environment - OTP for +2348137121340: 860609 
+2026-04-28 00:10:00 [INFO]: OTP requested for phone: +2348137121340 
+2026-04-28 00:10:33 [INFO]: Database pool connected 
+2026-04-28 00:10:47 [INFO]: ... end of ther server call.. 
+2026-04-28 00:10:47 [INFO]: Database pool connected 
+2026-04-28 00:10:47 [INFO]: Database extensions initialized 
+2026-04-28 00:10:47 [INFO]: Database connected successfully at Tue Apr 28 2026 00:10:47 GMT+0100 (West Africa Time) 
+2026-04-28 00:10:47 [INFO]: Database connected successfully 
+2026-04-28 00:10:47 [INFO]: Redis connecting... 
+2026-04-28 00:10:47 [INFO]: Redis connected successfully 
+2026-04-28 00:10:47 [INFO]: Redis initialized and connected 
+2026-04-28 00:10:47 [INFO]: Redis connected successfully 
+2026-04-28 00:10:47 [INFO]: Socket.IO server initialized 
+2026-04-28 00:10:47 [INFO]: getting to  port .. 
+2026-04-28 00:10:47 [INFO]: Server running on port 3000 
+2026-04-28 00:11:27 [INFO]: Database pool connected 
+2026-04-28 00:11:27 [INFO]: Test environment - OTP for +2348137121340: 448605 
+2026-04-28 00:11:27 [INFO]: OTP requested for phone: +2348137121340 
+2026-04-28 00:12:59 [INFO]: ... end of ther server call.. 
+2026-04-28 00:12:59 [INFO]: Database pool connected 
+2026-04-28 00:12:59 [INFO]: Database extensions initialized 
+2026-04-28 00:12:59 [INFO]: Database connected successfully at Tue Apr 28 2026 00:12:59 GMT+0100 (West Africa Time) 
+2026-04-28 00:12:59 [INFO]: Database connected successfully 
+2026-04-28 00:12:59 [INFO]: Redis connecting... 
+2026-04-28 00:12:59 [INFO]: Redis connected successfully 
+2026-04-28 00:12:59 [INFO]: Redis initialized and connected 
+2026-04-28 00:12:59 [INFO]: Redis connected successfully 
+2026-04-28 00:12:59 [INFO]: Socket.IO server initialized 
+2026-04-28 00:12:59 [INFO]: getting to  port .. 
+2026-04-28 00:12:59 [INFO]: Server running on port 3000 
+2026-04-28 00:13:02 [INFO]: ... end of ther server call.. 
+2026-04-28 00:13:02 [INFO]: Database pool connected 
+2026-04-28 00:13:02 [INFO]: Database extensions initialized 
+2026-04-28 00:13:02 [INFO]: Database connected successfully at Tue Apr 28 2026 00:13:02 GMT+0100 (West Africa Time) 
+2026-04-28 00:13:02 [INFO]: Database connected successfully 
+2026-04-28 00:13:02 [INFO]: Redis connecting... 
+2026-04-28 00:13:02 [INFO]: Redis connected successfully 
+2026-04-28 00:13:02 [INFO]: Redis initialized and connected 
+2026-04-28 00:13:02 [INFO]: Redis connected successfully 
+2026-04-28 00:13:02 [INFO]: Socket.IO server initialized 
+2026-04-28 00:13:02 [INFO]: getting to  port .. 
+2026-04-28 00:13:02 [INFO]: Server running on port 3000 
+2026-04-28 00:14:15 [INFO]: ... end of ther server call.. 
+2026-04-28 00:14:15 [INFO]: Database pool connected 
+2026-04-28 00:14:15 [INFO]: Database extensions initialized 
+2026-04-28 00:14:15 [INFO]: Database connected successfully at Tue Apr 28 2026 00:14:15 GMT+0100 (West Africa Time) 
+2026-04-28 00:14:15 [INFO]: Database connected successfully 
+2026-04-28 00:14:15 [INFO]: Redis connecting... 
+2026-04-28 00:14:15 [INFO]: Redis connected successfully 
+2026-04-28 00:14:15 [INFO]: Redis initialized and connected 
+2026-04-28 00:14:15 [INFO]: Redis connected successfully 
+2026-04-28 00:14:15 [INFO]: Socket.IO server initialized 
+2026-04-28 00:14:15 [INFO]: getting to  port .. 
+2026-04-28 00:14:15 [INFO]: Server running on port 3000 
+2026-04-28 00:14:16 [INFO]: ... end of ther server call.. 
+2026-04-28 00:14:16 [INFO]: Database pool connected 
+2026-04-28 00:14:16 [INFO]: Database extensions initialized 
+2026-04-28 00:14:16 [INFO]: Database connected successfully at Tue Apr 28 2026 00:14:16 GMT+0100 (West Africa Time) 
+2026-04-28 00:14:16 [INFO]: Database connected successfully 
+2026-04-28 00:14:16 [INFO]: Redis connecting... 
+2026-04-28 00:14:16 [INFO]: Redis connected successfully 
+2026-04-28 00:14:16 [INFO]: Redis initialized and connected 
+2026-04-28 00:14:16 [INFO]: Redis connected successfully 
+2026-04-28 00:14:16 [INFO]: Socket.IO server initialized 
+2026-04-28 00:14:16 [INFO]: getting to  port .. 
+2026-04-28 00:14:16 [INFO]: Server running on port 3000 
+2026-04-28 00:16:48 [INFO]: SIGINT received. Starting graceful shutdown... 
+2026-04-28 11:37:56 [INFO]: ... end of ther server call.. 
+2026-04-28 11:37:56 [INFO]: Database pool connected 
+2026-04-28 11:37:56 [INFO]: Database extensions initialized 
+2026-04-28 11:37:57 [INFO]: Database connected successfully at Tue Apr 28 2026 11:37:56 GMT+0100 (West Africa Time) 
+2026-04-28 11:37:57 [INFO]: Database connected successfully 
+2026-04-28 11:37:57 [INFO]: Redis connecting... 
+2026-04-28 11:37:57 [INFO]: Redis connected successfully 
+2026-04-28 11:37:57 [INFO]: Redis initialized and connected 
+2026-04-28 11:37:57 [INFO]: Redis connected successfully 
+2026-04-28 11:37:57 [INFO]: Socket.IO server initialized 
+2026-04-28 11:37:57 [INFO]: getting to  port .. 
+2026-04-28 11:37:57 [INFO]: Server running on port 3000 
+2026-04-28 11:42:13 [INFO]: Database pool connected 
+2026-04-28 11:42:14 [INFO]: Test environment - OTP for +2348137121340: 207289 
+2026-04-28 11:42:14 [INFO]: OTP requested for phone: +2348137121340 
+2026-04-28 11:42:48 [INFO]: Database pool connected 
+2026-04-28 11:43:53 [INFO]: ... end of ther server call.. 
+2026-04-28 11:43:53 [INFO]: Database pool connected 
+2026-04-28 11:43:53 [INFO]: Database extensions initialized 
+2026-04-28 11:43:53 [INFO]: Database connected successfully at Tue Apr 28 2026 11:43:53 GMT+0100 (West Africa Time) 
+2026-04-28 11:43:53 [INFO]: Database connected successfully 
+2026-04-28 11:43:53 [INFO]: Redis connecting... 
+2026-04-28 11:43:53 [INFO]: Redis connected successfully 
+2026-04-28 11:43:53 [INFO]: Redis initialized and connected 
+2026-04-28 11:43:53 [INFO]: Redis connected successfully 
+2026-04-28 11:43:53 [INFO]: Socket.IO server initialized 
+2026-04-28 11:43:53 [INFO]: getting to  port .. 
+2026-04-28 11:43:53 [INFO]: Server running on port 3000 
+2026-04-28 11:44:10 [INFO]: Test environment - OTP for +2348137121340: 910102 
+2026-04-28 11:44:10 [INFO]: OTP requested for phone: +2348137121340 
+2026-04-28 11:44:28 [INFO]: User logged in with OTP: joe@gmail.com / +2348137121340 
+2026-04-28 11:47:54 [INFO]: Database pool connected 
+2026-04-28 11:49:36 [INFO]: ... end of ther server call.. 
+2026-04-28 11:49:36 [INFO]: Database pool connected 
+2026-04-28 11:49:36 [INFO]: Database extensions initialized 
+2026-04-28 11:49:36 [INFO]: Database connected successfully at Tue Apr 28 2026 11:49:36 GMT+0100 (West Africa Time) 
+2026-04-28 11:49:36 [INFO]: Database connected successfully 
+2026-04-28 11:49:36 [INFO]: Redis connecting... 
+2026-04-28 11:49:36 [INFO]: Redis connected successfully 
+2026-04-28 11:49:36 [INFO]: Redis initialized and connected 
+2026-04-28 11:49:36 [INFO]: Redis connected successfully 
+2026-04-28 11:49:36 [INFO]: Socket.IO server initialized 
+2026-04-28 11:49:36 [INFO]: getting to  port .. 
+2026-04-28 11:49:36 [INFO]: Server running on port 3000 
+2026-04-28 11:49:45 [INFO]: ... end of ther server call.. 
+2026-04-28 11:49:45 [INFO]: Database pool connected 
+2026-04-28 11:49:45 [INFO]: Database extensions initialized 
+2026-04-28 11:49:45 [INFO]: Database connected successfully at Tue Apr 28 2026 11:49:45 GMT+0100 (West Africa Time) 
+2026-04-28 11:49:45 [INFO]: Database connected successfully 
+2026-04-28 11:49:45 [INFO]: Redis connecting... 
+2026-04-28 11:49:45 [INFO]: Redis connected successfully 
+2026-04-28 11:49:45 [INFO]: Redis initialized and connected 
+2026-04-28 11:49:45 [INFO]: Redis connected successfully 
+2026-04-28 11:49:45 [INFO]: Socket.IO server initialized 
+2026-04-28 11:49:45 [INFO]: getting to  port .. 
+2026-04-28 11:49:45 [INFO]: Server running on port 3000 
+2026-04-28 11:50:17 [INFO]: ... end of ther server call.. 
+2026-04-28 11:50:17 [INFO]: Database pool connected 
+2026-04-28 11:50:17 [INFO]: Database extensions initialized 
+2026-04-28 11:50:17 [INFO]: Database connected successfully at Tue Apr 28 2026 11:50:17 GMT+0100 (West Africa Time) 
+2026-04-28 11:50:17 [INFO]: Database connected successfully 
+2026-04-28 11:50:17 [INFO]: Redis connecting... 
+2026-04-28 11:50:17 [INFO]: Redis connected successfully 
+2026-04-28 11:50:17 [INFO]: Redis initialized and connected 
+2026-04-28 11:50:17 [INFO]: Redis connected successfully 
+2026-04-28 11:50:17 [INFO]: Socket.IO server initialized 
+2026-04-28 11:50:17 [INFO]: getting to  port .. 
+2026-04-28 11:50:17 [INFO]: Server running on port 3000 
+2026-04-28 11:50:18 [INFO]: ... end of ther server call.. 
+2026-04-28 11:50:18 [INFO]: Database pool connected 
+2026-04-28 11:50:18 [INFO]: Database extensions initialized 
+2026-04-28 11:50:18 [INFO]: Database connected successfully at Tue Apr 28 2026 11:50:18 GMT+0100 (West Africa Time) 
+2026-04-28 11:50:18 [INFO]: Database connected successfully 
+2026-04-28 11:50:18 [INFO]: Redis connecting... 
+2026-04-28 11:50:18 [INFO]: Redis connected successfully 
+2026-04-28 11:50:18 [INFO]: Redis initialized and connected 
+2026-04-28 11:50:18 [INFO]: Redis connected successfully 
+2026-04-28 11:50:18 [INFO]: Socket.IO server initialized 
+2026-04-28 11:50:18 [INFO]: getting to  port .. 
+2026-04-28 11:50:18 [INFO]: Server running on port 3000 
+2026-04-28 11:51:40 [INFO]: ... end of ther server call.. 
+2026-04-28 11:51:40 [INFO]: Database pool connected 
+2026-04-28 11:51:40 [INFO]: Database extensions initialized 
+2026-04-28 11:51:40 [INFO]: Database connected successfully at Tue Apr 28 2026 11:51:40 GMT+0100 (West Africa Time) 
+2026-04-28 11:51:40 [INFO]: Database connected successfully 
+2026-04-28 11:51:40 [INFO]: Redis connecting... 
+2026-04-28 11:51:40 [INFO]: Redis connected successfully 
+2026-04-28 11:51:40 [INFO]: Redis initialized and connected 
+2026-04-28 11:51:40 [INFO]: Redis connected successfully 
+2026-04-28 11:51:40 [INFO]: Socket.IO server initialized 
+2026-04-28 11:51:40 [INFO]: getting to  port .. 
+2026-04-28 11:51:40 [INFO]: Server running on port 3000 
+2026-04-28 11:51:47 [INFO]: ... end of ther server call.. 
+2026-04-28 11:51:47 [INFO]: Database pool connected 
+2026-04-28 11:51:47 [INFO]: Database extensions initialized 
+2026-04-28 11:51:47 [INFO]: Database connected successfully at Tue Apr 28 2026 11:51:47 GMT+0100 (West Africa Time) 
+2026-04-28 11:51:47 [INFO]: Database connected successfully 
+2026-04-28 11:51:47 [INFO]: Redis connecting... 
+2026-04-28 11:51:47 [INFO]: Redis connected successfully 
+2026-04-28 11:51:48 [INFO]: Redis initialized and connected 
+2026-04-28 11:51:48 [INFO]: Redis connected successfully 
+2026-04-28 11:51:48 [INFO]: Socket.IO server initialized 
+2026-04-28 11:51:48 [INFO]: getting to  port .. 
+2026-04-28 11:51:48 [INFO]: Server running on port 3000 
+2026-04-28 11:51:49 [INFO]: ... end of ther server call.. 
+2026-04-28 11:51:49 [INFO]: Database pool connected 
+2026-04-28 11:51:49 [INFO]: Database extensions initialized 
+2026-04-28 11:51:49 [INFO]: Database connected successfully at Tue Apr 28 2026 11:51:49 GMT+0100 (West Africa Time) 
+2026-04-28 11:51:49 [INFO]: Database connected successfully 
+2026-04-28 11:51:49 [INFO]: Redis connecting... 
+2026-04-28 11:51:49 [INFO]: Redis connected successfully 
+2026-04-28 11:51:49 [INFO]: Redis initialized and connected 
+2026-04-28 11:51:49 [INFO]: Redis connected successfully 
+2026-04-28 11:51:49 [INFO]: Socket.IO server initialized 
+2026-04-28 11:51:49 [INFO]: getting to  port .. 
+2026-04-28 11:51:49 [INFO]: Server running on port 3000 
+2026-04-28 12:26:50 [INFO]: ... end of ther server call.. 
+2026-04-28 12:26:50 [INFO]: Database pool connected 
+2026-04-28 12:26:50 [INFO]: Database extensions initialized 
+2026-04-28 12:26:50 [INFO]: Database connected successfully at Tue Apr 28 2026 12:26:50 GMT+0100 (West Africa Time) 
+2026-04-28 12:26:50 [INFO]: Database connected successfully 
+2026-04-28 12:26:50 [INFO]: Redis connecting... 
+2026-04-28 12:26:50 [INFO]: Redis connected successfully 
+2026-04-28 12:26:50 [INFO]: Redis initialized and connected 
+2026-04-28 12:26:50 [INFO]: Redis connected successfully 
+2026-04-28 12:26:50 [INFO]: Socket.IO server initialized 
+2026-04-28 12:26:50 [INFO]: getting to  port .. 
+2026-04-28 12:26:50 [INFO]: Server running on port 3000 
+2026-04-28 12:26:54 [INFO]: ... end of ther server call.. 
+2026-04-28 12:26:54 [INFO]: Database pool connected 
+2026-04-28 12:26:54 [INFO]: Database extensions initialized 
+2026-04-28 12:26:54 [INFO]: Database connected successfully at Tue Apr 28 2026 12:26:54 GMT+0100 (West Africa Time) 
+2026-04-28 12:26:54 [INFO]: Database connected successfully 
+2026-04-28 12:26:54 [INFO]: Redis connecting... 
+2026-04-28 12:26:54 [INFO]: Redis connected successfully 
+2026-04-28 12:26:54 [INFO]: Redis initialized and connected 
+2026-04-28 12:26:54 [INFO]: Redis connected successfully 
+2026-04-28 12:26:54 [INFO]: Socket.IO server initialized 
+2026-04-28 12:26:54 [INFO]: getting to  port .. 
+2026-04-28 12:26:54 [INFO]: Server running on port 3000 
+2026-04-28 12:27:01 [INFO]: ... end of ther server call.. 
+2026-04-28 12:27:01 [INFO]: Database pool connected 
+2026-04-28 12:27:01 [INFO]: Database extensions initialized 
+2026-04-28 12:27:01 [INFO]: Database connected successfully at Tue Apr 28 2026 12:27:01 GMT+0100 (West Africa Time) 
+2026-04-28 12:27:01 [INFO]: Database connected successfully 
+2026-04-28 12:27:01 [INFO]: Redis connecting... 
+2026-04-28 12:27:01 [INFO]: Redis connected successfully 
+2026-04-28 12:27:01 [INFO]: Redis initialized and connected 
+2026-04-28 12:27:01 [INFO]: Redis connected successfully 
+2026-04-28 12:27:01 [INFO]: Socket.IO server initialized 
+2026-04-28 12:27:01 [INFO]: getting to  port .. 
+2026-04-28 12:27:01 [INFO]: Server running on port 3000 
+2026-04-28 12:27:12 [INFO]: ... end of ther server call.. 
+2026-04-28 12:27:12 [INFO]: Database pool connected 
+2026-04-28 12:27:12 [INFO]: Database extensions initialized 
+2026-04-28 12:27:12 [INFO]: Database connected successfully at Tue Apr 28 2026 12:27:12 GMT+0100 (West Africa Time) 
+2026-04-28 12:27:12 [INFO]: Database connected successfully 
+2026-04-28 12:27:12 [INFO]: Redis connecting... 
+2026-04-28 12:27:12 [INFO]: Redis connected successfully 
+2026-04-28 12:27:12 [INFO]: Redis initialized and connected 
+2026-04-28 12:27:12 [INFO]: Redis connected successfully 
+2026-04-28 12:27:12 [INFO]: Socket.IO server initialized 
+2026-04-28 12:27:12 [INFO]: getting to  port .. 
+2026-04-28 12:27:12 [INFO]: Server running on port 3000 
+2026-04-28 12:27:13 [INFO]: ... end of ther server call.. 
+2026-04-28 12:27:13 [INFO]: Database pool connected 
+2026-04-28 12:27:13 [INFO]: Database extensions initialized 
+2026-04-28 12:27:13 [INFO]: Database connected successfully at Tue Apr 28 2026 12:27:13 GMT+0100 (West Africa Time) 
+2026-04-28 12:27:13 [INFO]: Database connected successfully 
+2026-04-28 12:27:13 [INFO]: Redis connecting... 
+2026-04-28 12:27:13 [INFO]: Redis connected successfully 
+2026-04-28 12:27:13 [INFO]: Redis initialized and connected 
+2026-04-28 12:27:13 [INFO]: Redis connected successfully 
+2026-04-28 12:27:13 [INFO]: Socket.IO server initialized 
+2026-04-28 12:27:13 [INFO]: getting to  port .. 
+2026-04-28 12:27:13 [INFO]: Server running on port 3000 
+2026-04-28 12:28:50 [INFO]: ... end of ther server call.. 
+2026-04-28 12:28:50 [INFO]: Database pool connected 
+2026-04-28 12:28:50 [INFO]: Database extensions initialized 
+2026-04-28 12:28:50 [INFO]: Database connected successfully at Tue Apr 28 2026 12:28:50 GMT+0100 (West Africa Time) 
+2026-04-28 12:28:50 [INFO]: Database connected successfully 
+2026-04-28 12:28:50 [INFO]: Redis connecting... 
+2026-04-28 12:28:50 [INFO]: Redis connected successfully 
+2026-04-28 12:28:50 [INFO]: Redis initialized and connected 
+2026-04-28 12:28:50 [INFO]: Redis connected successfully 
+2026-04-28 12:28:50 [INFO]: Socket.IO server initialized 
+2026-04-28 12:28:50 [INFO]: getting to  port .. 
+2026-04-28 12:28:50 [INFO]: Server running on port 3000 
+2026-04-28 12:28:57 [INFO]: ... end of ther server call.. 
+2026-04-28 12:28:57 [INFO]: Database pool connected 
+2026-04-28 12:28:57 [INFO]: Database extensions initialized 
+2026-04-28 12:28:57 [INFO]: Database connected successfully at Tue Apr 28 2026 12:28:57 GMT+0100 (West Africa Time) 
+2026-04-28 12:28:57 [INFO]: Database connected successfully 
+2026-04-28 12:28:57 [INFO]: Redis connecting... 
+2026-04-28 12:28:57 [INFO]: Redis connected successfully 
+2026-04-28 12:28:57 [INFO]: Redis initialized and connected 
+2026-04-28 12:28:57 [INFO]: Redis connected successfully 
+2026-04-28 12:28:57 [INFO]: Socket.IO server initialized 
+2026-04-28 12:28:57 [INFO]: getting to  port .. 
+2026-04-28 12:28:57 [INFO]: Server running on port 3000 
+2026-04-28 12:29:29 [INFO]: ... end of ther server call.. 
+2026-04-28 12:29:29 [INFO]: Database pool connected 
+2026-04-28 12:29:29 [INFO]: Database extensions initialized 
+2026-04-28 12:29:29 [INFO]: Database connected successfully at Tue Apr 28 2026 12:29:29 GMT+0100 (West Africa Time) 
+2026-04-28 12:29:29 [INFO]: Database connected successfully 
+2026-04-28 12:29:29 [INFO]: Redis connecting... 
+2026-04-28 12:29:29 [INFO]: Redis connected successfully 
+2026-04-28 12:29:29 [INFO]: Redis initialized and connected 
+2026-04-28 12:29:29 [INFO]: Redis connected successfully 
+2026-04-28 12:29:29 [INFO]: Socket.IO server initialized 
+2026-04-28 12:29:29 [INFO]: getting to  port .. 
+2026-04-28 12:29:29 [INFO]: Server running on port 3000 
+2026-04-28 12:29:38 [INFO]: ... end of ther server call.. 
+2026-04-28 12:29:38 [INFO]: Database pool connected 
+2026-04-28 12:29:38 [INFO]: Database extensions initialized 
+2026-04-28 12:29:38 [INFO]: Database connected successfully at Tue Apr 28 2026 12:29:38 GMT+0100 (West Africa Time) 
+2026-04-28 12:29:38 [INFO]: Database connected successfully 
+2026-04-28 12:29:38 [INFO]: Redis connecting... 
+2026-04-28 12:29:38 [INFO]: Redis connected successfully 
+2026-04-28 12:29:38 [INFO]: Redis initialized and connected 
+2026-04-28 12:29:38 [INFO]: Redis connected successfully 
+2026-04-28 12:29:38 [INFO]: Socket.IO server initialized 
+2026-04-28 12:29:38 [INFO]: getting to  port .. 
+2026-04-28 12:29:38 [INFO]: Server running on port 3000 
+2026-04-28 12:29:42 [INFO]: ... end of ther server call.. 
+2026-04-28 12:29:42 [INFO]: Database pool connected 
+2026-04-28 12:29:42 [INFO]: Database extensions initialized 
+2026-04-28 12:29:42 [INFO]: Database connected successfully at Tue Apr 28 2026 12:29:42 GMT+0100 (West Africa Time) 
+2026-04-28 12:29:42 [INFO]: Database connected successfully 
+2026-04-28 12:29:42 [INFO]: Redis connecting... 
+2026-04-28 12:29:42 [INFO]: Redis connected successfully 
+2026-04-28 12:29:42 [INFO]: Redis initialized and connected 
+2026-04-28 12:29:42 [INFO]: Redis connected successfully 
+2026-04-28 12:29:42 [INFO]: Socket.IO server initialized 
+2026-04-28 12:29:42 [INFO]: getting to  port .. 
+2026-04-28 12:29:42 [INFO]: Server running on port 3000 
+2026-04-28 12:31:42 [INFO]: ... end of ther server call.. 
+2026-04-28 12:31:42 [INFO]: Database pool connected 
+2026-04-28 12:31:42 [INFO]: Database extensions initialized 
+2026-04-28 12:31:42 [INFO]: Database connected successfully at Tue Apr 28 2026 12:31:42 GMT+0100 (West Africa Time) 
+2026-04-28 12:31:42 [INFO]: Database connected successfully 
+2026-04-28 12:31:42 [INFO]: Redis connecting... 
+2026-04-28 12:31:42 [INFO]: Redis connected successfully 
+2026-04-28 12:31:42 [INFO]: Redis initialized and connected 
+2026-04-28 12:31:42 [INFO]: Redis connected successfully 
+2026-04-28 12:31:42 [INFO]: Socket.IO server initialized 
+2026-04-28 12:31:42 [INFO]: getting to  port .. 
+2026-04-28 12:31:42 [INFO]: Server running on port 3000 
+2026-04-28 12:31:45 [INFO]: ... end of ther server call.. 
+2026-04-28 12:31:45 [INFO]: Database pool connected 
+2026-04-28 12:31:45 [INFO]: Database extensions initialized 
+2026-04-28 12:31:45 [INFO]: Database connected successfully at Tue Apr 28 2026 12:31:45 GMT+0100 (West Africa Time) 
+2026-04-28 12:31:45 [INFO]: Database connected successfully 
+2026-04-28 12:31:45 [INFO]: Redis connecting... 
+2026-04-28 12:31:45 [INFO]: Redis connected successfully 
+2026-04-28 12:31:45 [INFO]: Redis initialized and connected 
+2026-04-28 12:31:45 [INFO]: Redis connected successfully 
+2026-04-28 12:31:45 [INFO]: Socket.IO server initialized 
+2026-04-28 12:31:45 [INFO]: getting to  port .. 
+2026-04-28 12:31:45 [INFO]: Server running on port 3000 
+2026-04-28 12:32:06 [INFO]: ... end of ther server call.. 
+2026-04-28 12:32:06 [INFO]: Database pool connected 
+2026-04-28 12:32:06 [INFO]: Database extensions initialized 
+2026-04-28 12:32:06 [INFO]: Database connected successfully at Tue Apr 28 2026 12:32:06 GMT+0100 (West Africa Time) 
+2026-04-28 12:32:06 [INFO]: Database connected successfully 
+2026-04-28 12:32:06 [INFO]: Redis connecting... 
+2026-04-28 12:32:06 [INFO]: Redis connected successfully 
+2026-04-28 12:32:06 [INFO]: Redis initialized and connected 
+2026-04-28 12:32:06 [INFO]: Redis connected successfully 
+2026-04-28 12:32:06 [INFO]: Socket.IO server initialized 
+2026-04-28 12:32:06 [INFO]: getting to  port .. 
+2026-04-28 12:32:06 [INFO]: Server running on port 3000 
+2026-04-28 12:32:17 [INFO]: ... end of ther server call.. 
+2026-04-28 12:32:17 [INFO]: Database pool connected 
+2026-04-28 12:32:17 [INFO]: Database extensions initialized 
+2026-04-28 12:32:17 [INFO]: Database connected successfully at Tue Apr 28 2026 12:32:17 GMT+0100 (West Africa Time) 
+2026-04-28 12:32:17 [INFO]: Database connected successfully 
+2026-04-28 12:32:17 [INFO]: Redis connecting... 
+2026-04-28 12:32:17 [INFO]: Redis connected successfully 
+2026-04-28 12:32:17 [INFO]: Redis initialized and connected 
+2026-04-28 12:32:17 [INFO]: Redis connected successfully 
+2026-04-28 12:32:17 [INFO]: Socket.IO server initialized 
+2026-04-28 12:32:17 [INFO]: getting to  port .. 
+2026-04-28 12:32:17 [INFO]: Server running on port 3000 
+2026-04-28 12:32:18 [INFO]: ... end of ther server call.. 
+2026-04-28 12:32:19 [INFO]: Database pool connected 
+2026-04-28 12:32:19 [INFO]: Database extensions initialized 
+2026-04-28 12:32:19 [INFO]: Database connected successfully at Tue Apr 28 2026 12:32:19 GMT+0100 (West Africa Time) 
+2026-04-28 12:32:19 [INFO]: Database connected successfully 
+2026-04-28 12:32:19 [INFO]: Redis connecting... 
+2026-04-28 12:32:19 [INFO]: Redis connected successfully 
+2026-04-28 12:32:19 [INFO]: Redis initialized and connected 
+2026-04-28 12:32:19 [INFO]: Redis connected successfully 
+2026-04-28 12:32:19 [INFO]: Socket.IO server initialized 
+2026-04-28 12:32:19 [INFO]: getting to  port .. 
+2026-04-28 12:32:19 [INFO]: Server running on port 3000 
+2026-04-28 12:32:31 [INFO]: ... end of ther server call.. 
+2026-04-28 12:32:31 [INFO]: Database pool connected 
+2026-04-28 12:32:31 [INFO]: Database extensions initialized 
+2026-04-28 12:32:31 [INFO]: Database connected successfully at Tue Apr 28 2026 12:32:31 GMT+0100 (West Africa Time) 
+2026-04-28 12:32:31 [INFO]: Database connected successfully 
+2026-04-28 12:32:31 [INFO]: Redis connecting... 
+2026-04-28 12:32:31 [INFO]: Redis connected successfully 
+2026-04-28 12:32:31 [INFO]: Redis initialized and connected 
+2026-04-28 12:32:31 [INFO]: Redis connected successfully 
+2026-04-28 12:32:31 [INFO]: Socket.IO server initialized 
+2026-04-28 12:32:31 [INFO]: getting to  port .. 
+2026-04-28 12:32:31 [INFO]: Server running on port 3000 
+2026-04-28 12:32:35 [INFO]: ... end of ther server call.. 
+2026-04-28 12:32:35 [INFO]: Database pool connected 
+2026-04-28 12:32:35 [INFO]: Database extensions initialized 
+2026-04-28 12:32:35 [INFO]: Database connected successfully at Tue Apr 28 2026 12:32:35 GMT+0100 (West Africa Time) 
+2026-04-28 12:32:35 [INFO]: Database connected successfully 
+2026-04-28 12:32:35 [INFO]: Redis connecting... 
+2026-04-28 12:32:35 [INFO]: Redis connected successfully 
+2026-04-28 12:32:35 [INFO]: Redis initialized and connected 
+2026-04-28 12:32:35 [INFO]: Redis connected successfully 
+2026-04-28 12:32:35 [INFO]: Socket.IO server initialized 
+2026-04-28 12:32:35 [INFO]: getting to  port .. 
+2026-04-28 12:32:35 [INFO]: Server running on port 3000 
+2026-04-28 12:32:36 [INFO]: ... end of ther server call.. 
+2026-04-28 12:32:36 [INFO]: Database pool connected 
+2026-04-28 12:32:36 [INFO]: Database extensions initialized 
+2026-04-28 12:32:36 [INFO]: Database connected successfully at Tue Apr 28 2026 12:32:36 GMT+0100 (West Africa Time) 
+2026-04-28 12:32:36 [INFO]: Database connected successfully 
+2026-04-28 12:32:36 [INFO]: Redis connecting... 
+2026-04-28 12:32:36 [INFO]: Redis connected successfully 
+2026-04-28 12:32:36 [INFO]: Redis initialized and connected 
+2026-04-28 12:32:36 [INFO]: Redis connected successfully 
+2026-04-28 12:32:36 [INFO]: Socket.IO server initialized 
+2026-04-28 12:32:36 [INFO]: getting to  port .. 
+2026-04-28 12:32:36 [INFO]: Server running on port 3000 
+2026-04-28 12:33:07 [INFO]: ... end of ther server call.. 
+2026-04-28 12:33:07 [INFO]: Database pool connected 
+2026-04-28 12:33:07 [INFO]: Database extensions initialized 
+2026-04-28 12:33:07 [INFO]: Database connected successfully at Tue Apr 28 2026 12:33:07 GMT+0100 (West Africa Time) 
+2026-04-28 12:33:07 [INFO]: Database connected successfully 
+2026-04-28 12:33:07 [INFO]: Redis connecting... 
+2026-04-28 12:33:07 [INFO]: Redis connected successfully 
+2026-04-28 12:33:07 [INFO]: Redis initialized and connected 
+2026-04-28 12:33:07 [INFO]: Redis connected successfully 
+2026-04-28 12:33:07 [INFO]: Socket.IO server initialized 
+2026-04-28 12:33:07 [INFO]: getting to  port .. 
+2026-04-28 12:33:07 [INFO]: Server running on port 3000 
+2026-04-28 12:40:50 [INFO]: ... end of ther server call.. 
+2026-04-28 12:40:50 [INFO]: Database pool connected 
+2026-04-28 12:40:50 [INFO]: Database extensions initialized 
+2026-04-28 12:40:50 [INFO]: Database connected successfully at Tue Apr 28 2026 12:40:50 GMT+0100 (West Africa Time) 
+2026-04-28 12:40:50 [INFO]: Database connected successfully 
+2026-04-28 12:40:50 [INFO]: Redis connecting... 
+2026-04-28 12:40:50 [INFO]: Redis connected successfully 
+2026-04-28 12:40:50 [INFO]: Redis initialized and connected 
+2026-04-28 12:40:50 [INFO]: Redis connected successfully 
+2026-04-28 12:40:50 [INFO]: Socket.IO server initialized 
+2026-04-28 12:40:50 [INFO]: getting to  port .. 
+2026-04-28 12:40:50 [INFO]: Server running on port 3000 
+2026-04-28 12:43:13 [INFO]: ... end of ther server call.. 
+2026-04-28 12:43:13 [INFO]: Database pool connected 
+2026-04-28 12:43:13 [INFO]: Database extensions initialized 
+2026-04-28 12:43:13 [INFO]: Database connected successfully at Tue Apr 28 2026 12:43:13 GMT+0100 (West Africa Time) 
+2026-04-28 12:43:13 [INFO]: Database connected successfully 
+2026-04-28 12:43:13 [INFO]: Redis connecting... 
+2026-04-28 12:43:13 [INFO]: Redis connected successfully 
+2026-04-28 12:43:13 [INFO]: Redis initialized and connected 
+2026-04-28 12:43:13 [INFO]: Redis connected successfully 
+2026-04-28 12:43:13 [INFO]: Socket.IO server initialized 
+2026-04-28 12:43:13 [INFO]: getting to  port .. 
+2026-04-28 12:43:13 [INFO]: Server running on port 3000 
+2026-04-28 13:01:15 [INFO]: ... end of ther server call.. 
+2026-04-28 13:01:15 [INFO]: Database pool connected 
+2026-04-28 13:01:15 [INFO]: Database extensions initialized 
+2026-04-28 13:01:15 [INFO]: Database connected successfully at Tue Apr 28 2026 13:01:15 GMT+0100 (West Africa Time) 
+2026-04-28 13:01:15 [INFO]: Database connected successfully 
+2026-04-28 13:01:15 [INFO]: Redis connecting... 
+2026-04-28 13:01:15 [INFO]: Redis connected successfully 
+2026-04-28 13:01:15 [INFO]: Redis initialized and connected 
+2026-04-28 13:01:15 [INFO]: Redis connected successfully 
+2026-04-28 13:01:15 [INFO]: Socket.IO server initialized 
+2026-04-28 13:01:15 [INFO]: getting to  port .. 
+2026-04-28 13:01:15 [INFO]: Server running on port 3000 
+2026-04-28 13:01:49 [INFO]: ... end of ther server call.. 
+2026-04-28 13:01:49 [INFO]: Database pool connected 
+2026-04-28 13:01:49 [INFO]: Database extensions initialized 
+2026-04-28 13:01:49 [INFO]: Database connected successfully at Tue Apr 28 2026 13:01:49 GMT+0100 (West Africa Time) 
+2026-04-28 13:01:49 [INFO]: Database connected successfully 
+2026-04-28 13:01:49 [INFO]: Redis connecting... 
+2026-04-28 13:01:49 [INFO]: Redis connected successfully 
+2026-04-28 13:01:49 [INFO]: Redis initialized and connected 
+2026-04-28 13:01:49 [INFO]: Redis connected successfully 
+2026-04-28 13:01:49 [INFO]: Socket.IO server initialized 
+2026-04-28 13:01:49 [INFO]: getting to  port .. 
+2026-04-28 13:01:49 [INFO]: Server running on port 3000 
+2026-04-28 13:01:51 [INFO]: ... end of ther server call.. 
+2026-04-28 13:01:51 [INFO]: Database pool connected 
+2026-04-28 13:01:51 [INFO]: Database extensions initialized 
+2026-04-28 13:01:51 [INFO]: Database connected successfully at Tue Apr 28 2026 13:01:51 GMT+0100 (West Africa Time) 
+2026-04-28 13:01:51 [INFO]: Database connected successfully 
+2026-04-28 13:01:51 [INFO]: Redis connecting... 
+2026-04-28 13:01:51 [INFO]: Redis connected successfully 
+2026-04-28 13:01:51 [INFO]: Redis initialized and connected 
+2026-04-28 13:01:51 [INFO]: Redis connected successfully 
+2026-04-28 13:01:51 [INFO]: Socket.IO server initialized 
+2026-04-28 13:01:51 [INFO]: getting to  port .. 
+2026-04-28 13:01:51 [INFO]: Server running on port 3000 
+2026-04-28 13:36:20 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:20 [INFO]: Database pool connected 
+2026-04-28 13:36:20 [INFO]: Database extensions initialized 
+2026-04-28 13:36:20 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:20 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:20 [INFO]: Database connected successfully 
+2026-04-28 13:36:20 [INFO]: Redis connecting... 
+2026-04-28 13:36:20 [INFO]: Redis connected successfully 
+2026-04-28 13:36:20 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:20 [INFO]: Redis connected successfully 
+2026-04-28 13:36:20 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:20 [INFO]: getting to  port .. 
+2026-04-28 13:36:20 [INFO]: Server running on port 3000 
+2026-04-28 13:36:36 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:36 [INFO]: Database pool connected 
+2026-04-28 13:36:36 [INFO]: Database extensions initialized 
+2026-04-28 13:36:36 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:36 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:36 [INFO]: Database connected successfully 
+2026-04-28 13:36:36 [INFO]: Redis connecting... 
+2026-04-28 13:36:36 [INFO]: Redis connected successfully 
+2026-04-28 13:36:36 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:36 [INFO]: Redis connected successfully 
+2026-04-28 13:36:36 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:36 [INFO]: getting to  port .. 
+2026-04-28 13:36:36 [INFO]: Server running on port 3000 
+2026-04-28 13:36:39 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:39 [INFO]: Database pool connected 
+2026-04-28 13:36:39 [INFO]: Database extensions initialized 
+2026-04-28 13:36:39 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:39 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:39 [INFO]: Database connected successfully 
+2026-04-28 13:36:39 [INFO]: Redis connecting... 
+2026-04-28 13:36:39 [INFO]: Redis connected successfully 
+2026-04-28 13:36:39 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:39 [INFO]: Redis connected successfully 
+2026-04-28 13:36:39 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:39 [INFO]: getting to  port .. 
+2026-04-28 13:36:39 [INFO]: Server running on port 3000 
+2026-04-28 13:36:42 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:42 [INFO]: Database pool connected 
+2026-04-28 13:36:42 [INFO]: Database extensions initialized 
+2026-04-28 13:36:42 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:42 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:42 [INFO]: Database connected successfully 
+2026-04-28 13:36:42 [INFO]: Redis connecting... 
+2026-04-28 13:36:42 [INFO]: Redis connected successfully 
+2026-04-28 13:36:42 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:42 [INFO]: Redis connected successfully 
+2026-04-28 13:36:42 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:42 [INFO]: getting to  port .. 
+2026-04-28 13:36:42 [INFO]: Server running on port 3000 
+2026-04-28 13:36:44 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:44 [INFO]: Database pool connected 
+2026-04-28 13:36:44 [INFO]: Database extensions initialized 
+2026-04-28 13:36:44 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:44 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:44 [INFO]: Database connected successfully 
+2026-04-28 13:36:44 [INFO]: Redis connecting... 
+2026-04-28 13:36:44 [INFO]: Redis connected successfully 
+2026-04-28 13:36:44 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:44 [INFO]: Redis connected successfully 
+2026-04-28 13:36:44 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:44 [INFO]: getting to  port .. 
+2026-04-28 13:36:44 [INFO]: Server running on port 3000 
+2026-04-28 13:36:49 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:49 [INFO]: Database pool connected 
+2026-04-28 13:36:49 [INFO]: Database extensions initialized 
+2026-04-28 13:36:49 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:49 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:49 [INFO]: Database connected successfully 
+2026-04-28 13:36:49 [INFO]: Redis connecting... 
+2026-04-28 13:36:49 [INFO]: Redis connected successfully 
+2026-04-28 13:36:49 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:49 [INFO]: Redis connected successfully 
+2026-04-28 13:36:49 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:49 [INFO]: getting to  port .. 
+2026-04-28 13:36:49 [INFO]: Server running on port 3000 
+2026-04-28 13:36:50 [INFO]: ... end of ther server call.. 
+2026-04-28 13:36:50 [INFO]: Database pool connected 
+2026-04-28 13:36:50 [INFO]: Database extensions initialized 
+2026-04-28 13:36:50 [INFO]: Database connected successfully at Tue Apr 28 2026 13:36:50 GMT+0100 (West Africa Time) 
+2026-04-28 13:36:50 [INFO]: Database connected successfully 
+2026-04-28 13:36:50 [INFO]: Redis connecting... 
+2026-04-28 13:36:50 [INFO]: Redis connected successfully 
+2026-04-28 13:36:50 [INFO]: Redis initialized and connected 
+2026-04-28 13:36:50 [INFO]: Redis connected successfully 
+2026-04-28 13:36:50 [INFO]: Socket.IO server initialized 
+2026-04-28 13:36:50 [INFO]: getting to  port .. 
+2026-04-28 13:36:50 [INFO]: Server running on port 3000 
+2026-04-28 13:38:15 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:15 [INFO]: Database pool connected 
+2026-04-28 13:38:15 [INFO]: Database extensions initialized 
+2026-04-28 13:38:15 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:15 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:15 [INFO]: Database connected successfully 
+2026-04-28 13:38:15 [INFO]: Redis connecting... 
+2026-04-28 13:38:15 [INFO]: Redis connected successfully 
+2026-04-28 13:38:15 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:15 [INFO]: Redis connected successfully 
+2026-04-28 13:38:15 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:15 [INFO]: getting to  port .. 
+2026-04-28 13:38:15 [INFO]: Server running on port 3000 
+2026-04-28 13:38:16 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:16 [INFO]: Database pool connected 
+2026-04-28 13:38:16 [INFO]: Database extensions initialized 
+2026-04-28 13:38:16 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:16 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:16 [INFO]: Database connected successfully 
+2026-04-28 13:38:16 [INFO]: Redis connecting... 
+2026-04-28 13:38:16 [INFO]: Redis connected successfully 
+2026-04-28 13:38:16 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:16 [INFO]: Redis connected successfully 
+2026-04-28 13:38:16 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:16 [INFO]: getting to  port .. 
+2026-04-28 13:38:16 [INFO]: Server running on port 3000 
+2026-04-28 13:38:20 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:21 [INFO]: Database pool connected 
+2026-04-28 13:38:21 [INFO]: Database extensions initialized 
+2026-04-28 13:38:21 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:21 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:21 [INFO]: Database connected successfully 
+2026-04-28 13:38:21 [INFO]: Redis connecting... 
+2026-04-28 13:38:21 [INFO]: Redis connected successfully 
+2026-04-28 13:38:21 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:21 [INFO]: Redis connected successfully 
+2026-04-28 13:38:21 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:21 [INFO]: getting to  port .. 
+2026-04-28 13:38:21 [INFO]: Server running on port 3000 
+2026-04-28 13:38:28 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:28 [INFO]: Database pool connected 
+2026-04-28 13:38:28 [INFO]: Database extensions initialized 
+2026-04-28 13:38:28 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:28 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:28 [INFO]: Database connected successfully 
+2026-04-28 13:38:28 [INFO]: Redis connecting... 
+2026-04-28 13:38:28 [INFO]: Redis connected successfully 
+2026-04-28 13:38:28 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:28 [INFO]: Redis connected successfully 
+2026-04-28 13:38:28 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:28 [INFO]: getting to  port .. 
+2026-04-28 13:38:28 [INFO]: Server running on port 3000 
+2026-04-28 13:38:34 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:35 [INFO]: Database pool connected 
+2026-04-28 13:38:35 [INFO]: Database extensions initialized 
+2026-04-28 13:38:35 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:35 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:35 [INFO]: Database connected successfully 
+2026-04-28 13:38:35 [INFO]: Redis connecting... 
+2026-04-28 13:38:35 [INFO]: Redis connected successfully 
+2026-04-28 13:38:35 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:35 [INFO]: Redis connected successfully 
+2026-04-28 13:38:35 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:35 [INFO]: getting to  port .. 
+2026-04-28 13:38:35 [INFO]: Server running on port 3000 
+2026-04-28 13:38:36 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:36 [INFO]: Database pool connected 
+2026-04-28 13:38:36 [INFO]: Database extensions initialized 
+2026-04-28 13:38:36 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:36 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:36 [INFO]: Database connected successfully 
+2026-04-28 13:38:36 [INFO]: Redis connecting... 
+2026-04-28 13:38:36 [INFO]: Redis connected successfully 
+2026-04-28 13:38:36 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:36 [INFO]: Redis connected successfully 
+2026-04-28 13:38:36 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:36 [INFO]: getting to  port .. 
+2026-04-28 13:38:36 [INFO]: Server running on port 3000 
+2026-04-28 13:38:38 [INFO]: ... end of ther server call.. 
+2026-04-28 13:38:38 [INFO]: Database pool connected 
+2026-04-28 13:38:38 [INFO]: Database extensions initialized 
+2026-04-28 13:38:38 [INFO]: Database connected successfully at Tue Apr 28 2026 13:38:38 GMT+0100 (West Africa Time) 
+2026-04-28 13:38:38 [INFO]: Database connected successfully 
+2026-04-28 13:38:38 [INFO]: Redis connecting... 
+2026-04-28 13:38:38 [INFO]: Redis connected successfully 
+2026-04-28 13:38:38 [INFO]: Redis initialized and connected 
+2026-04-28 13:38:38 [INFO]: Redis connected successfully 
+2026-04-28 13:38:38 [INFO]: Socket.IO server initialized 
+2026-04-28 13:38:38 [INFO]: getting to  port .. 
+2026-04-28 13:38:38 [INFO]: Server running on port 3000 
+2026-04-28 13:39:25 [INFO]: ... end of ther server call.. 
+2026-04-28 13:39:25 [INFO]: Database pool connected 
+2026-04-28 13:39:25 [INFO]: Database extensions initialized 
+2026-04-28 13:39:25 [INFO]: Database connected successfully at Tue Apr 28 2026 13:39:25 GMT+0100 (West Africa Time) 
+2026-04-28 13:39:25 [INFO]: Database connected successfully 
+2026-04-28 13:39:25 [INFO]: Redis connecting... 
+2026-04-28 13:39:25 [INFO]: Redis connected successfully 
+2026-04-28 13:39:25 [INFO]: Redis initialized and connected 
+2026-04-28 13:39:25 [INFO]: Redis connected successfully 
+2026-04-28 13:39:25 [INFO]: Socket.IO server initialized 
+2026-04-28 13:39:25 [INFO]: getting to  port .. 
+2026-04-28 13:39:25 [INFO]: Server running on port 3000 
+2026-04-28 13:39:26 [INFO]: ... end of ther server call.. 
+2026-04-28 13:39:26 [INFO]: Database pool connected 
+2026-04-28 13:39:26 [INFO]: Database extensions initialized 
+2026-04-28 13:39:26 [INFO]: Database connected successfully at Tue Apr 28 2026 13:39:26 GMT+0100 (West Africa Time) 
+2026-04-28 13:39:26 [INFO]: Database connected successfully 
+2026-04-28 13:39:26 [INFO]: Redis connecting... 
+2026-04-28 13:39:26 [INFO]: Redis connected successfully 
+2026-04-28 13:39:26 [INFO]: Redis initialized and connected 
+2026-04-28 13:39:26 [INFO]: Redis connected successfully 
+2026-04-28 13:39:26 [INFO]: Socket.IO server initialized 
+2026-04-28 13:39:26 [INFO]: getting to  port .. 
+2026-04-28 13:39:26 [INFO]: Server running on port 3000 
+2026-04-28 13:39:40 [INFO]: ... end of ther server call.. 
+2026-04-28 13:39:40 [INFO]: Database pool connected 
+2026-04-28 13:39:40 [INFO]: Database extensions initialized 
+2026-04-28 13:39:40 [INFO]: Database connected successfully at Tue Apr 28 2026 13:39:40 GMT+0100 (West Africa Time) 
+2026-04-28 13:39:40 [INFO]: Database connected successfully 
+2026-04-28 13:39:40 [INFO]: Redis connecting... 
+2026-04-28 13:39:40 [INFO]: Redis connected successfully 
+2026-04-28 13:39:40 [INFO]: Redis initialized and connected 
+2026-04-28 13:39:40 [INFO]: Redis connected successfully 
+2026-04-28 13:39:40 [INFO]: Socket.IO server initialized 
+2026-04-28 13:39:40 [INFO]: getting to  port .. 
+2026-04-28 13:39:40 [INFO]: Server running on port 3000 
+2026-04-28 13:46:33 [INFO]: Database pool connected 
+2026-04-28 13:46:39 [ERROR]: Email sending failed: Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to
+535 5.7.8  https://support.google.com/mail/?p=BadCredentials 5b1f17b1804b1-48a7748ef4esm17668755e9.4 - gsmtp {"code":"EAUTH","response":"535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 5b1f17b1804b1-48a7748ef4esm17668755e9.4 - gsmtp","responseCode":535,"command":"AUTH PLAIN","stack":"Error: Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 5b1f17b1804b1-48a7748ef4esm17668755e9.4 - gsmtp\n    at SMTPConnection._formatError (/home/philip/beavers/beavers-backend/node_modules/nodemailer/lib/smtp-connection/index.js:809:19)\n    at SMTPConnection._actionAUTHComplete (/home/philip/beavers/beavers-backend/node_modules/nodemailer/lib/smtp-connection/index.js:1588:34)\n    at SMTPConnection.<anonymous> (/home/philip/beavers/beavers-backend/node_modules/nodemailer/lib/smtp-connection/index.js:556:26)\n    at SMTPConnection._processResponse (/home/philip/beavers/beavers-backend/node_modules/nodemailer/lib/smtp-connection/index.js:993:20)\n    at SMTPConnection._onData (/home/philip/beavers/beavers-backend/node_modules/nodemailer/lib/smtp-connection/index.js:774:14)\n    at SMTPConnection._onSocketData (/home/philip/beavers/beavers-backend/node_modules/nodemailer/lib/smtp-connection/index.js:195:44)\n    at TLSSocket.emit (node:events:509:20)\n    at addChunk (node:internal/streams/readable:564:12)\n    at readableAddChunkPushByteMode (node:internal/streams/readable:515:3)\n    at Readable.push (node:internal/streams/readable:395:5)"}
+2026-04-28 13:48:30 [INFO]: ... end of ther server call.. 
+2026-04-28 13:48:30 [INFO]: Database pool connected 
+2026-04-28 13:48:30 [INFO]: Database extensions initialized 
+2026-04-28 13:48:30 [INFO]: Database connected successfully at Tue Apr 28 2026 13:48:30 GMT+0100 (West Africa Time) 
+2026-04-28 13:48:30 [INFO]: Database connected successfully 
+2026-04-28 13:48:30 [INFO]: Redis connecting... 
+2026-04-28 13:48:30 [INFO]: Redis connected successfully 
+2026-04-28 13:48:30 [INFO]: Redis initialized and connected 
+2026-04-28 13:48:30 [INFO]: Redis connected successfully 
+2026-04-28 13:48:30 [INFO]: Socket.IO server initialized 
+2026-04-28 13:48:30 [INFO]: getting to  port .. 
+2026-04-28 13:48:30 [INFO]: Server running on port 3000 
+2026-04-28 13:48:34 [INFO]: ... end of ther server call.. 
+2026-04-28 13:48:34 [INFO]: Database pool connected 
+2026-04-28 13:48:34 [INFO]: Database extensions initialized 
+2026-04-28 13:48:34 [INFO]: Database connected successfully at Tue Apr 28 2026 13:48:34 GMT+0100 (West Africa Time) 
+2026-04-28 13:48:34 [INFO]: Database connected successfully 
+2026-04-28 13:48:34 [INFO]: Redis connecting... 
+2026-04-28 13:48:34 [INFO]: Redis connected successfully 
+2026-04-28 13:48:34 [INFO]: Redis initialized and connected 
+2026-04-28 13:48:34 [INFO]: Redis connected successfully 
+2026-04-28 13:48:34 [INFO]: Socket.IO server initialized 
+2026-04-28 13:48:34 [INFO]: getting to  port .. 
+2026-04-28 13:48:34 [INFO]: Server running on port 3000 
+2026-04-28 13:48:47 [INFO]: ... end of ther server call.. 
+2026-04-28 13:48:47 [INFO]: Database pool connected 
+2026-04-28 13:48:47 [INFO]: Database extensions initialized 
+2026-04-28 13:48:47 [INFO]: Database connected successfully at Tue Apr 28 2026 13:48:47 GMT+0100 (West Africa Time) 
+2026-04-28 13:48:47 [INFO]: Database connected successfully 
+2026-04-28 13:48:47 [INFO]: Redis connecting... 
+2026-04-28 13:48:47 [INFO]: Redis connected successfully 
+2026-04-28 13:48:47 [INFO]: Redis initialized and connected 
+2026-04-28 13:48:47 [INFO]: Redis connected successfully 
+2026-04-28 13:48:47 [INFO]: Socket.IO server initialized 
+2026-04-28 13:48:47 [INFO]: getting to  port .. 
+2026-04-28 13:48:47 [INFO]: Server running on port 3000 
+2026-04-28 13:48:49 [INFO]: ... end of ther server call.. 
+2026-04-28 13:48:49 [INFO]: Database pool connected 
+2026-04-28 13:48:49 [INFO]: Database extensions initialized 
+2026-04-28 13:48:49 [INFO]: Database connected successfully at Tue Apr 28 2026 13:48:49 GMT+0100 (West Africa Time) 
+2026-04-28 13:48:49 [INFO]: Database connected successfully 
+2026-04-28 13:48:49 [INFO]: Redis connecting... 
+2026-04-28 13:48:49 [INFO]: Redis connected successfully 
+2026-04-28 13:48:49 [INFO]: Redis initialized and connected 
+2026-04-28 13:48:49 [INFO]: Redis connected successfully 
+2026-04-28 13:48:49 [INFO]: Socket.IO server initialized 
+2026-04-28 13:48:49 [INFO]: getting to  port .. 
+2026-04-28 13:48:49 [INFO]: Server running on port 3000 
+2026-04-28 13:48:52 [INFO]: ... end of ther server call.. 
+2026-04-28 13:48:52 [INFO]: Database pool connected 
+2026-04-28 13:48:52 [INFO]: Database extensions initialized 
+2026-04-28 13:48:52 [INFO]: Database connected successfully at Tue Apr 28 2026 13:48:52 GMT+0100 (West Africa Time) 
+2026-04-28 13:48:52 [INFO]: Database connected successfully 
+2026-04-28 13:48:52 [INFO]: Redis connecting... 
+2026-04-28 13:48:52 [INFO]: Redis connected successfully 
+2026-04-28 13:48:52 [INFO]: Redis initialized and connected 
+2026-04-28 13:48:52 [INFO]: Redis connected successfully 
+2026-04-28 13:48:52 [INFO]: Socket.IO server initialized 
+2026-04-28 13:48:52 [INFO]: getting to  port .. 
+2026-04-28 13:48:52 [INFO]: Server running on port 3000 
+2026-04-28 13:48:55 [INFO]: ... end of ther server call.. 
+2026-04-28 13:48:55 [INFO]: Database pool connected 
+2026-04-28 13:48:55 [INFO]: Database extensions initialized 
+2026-04-28 13:48:55 [INFO]: Database connected successfully at Tue Apr 28 2026 13:48:55 GMT+0100 (West Africa Time) 
+2026-04-28 13:48:55 [INFO]: Database connected successfully 
+2026-04-28 13:48:55 [INFO]: Redis connecting... 
+2026-04-28 13:48:55 [INFO]: Redis connected successfully 
+2026-04-28 13:48:55 [INFO]: Redis initialized and connected 
+2026-04-28 13:48:55 [INFO]: Redis connected successfully 
+2026-04-28 13:48:55 [INFO]: Socket.IO server initialized 
+2026-04-28 13:48:55 [INFO]: getting to  port .. 
+2026-04-28 13:48:55 [INFO]: Server running on port 3000 
+2026-04-28 13:49:00 [INFO]: ... end of ther server call.. 
+2026-04-28 13:49:00 [INFO]: Database pool connected 
+2026-04-28 13:49:00 [INFO]: Database extensions initialized 
+2026-04-28 13:49:00 [INFO]: Database connected successfully at Tue Apr 28 2026 13:49:00 GMT+0100 (West Africa Time) 
+2026-04-28 13:49:00 [INFO]: Database connected successfully 
+2026-04-28 13:49:00 [INFO]: Redis connecting... 
+2026-04-28 13:49:00 [INFO]: Redis connected successfully 
+2026-04-28 13:49:00 [INFO]: Redis initialized and connected 
+2026-04-28 13:49:00 [INFO]: Redis connected successfully 
+2026-04-28 13:49:00 [INFO]: Socket.IO server initialized 
+2026-04-28 13:49:00 [INFO]: getting to  port .. 
+2026-04-28 13:49:00 [INFO]: Server running on port 3000 
+2026-04-28 13:49:01 [INFO]: ... end of ther server call.. 
+2026-04-28 13:49:01 [INFO]: Database pool connected 
+2026-04-28 13:49:01 [INFO]: Database extensions initialized 
+2026-04-28 13:49:01 [INFO]: Database connected successfully at Tue Apr 28 2026 13:49:01 GMT+0100 (West Africa Time) 
+2026-04-28 13:49:01 [INFO]: Database connected successfully 
+2026-04-28 13:49:01 [INFO]: Redis connecting... 
+2026-04-28 13:49:01 [INFO]: Redis connected successfully 
+2026-04-28 13:49:01 [INFO]: Redis initialized and connected 
+2026-04-28 13:49:01 [INFO]: Redis connected successfully 
+2026-04-28 13:49:01 [INFO]: Socket.IO server initialized 
+2026-04-28 13:49:01 [INFO]: getting to  port .. 
+2026-04-28 13:49:01 [INFO]: Server running on port 3000 
+2026-04-28 13:49:02 [INFO]: ... end of ther server call.. 
+2026-04-28 13:49:02 [INFO]: Database pool connected 
+2026-04-28 13:49:02 [INFO]: Database extensions initialized 
+2026-04-28 13:49:02 [INFO]: Database connected successfully at Tue Apr 28 2026 13:49:02 GMT+0100 (West Africa Time) 
+2026-04-28 13:49:02 [INFO]: Database connected successfully 
+2026-04-28 13:49:02 [INFO]: Redis connecting... 
+2026-04-28 13:49:02 [INFO]: Redis connected successfully 
+2026-04-28 13:49:02 [INFO]: Redis initialized and connected 
+2026-04-28 13:49:02 [INFO]: Redis connected successfully 
+2026-04-28 13:49:02 [INFO]: Socket.IO server initialized 
+2026-04-28 13:49:02 [INFO]: getting to  port .. 
+2026-04-28 13:49:02 [INFO]: Server running on port 3000 
+2026-04-28 13:49:07 [INFO]: ... end of ther server call.. 
+2026-04-28 13:49:07 [INFO]: Database pool connected 
+2026-04-28 13:49:07 [INFO]: Database extensions initialized 
+2026-04-28 13:49:07 [INFO]: Database connected successfully at Tue Apr 28 2026 13:49:07 GMT+0100 (West Africa Time) 
+2026-04-28 13:49:07 [INFO]: Database connected successfully 
+2026-04-28 13:49:07 [INFO]: Redis connecting... 
+2026-04-28 13:49:07 [INFO]: Redis connected successfully 
+2026-04-28 13:49:07 [INFO]: Redis initialized and connected 
+2026-04-28 13:49:07 [INFO]: Redis connected successfully 
+2026-04-28 13:49:07 [INFO]: Socket.IO server initialized 
+2026-04-28 13:49:07 [INFO]: getting to  port .. 
+2026-04-28 13:49:07 [INFO]: Server running on port 3000 
+2026-04-28 13:49:10 [INFO]: ... end of ther server call.. 
+2026-04-28 13:49:10 [INFO]: Database pool connected 
+2026-04-28 13:49:10 [INFO]: Database extensions initialized 
+2026-04-28 13:49:10 [INFO]: Database connected successfully at Tue Apr 28 2026 13:49:10 GMT+0100 (West Africa Time) 
+2026-04-28 13:49:10 [INFO]: Database connected successfully 
+2026-04-28 13:49:10 [INFO]: Redis connecting... 
+2026-04-28 13:49:10 [INFO]: Redis connected successfully 
+2026-04-28 13:49:10 [INFO]: Redis initialized and connected 
+2026-04-28 13:49:10 [INFO]: Redis connected successfully 
+2026-04-28 13:49:10 [INFO]: Socket.IO server initialized 
+2026-04-28 13:49:10 [INFO]: getting to  port .. 
+2026-04-28 13:49:10 [INFO]: Server running on port 3000 
+2026-04-28 13:50:50 [INFO]: ... end of ther server call.. 
+2026-04-28 13:50:50 [INFO]: Database pool connected 
+2026-04-28 13:50:50 [INFO]: Database extensions initialized 
+2026-04-28 13:50:50 [INFO]: Database connected successfully at Tue Apr 28 2026 13:50:50 GMT+0100 (West Africa Time) 
+2026-04-28 13:50:50 [INFO]: Database connected successfully 
+2026-04-28 13:50:50 [INFO]: Redis connecting... 
+2026-04-28 13:50:50 [INFO]: Redis connected successfully 
+2026-04-28 13:50:50 [INFO]: Redis initialized and connected 
+2026-04-28 13:50:50 [INFO]: Redis connected successfully 
+2026-04-28 13:50:50 [INFO]: Socket.IO server initialized 
+2026-04-28 13:50:50 [INFO]: getting to  port .. 
+2026-04-28 13:50:50 [INFO]: Server running on port 3000 
+2026-04-28 13:50:53 [INFO]: ... end of ther server call.. 
+2026-04-28 13:50:53 [INFO]: Database pool connected 
+2026-04-28 13:50:53 [INFO]: Database extensions initialized 
+2026-04-28 13:50:53 [INFO]: Database connected successfully at Tue Apr 28 2026 13:50:53 GMT+0100 (West Africa Time) 
+2026-04-28 13:50:53 [INFO]: Database connected successfully 
+2026-04-28 13:50:53 [INFO]: Redis connecting... 
+2026-04-28 13:50:53 [INFO]: Redis connected successfully 
+2026-04-28 13:50:53 [INFO]: Redis initialized and connected 
+2026-04-28 13:50:53 [INFO]: Redis connected successfully 
+2026-04-28 13:50:53 [INFO]: Socket.IO server initialized 
+2026-04-28 13:50:53 [INFO]: getting to  port .. 
+2026-04-28 13:50:53 [INFO]: Server running on port 3000 
+2026-04-28 14:15:23 [INFO]: ... end of ther server call.. 
+2026-04-28 14:15:23 [INFO]: Database pool connected 
+2026-04-28 14:15:23 [INFO]: Database extensions initialized 
+2026-04-28 14:15:23 [INFO]: Database connected successfully at Tue Apr 28 2026 14:15:23 GMT+0100 (West Africa Time) 
+2026-04-28 14:15:23 [INFO]: Database connected successfully 
+2026-04-28 14:15:23 [INFO]: Redis connecting... 
+2026-04-28 14:15:23 [INFO]: Redis connected successfully 
+2026-04-28 14:15:23 [INFO]: Redis initialized and connected 
+2026-04-28 14:15:23 [INFO]: Redis connected successfully 
+2026-04-28 14:15:23 [INFO]: Socket.IO server initialized 
+2026-04-28 14:15:23 [INFO]: getting to  port .. 
+2026-04-28 14:15:23 [INFO]: Server running on port 3000 
+2026-04-28 14:24:16 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:16 [INFO]: Database pool connected 
+2026-04-28 14:24:16 [INFO]: Database extensions initialized 
+2026-04-28 14:24:16 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:16 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:16 [INFO]: Database connected successfully 
+2026-04-28 14:24:16 [INFO]: Redis connecting... 
+2026-04-28 14:24:16 [INFO]: Redis connected successfully 
+2026-04-28 14:24:16 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:16 [INFO]: Redis connected successfully 
+2026-04-28 14:24:16 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:16 [INFO]: getting to  port .. 
+2026-04-28 14:24:16 [INFO]: Server running on port 3000 
+2026-04-28 14:24:27 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:27 [INFO]: Database pool connected 
+2026-04-28 14:24:27 [INFO]: Database extensions initialized 
+2026-04-28 14:24:27 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:27 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:27 [INFO]: Database connected successfully 
+2026-04-28 14:24:27 [INFO]: Redis connecting... 
+2026-04-28 14:24:27 [INFO]: Redis connected successfully 
+2026-04-28 14:24:27 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:27 [INFO]: Redis connected successfully 
+2026-04-28 14:24:27 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:27 [INFO]: getting to  port .. 
+2026-04-28 14:24:27 [INFO]: Server running on port 3000 
+2026-04-28 14:24:29 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:29 [INFO]: Database pool connected 
+2026-04-28 14:24:29 [INFO]: Database extensions initialized 
+2026-04-28 14:24:29 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:29 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:29 [INFO]: Database connected successfully 
+2026-04-28 14:24:29 [INFO]: Redis connecting... 
+2026-04-28 14:24:29 [INFO]: Redis connected successfully 
+2026-04-28 14:24:29 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:29 [INFO]: Redis connected successfully 
+2026-04-28 14:24:29 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:29 [INFO]: getting to  port .. 
+2026-04-28 14:24:29 [INFO]: Server running on port 3000 
+2026-04-28 14:24:32 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:32 [INFO]: Database pool connected 
+2026-04-28 14:24:32 [INFO]: Database extensions initialized 
+2026-04-28 14:24:32 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:32 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:32 [INFO]: Database connected successfully 
+2026-04-28 14:24:32 [INFO]: Redis connecting... 
+2026-04-28 14:24:32 [INFO]: Redis connected successfully 
+2026-04-28 14:24:32 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:32 [INFO]: Redis connected successfully 
+2026-04-28 14:24:32 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:32 [INFO]: getting to  port .. 
+2026-04-28 14:24:32 [INFO]: Server running on port 3000 
+2026-04-28 14:24:37 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:37 [INFO]: Database pool connected 
+2026-04-28 14:24:37 [INFO]: Database extensions initialized 
+2026-04-28 14:24:37 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:37 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:37 [INFO]: Database connected successfully 
+2026-04-28 14:24:37 [INFO]: Redis connecting... 
+2026-04-28 14:24:37 [INFO]: Redis connected successfully 
+2026-04-28 14:24:37 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:37 [INFO]: Redis connected successfully 
+2026-04-28 14:24:37 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:37 [INFO]: getting to  port .. 
+2026-04-28 14:24:37 [INFO]: Server running on port 3000 
+2026-04-28 14:24:43 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:43 [INFO]: Database pool connected 
+2026-04-28 14:24:43 [INFO]: Database extensions initialized 
+2026-04-28 14:24:43 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:43 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:43 [INFO]: Database connected successfully 
+2026-04-28 14:24:43 [INFO]: Redis connecting... 
+2026-04-28 14:24:43 [INFO]: Redis connected successfully 
+2026-04-28 14:24:43 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:43 [INFO]: Redis connected successfully 
+2026-04-28 14:24:43 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:43 [INFO]: getting to  port .. 
+2026-04-28 14:24:43 [INFO]: Server running on port 3000 
+2026-04-28 14:24:46 [INFO]: ... end of ther server call.. 
+2026-04-28 14:24:46 [INFO]: Database pool connected 
+2026-04-28 14:24:46 [INFO]: Database extensions initialized 
+2026-04-28 14:24:46 [INFO]: Database connected successfully at Tue Apr 28 2026 14:24:46 GMT+0100 (West Africa Time) 
+2026-04-28 14:24:46 [INFO]: Database connected successfully 
+2026-04-28 14:24:46 [INFO]: Redis connecting... 
+2026-04-28 14:24:46 [INFO]: Redis connected successfully 
+2026-04-28 14:24:46 [INFO]: Redis initialized and connected 
+2026-04-28 14:24:46 [INFO]: Redis connected successfully 
+2026-04-28 14:24:46 [INFO]: Socket.IO server initialized 
+2026-04-28 14:24:46 [INFO]: getting to  port .. 
+2026-04-28 14:24:46 [INFO]: Server running on port 3000 
+2026-04-28 14:25:03 [INFO]: ... end of ther server call.. 
+2026-04-28 14:25:03 [INFO]: Database pool connected 
+2026-04-28 14:25:03 [INFO]: Database extensions initialized 
+2026-04-28 14:25:03 [INFO]: Database connected successfully at Tue Apr 28 2026 14:25:03 GMT+0100 (West Africa Time) 
+2026-04-28 14:25:03 [INFO]: Database connected successfully 
+2026-04-28 14:25:03 [INFO]: Redis connecting... 
+2026-04-28 14:25:03 [INFO]: Redis connected successfully 
+2026-04-28 14:25:03 [INFO]: Redis initialized and connected 
+2026-04-28 14:25:03 [INFO]: Redis connected successfully 
+2026-04-28 14:25:03 [INFO]: Socket.IO server initialized 
+2026-04-28 14:25:03 [INFO]: getting to  port .. 
+2026-04-28 14:25:03 [INFO]: Server running on port 3000 
+2026-04-28 14:25:07 [INFO]: ... end of ther server call.. 
+2026-04-28 14:25:07 [INFO]: Database pool connected 
+2026-04-28 14:25:07 [INFO]: Database extensions initialized 
+2026-04-28 14:25:07 [INFO]: Database connected successfully at Tue Apr 28 2026 14:25:07 GMT+0100 (West Africa Time) 
+2026-04-28 14:25:07 [INFO]: Database connected successfully 
+2026-04-28 14:25:07 [INFO]: Redis connecting... 
+2026-04-28 14:25:07 [INFO]: Redis connected successfully 
+2026-04-28 14:25:07 [INFO]: Redis initialized and connected 
+2026-04-28 14:25:07 [INFO]: Redis connected successfully 
+2026-04-28 14:25:07 [INFO]: Socket.IO server initialized 
+2026-04-28 14:25:07 [INFO]: getting to  port .. 
+2026-04-28 14:25:07 [INFO]: Server running on port 3000 
+2026-04-28 14:25:10 [INFO]: ... end of ther server call.. 
+2026-04-28 14:25:10 [INFO]: Database pool connected 
+2026-04-28 14:25:10 [INFO]: Database extensions initialized 
+2026-04-28 14:25:10 [INFO]: Database connected successfully at Tue Apr 28 2026 14:25:10 GMT+0100 (West Africa Time) 
+2026-04-28 14:25:10 [INFO]: Database connected successfully 
+2026-04-28 14:25:10 [INFO]: Redis connecting... 
+2026-04-28 14:25:10 [INFO]: Redis connected successfully 
+2026-04-28 14:25:10 [INFO]: Redis initialized and connected 
+2026-04-28 14:25:10 [INFO]: Redis connected successfully 
+2026-04-28 14:25:10 [INFO]: Socket.IO server initialized 
+2026-04-28 14:25:10 [INFO]: getting to  port .. 
+2026-04-28 14:25:10 [INFO]: Server running on port 3000 
+2026-04-28 14:25:14 [INFO]: ... end of ther server call.. 
+2026-04-28 14:25:14 [INFO]: Database pool connected 
+2026-04-28 14:25:14 [INFO]: Database extensions initialized 
+2026-04-28 14:25:14 [INFO]: Database connected successfully at Tue Apr 28 2026 14:25:14 GMT+0100 (West Africa Time) 
+2026-04-28 14:25:14 [INFO]: Database connected successfully 
+2026-04-28 14:25:14 [INFO]: Redis connecting... 
+2026-04-28 14:25:14 [INFO]: Redis connected successfully 
+2026-04-28 14:25:14 [INFO]: Redis initialized and connected 
+2026-04-28 14:25:14 [INFO]: Redis connected successfully 
+2026-04-28 14:25:14 [INFO]: Socket.IO server initialized 
+2026-04-28 14:25:14 [INFO]: getting to  port .. 
+2026-04-28 14:25:14 [INFO]: Server running on port 3000 
+2026-04-28 14:25:16 [INFO]: ... end of ther server call.. 
+2026-04-28 14:25:16 [INFO]: Database pool connected 
+2026-04-28 14:25:16 [INFO]: Database extensions initialized 
+2026-04-28 14:25:16 [INFO]: Database connected successfully at Tue Apr 28 2026 14:25:16 GMT+0100 (West Africa Time) 
+2026-04-28 14:25:16 [INFO]: Database connected successfully 
+2026-04-28 14:25:16 [INFO]: Redis connecting... 
+2026-04-28 14:25:16 [INFO]: Redis connected successfully 
+2026-04-28 14:25:16 [INFO]: Redis initialized and connected 
+2026-04-28 14:25:16 [INFO]: Redis connected successfully 
+2026-04-28 14:25:16 [INFO]: Socket.IO server initialized 
+2026-04-28 14:25:16 [INFO]: getting to  port .. 
+2026-04-28 14:25:16 [INFO]: Server running on port 3000 
+2026-04-28 14:25:19 [INFO]: ... end of ther server call.. 
+2026-04-28 14:25:19 [INFO]: Database pool connected 
+2026-04-28 14:25:19 [INFO]: Database extensions initialized 
+2026-04-28 14:25:19 [INFO]: Database connected successfully at Tue Apr 28 2026 14:25:19 GMT+0100 (West Africa Time) 
+2026-04-28 14:25:19 [INFO]: Database connected successfully 
+2026-04-28 14:25:19 [INFO]: Redis connecting... 
+2026-04-28 14:25:19 [INFO]: Redis connected successfully 
+2026-04-28 14:25:19 [INFO]: Redis initialized and connected 
+2026-04-28 14:25:19 [INFO]: Redis connected successfully 
+2026-04-28 14:25:19 [INFO]: Socket.IO server initialized 
+2026-04-28 14:25:19 [INFO]: getting to  port .. 
+2026-04-28 14:25:19 [INFO]: Server running on port 3000 
+2026-04-28 14:26:31 [INFO]: Database pool connected 
+2026-04-28 14:26:31 [INFO]: Test environment - Email OTP for joe@gmail.com: 625450 
+2026-04-28 14:27:42 [INFO]: Database pool connected 
+2026-04-28 14:27:42 [INFO]: Test environment - Email OTP for joe@gmail.com: 207198 
+2026-04-28 14:28:29 [INFO]: Database pool connected 
+2026-04-28 14:28:30 [INFO]: Email verified: joe@gmail.com 
+2026-04-28 14:30:31 [INFO]: Database pool connected 
+2026-04-28 14:30:31 [INFO]: Test environment - Phone OTP for +2348022688674: 824831 
+2026-04-28 14:34:47 [INFO]: ... end of ther server call.. 
+2026-04-28 14:34:47 [INFO]: Database pool connected 
+2026-04-28 14:34:47 [INFO]: Database extensions initialized 
+2026-04-28 14:34:47 [INFO]: Database connected successfully at Tue Apr 28 2026 14:34:47 GMT+0100 (West Africa Time) 
+2026-04-28 14:34:47 [INFO]: Database connected successfully 
+2026-04-28 14:34:47 [INFO]: Redis connecting... 
+2026-04-28 14:34:47 [INFO]: Redis connected successfully 
+2026-04-28 14:34:47 [INFO]: Redis initialized and connected 
+2026-04-28 14:34:47 [INFO]: Redis connected successfully 
+2026-04-28 14:34:47 [INFO]: Socket.IO server initialized 
+2026-04-28 14:34:47 [INFO]: getting to  port .. 
+2026-04-28 14:34:47 [INFO]: Server running on port 3000 
+2026-04-28 14:35:13 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:13 [INFO]: Database pool connected 
+2026-04-28 14:35:13 [INFO]: Database extensions initialized 
+2026-04-28 14:35:13 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:13 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:13 [INFO]: Database connected successfully 
+2026-04-28 14:35:13 [INFO]: Redis connecting... 
+2026-04-28 14:35:13 [INFO]: Redis connected successfully 
+2026-04-28 14:35:13 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:13 [INFO]: Redis connected successfully 
+2026-04-28 14:35:13 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:13 [INFO]: getting to  port .. 
+2026-04-28 14:35:13 [INFO]: Server running on port 3000 
+2026-04-28 14:35:22 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:22 [INFO]: Database pool connected 
+2026-04-28 14:35:22 [INFO]: Database extensions initialized 
+2026-04-28 14:35:22 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:22 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:22 [INFO]: Database connected successfully 
+2026-04-28 14:35:22 [INFO]: Redis connecting... 
+2026-04-28 14:35:22 [INFO]: Redis connected successfully 
+2026-04-28 14:35:22 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:22 [INFO]: Redis connected successfully 
+2026-04-28 14:35:22 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:22 [INFO]: getting to  port .. 
+2026-04-28 14:35:22 [INFO]: Server running on port 3000 
+2026-04-28 14:35:25 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:25 [INFO]: Database pool connected 
+2026-04-28 14:35:25 [INFO]: Database extensions initialized 
+2026-04-28 14:35:25 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:25 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:25 [INFO]: Database connected successfully 
+2026-04-28 14:35:25 [INFO]: Redis connecting... 
+2026-04-28 14:35:25 [INFO]: Redis connected successfully 
+2026-04-28 14:35:25 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:25 [INFO]: Redis connected successfully 
+2026-04-28 14:35:25 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:25 [INFO]: getting to  port .. 
+2026-04-28 14:35:25 [INFO]: Server running on port 3000 
+2026-04-28 14:35:26 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:26 [INFO]: Database pool connected 
+2026-04-28 14:35:26 [INFO]: Database extensions initialized 
+2026-04-28 14:35:26 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:26 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:26 [INFO]: Database connected successfully 
+2026-04-28 14:35:26 [INFO]: Redis connecting... 
+2026-04-28 14:35:26 [INFO]: Redis connected successfully 
+2026-04-28 14:35:26 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:26 [INFO]: Redis connected successfully 
+2026-04-28 14:35:26 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:26 [INFO]: getting to  port .. 
+2026-04-28 14:35:26 [INFO]: Server running on port 3000 
+2026-04-28 14:35:34 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:34 [INFO]: Database pool connected 
+2026-04-28 14:35:34 [INFO]: Database extensions initialized 
+2026-04-28 14:35:34 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:34 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:34 [INFO]: Database connected successfully 
+2026-04-28 14:35:34 [INFO]: Redis connecting... 
+2026-04-28 14:35:34 [INFO]: Redis connected successfully 
+2026-04-28 14:35:34 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:34 [INFO]: Redis connected successfully 
+2026-04-28 14:35:34 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:34 [INFO]: getting to  port .. 
+2026-04-28 14:35:34 [INFO]: Server running on port 3000 
+2026-04-28 14:35:42 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:42 [INFO]: Database pool connected 
+2026-04-28 14:35:42 [INFO]: Database extensions initialized 
+2026-04-28 14:35:42 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:42 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:42 [INFO]: Database connected successfully 
+2026-04-28 14:35:42 [INFO]: Redis connecting... 
+2026-04-28 14:35:42 [INFO]: Redis connected successfully 
+2026-04-28 14:35:42 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:42 [INFO]: Redis connected successfully 
+2026-04-28 14:35:42 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:42 [INFO]: getting to  port .. 
+2026-04-28 14:35:42 [INFO]: Server running on port 3000 
+2026-04-28 14:35:50 [INFO]: ... end of ther server call.. 
+2026-04-28 14:35:50 [INFO]: Database pool connected 
+2026-04-28 14:35:50 [INFO]: Database extensions initialized 
+2026-04-28 14:35:50 [INFO]: Database connected successfully at Tue Apr 28 2026 14:35:50 GMT+0100 (West Africa Time) 
+2026-04-28 14:35:50 [INFO]: Database connected successfully 
+2026-04-28 14:35:50 [INFO]: Redis connecting... 
+2026-04-28 14:35:50 [INFO]: Redis connected successfully 
+2026-04-28 14:35:50 [INFO]: Redis initialized and connected 
+2026-04-28 14:35:50 [INFO]: Redis connected successfully 
+2026-04-28 14:35:50 [INFO]: Socket.IO server initialized 
+2026-04-28 14:35:50 [INFO]: getting to  port .. 
+2026-04-28 14:35:50 [INFO]: Server running on port 3000 
+2026-04-28 14:37:11 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:11 [INFO]: Database pool connected 
+2026-04-28 14:37:11 [INFO]: Database extensions initialized 
+2026-04-28 14:37:11 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:11 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:11 [INFO]: Database connected successfully 
+2026-04-28 14:37:11 [INFO]: Redis connecting... 
+2026-04-28 14:37:11 [INFO]: Redis connected successfully 
+2026-04-28 14:37:11 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:11 [INFO]: Redis connected successfully 
+2026-04-28 14:37:11 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:11 [INFO]: getting to  port .. 
+2026-04-28 14:37:11 [INFO]: Server running on port 3000 
+2026-04-28 14:37:32 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:32 [INFO]: Database pool connected 
+2026-04-28 14:37:32 [INFO]: Database extensions initialized 
+2026-04-28 14:37:32 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:32 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:32 [INFO]: Database connected successfully 
+2026-04-28 14:37:32 [INFO]: Redis connecting... 
+2026-04-28 14:37:32 [INFO]: Redis connected successfully 
+2026-04-28 14:37:32 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:32 [INFO]: Redis connected successfully 
+2026-04-28 14:37:32 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:32 [INFO]: getting to  port .. 
+2026-04-28 14:37:32 [INFO]: Server running on port 3000 
+2026-04-28 14:37:37 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:37 [INFO]: Database pool connected 
+2026-04-28 14:37:37 [INFO]: Database extensions initialized 
+2026-04-28 14:37:37 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:37 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:37 [INFO]: Database connected successfully 
+2026-04-28 14:37:37 [INFO]: Redis connecting... 
+2026-04-28 14:37:37 [INFO]: Redis connected successfully 
+2026-04-28 14:37:37 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:37 [INFO]: Redis connected successfully 
+2026-04-28 14:37:37 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:37 [INFO]: getting to  port .. 
+2026-04-28 14:37:37 [INFO]: Server running on port 3000 
+2026-04-28 14:37:38 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:38 [INFO]: Database pool connected 
+2026-04-28 14:37:38 [INFO]: Database extensions initialized 
+2026-04-28 14:37:38 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:38 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:38 [INFO]: Database connected successfully 
+2026-04-28 14:37:38 [INFO]: Redis connecting... 
+2026-04-28 14:37:38 [INFO]: Redis connected successfully 
+2026-04-28 14:37:38 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:38 [INFO]: Redis connected successfully 
+2026-04-28 14:37:38 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:38 [INFO]: getting to  port .. 
+2026-04-28 14:37:38 [INFO]: Server running on port 3000 
+2026-04-28 14:37:41 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:41 [INFO]: Database pool connected 
+2026-04-28 14:37:41 [INFO]: Database extensions initialized 
+2026-04-28 14:37:41 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:41 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:41 [INFO]: Database connected successfully 
+2026-04-28 14:37:41 [INFO]: Redis connecting... 
+2026-04-28 14:37:41 [INFO]: Redis connected successfully 
+2026-04-28 14:37:41 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:41 [INFO]: Redis connected successfully 
+2026-04-28 14:37:41 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:41 [INFO]: getting to  port .. 
+2026-04-28 14:37:41 [INFO]: Server running on port 3000 
+2026-04-28 14:37:44 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:44 [INFO]: Database pool connected 
+2026-04-28 14:37:44 [INFO]: Database extensions initialized 
+2026-04-28 14:37:44 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:44 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:44 [INFO]: Database connected successfully 
+2026-04-28 14:37:44 [INFO]: Redis connecting... 
+2026-04-28 14:37:44 [INFO]: Redis connected successfully 
+2026-04-28 14:37:44 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:44 [INFO]: Redis connected successfully 
+2026-04-28 14:37:44 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:44 [INFO]: getting to  port .. 
+2026-04-28 14:37:44 [INFO]: Server running on port 3000 
+2026-04-28 14:37:49 [INFO]: ... end of ther server call.. 
+2026-04-28 14:37:49 [INFO]: Database pool connected 
+2026-04-28 14:37:49 [INFO]: Database extensions initialized 
+2026-04-28 14:37:49 [INFO]: Database connected successfully at Tue Apr 28 2026 14:37:49 GMT+0100 (West Africa Time) 
+2026-04-28 14:37:49 [INFO]: Database connected successfully 
+2026-04-28 14:37:49 [INFO]: Redis connecting... 
+2026-04-28 14:37:49 [INFO]: Redis connected successfully 
+2026-04-28 14:37:49 [INFO]: Redis initialized and connected 
+2026-04-28 14:37:49 [INFO]: Redis connected successfully 
+2026-04-28 14:37:49 [INFO]: Socket.IO server initialized 
+2026-04-28 14:37:49 [INFO]: getting to  port .. 
+2026-04-28 14:37:49 [INFO]: Server running on port 3000 
+2026-04-28 14:42:12 [INFO]: ... end of ther server call.. 
+2026-04-28 14:42:12 [INFO]: Database pool connected 
+2026-04-28 14:42:12 [INFO]: Database extensions initialized 
+2026-04-28 14:42:12 [INFO]: Database connected successfully at Tue Apr 28 2026 14:42:12 GMT+0100 (West Africa Time) 
+2026-04-28 14:42:12 [INFO]: Database connected successfully 
+2026-04-28 14:42:12 [INFO]: Redis connecting... 
+2026-04-28 14:42:12 [INFO]: Redis connected successfully 
+2026-04-28 14:42:12 [INFO]: Redis initialized and connected 
+2026-04-28 14:42:12 [INFO]: Redis connected successfully 
+2026-04-28 14:42:12 [INFO]: Socket.IO server initialized 
+2026-04-28 14:42:12 [INFO]: getting to  port .. 
+2026-04-28 14:42:12 [INFO]: Server running on port 3000 
+2026-04-28 14:44:39 [INFO]: ... end of ther server call.. 
+2026-04-28 14:44:39 [INFO]: Database pool connected 
+2026-04-28 14:44:39 [INFO]: Database extensions initialized 
+2026-04-28 14:44:39 [INFO]: Database connected successfully at Tue Apr 28 2026 14:44:39 GMT+0100 (West Africa Time) 
+2026-04-28 14:44:39 [INFO]: Database connected successfully 
+2026-04-28 14:44:39 [INFO]: Redis connecting... 
+2026-04-28 14:44:39 [INFO]: Redis connected successfully 
+2026-04-28 14:44:39 [INFO]: Redis initialized and connected 
+2026-04-28 14:44:39 [INFO]: Redis connected successfully 
+2026-04-28 14:44:39 [INFO]: Socket.IO server initialized 
+2026-04-28 14:44:39 [INFO]: getting to  port .. 
+2026-04-28 14:44:39 [INFO]: Server running on port 3000 
+2026-04-28 14:44:44 [INFO]: ... end of ther server call.. 
+2026-04-28 14:44:44 [INFO]: Database pool connected 
+2026-04-28 14:44:44 [INFO]: Database extensions initialized 
+2026-04-28 14:44:44 [INFO]: Database connected successfully at Tue Apr 28 2026 14:44:44 GMT+0100 (West Africa Time) 
+2026-04-28 14:44:44 [INFO]: Database connected successfully 
+2026-04-28 14:44:44 [INFO]: Redis connecting... 
+2026-04-28 14:44:44 [INFO]: Redis connected successfully 
+2026-04-28 14:44:44 [INFO]: Redis initialized and connected 
+2026-04-28 14:44:44 [INFO]: Redis connected successfully 
+2026-04-28 14:44:44 [INFO]: Socket.IO server initialized 
+2026-04-28 14:44:44 [INFO]: getting to  port .. 
+2026-04-28 14:44:44 [INFO]: Server running on port 3000 
+2026-04-28 15:03:25 [INFO]: Database pool connected 
+2026-04-28 15:03:26 [INFO]: Test environment - Password reset link for joe@gmail.com: https://beaverworks.com/reset-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTg5MWY5Mi0wODFhLTRjZjQtOTMxYi1hNDM0MjgwMDg0OWQiLCJwdXJwb3NlIjoicGFzc3dvcmRfcmVzZXQiLCJpYXQiOjE3NzczODUwMDYsImV4cCI6MTc3NzM4ODYwNn0._ce1-nmAh9Y7-EcQRd3DD4To_A4KRtnTa1mfZJvkhEA 
+2026-04-28 15:03:26 [INFO]: Password reset requested for: joe@gmail.com 
+2026-04-28 15:09:47 [INFO]: ... end of ther server call.. 
+2026-04-28 15:09:47 [INFO]: Database pool connected 
+2026-04-28 15:09:47 [INFO]: Database extensions initialized 
+2026-04-28 15:09:47 [INFO]: Database connected successfully at Tue Apr 28 2026 15:09:47 GMT+0100 (West Africa Time) 
+2026-04-28 15:09:47 [INFO]: Database connected successfully 
+2026-04-28 15:09:47 [INFO]: Redis connecting... 
+2026-04-28 15:09:47 [INFO]: Redis connected successfully 
+2026-04-28 15:09:47 [INFO]: Redis initialized and connected 
+2026-04-28 15:09:47 [INFO]: Redis connected successfully 
+2026-04-28 15:09:47 [INFO]: Socket.IO server initialized 
+2026-04-28 15:09:47 [INFO]: getting to  port .. 
+2026-04-28 15:09:47 [INFO]: Server running on port 3000 
+2026-04-28 15:09:58 [INFO]: ... end of ther server call.. 
+2026-04-28 15:09:58 [INFO]: Database pool connected 
+2026-04-28 15:09:58 [INFO]: Database extensions initialized 
+2026-04-28 15:09:58 [INFO]: Database connected successfully at Tue Apr 28 2026 15:09:58 GMT+0100 (West Africa Time) 
+2026-04-28 15:09:58 [INFO]: Database connected successfully 
+2026-04-28 15:09:58 [INFO]: Redis connecting... 
+2026-04-28 15:09:58 [INFO]: Redis connected successfully 
+2026-04-28 15:09:58 [INFO]: Redis initialized and connected 
+2026-04-28 15:09:58 [INFO]: Redis connected successfully 
+2026-04-28 15:09:58 [INFO]: Socket.IO server initialized 
+2026-04-28 15:09:58 [INFO]: getting to  port .. 
+2026-04-28 15:09:58 [INFO]: Server running on port 3000 
+2026-04-28 15:10:03 [INFO]: ... end of ther server call.. 
+2026-04-28 15:10:03 [INFO]: Database pool connected 
+2026-04-28 15:10:03 [INFO]: Database extensions initialized 
+2026-04-28 15:10:03 [INFO]: Database connected successfully at Tue Apr 28 2026 15:10:03 GMT+0100 (West Africa Time) 
+2026-04-28 15:10:03 [INFO]: Database connected successfully 
+2026-04-28 15:10:03 [INFO]: Redis connecting... 
+2026-04-28 15:10:03 [INFO]: Redis connected successfully 
+2026-04-28 15:10:03 [INFO]: Redis initialized and connected 
+2026-04-28 15:10:03 [INFO]: Redis connected successfully 
+2026-04-28 15:10:03 [INFO]: Socket.IO server initialized 
+2026-04-28 15:10:03 [INFO]: getting to  port .. 
+2026-04-28 15:10:03 [INFO]: Server running on port 3000 
+2026-04-28 15:11:38 [INFO]: ... end of ther server call.. 
+2026-04-28 15:11:38 [INFO]: Database pool connected 
+2026-04-28 15:11:38 [INFO]: Database extensions initialized 
+2026-04-28 15:11:38 [INFO]: Database connected successfully at Tue Apr 28 2026 15:11:38 GMT+0100 (West Africa Time) 
+2026-04-28 15:11:38 [INFO]: Database connected successfully 
+2026-04-28 15:11:38 [INFO]: Redis connecting... 
+2026-04-28 15:11:38 [INFO]: Redis connected successfully 
+2026-04-28 15:11:38 [INFO]: Redis initialized and connected 
+2026-04-28 15:11:38 [INFO]: Redis connected successfully 
+2026-04-28 15:11:38 [INFO]: Socket.IO server initialized 
+2026-04-28 15:11:38 [INFO]: getting to  port .. 
+2026-04-28 15:11:38 [INFO]: Server running on port 3000 
+2026-04-28 15:11:40 [INFO]: ... end of ther server call.. 
+2026-04-28 15:11:40 [INFO]: Database pool connected 
+2026-04-28 15:11:40 [INFO]: Database extensions initialized 
+2026-04-28 15:11:40 [INFO]: Database connected successfully at Tue Apr 28 2026 15:11:40 GMT+0100 (West Africa Time) 
+2026-04-28 15:11:40 [INFO]: Database connected successfully 
+2026-04-28 15:11:40 [INFO]: Redis connecting... 
+2026-04-28 15:11:40 [INFO]: Redis connected successfully 
+2026-04-28 15:11:40 [INFO]: Redis initialized and connected 
+2026-04-28 15:11:40 [INFO]: Redis connected successfully 
+2026-04-28 15:11:40 [INFO]: Socket.IO server initialized 
+2026-04-28 15:11:40 [INFO]: getting to  port .. 
+2026-04-28 15:11:40 [INFO]: Server running on port 3000 
+2026-04-28 15:11:47 [INFO]: ... end of ther server call.. 
+2026-04-28 15:11:48 [INFO]: Database pool connected 
+2026-04-28 15:11:48 [INFO]: Database extensions initialized 
+2026-04-28 15:11:48 [INFO]: Database connected successfully at Tue Apr 28 2026 15:11:48 GMT+0100 (West Africa Time) 
+2026-04-28 15:11:48 [INFO]: Database connected successfully 
+2026-04-28 15:11:48 [INFO]: Redis connecting... 
+2026-04-28 15:11:48 [INFO]: Redis connected successfully 
+2026-04-28 15:11:48 [INFO]: Redis initialized and connected 
+2026-04-28 15:11:48 [INFO]: Redis connected successfully 
+2026-04-28 15:11:48 [INFO]: Socket.IO server initialized 
+2026-04-28 15:11:48 [INFO]: getting to  port .. 
+2026-04-28 15:11:48 [INFO]: Server running on port 3000 
+2026-04-28 15:11:52 [INFO]: ... end of ther server call.. 
+2026-04-28 15:11:52 [INFO]: Database pool connected 
+2026-04-28 15:11:52 [INFO]: Database extensions initialized 
+2026-04-28 15:11:52 [INFO]: Database connected successfully at Tue Apr 28 2026 15:11:52 GMT+0100 (West Africa Time) 
+2026-04-28 15:11:52 [INFO]: Database connected successfully 
+2026-04-28 15:11:52 [INFO]: Redis connecting... 
+2026-04-28 15:11:52 [INFO]: Redis connected successfully 
+2026-04-28 15:11:52 [INFO]: Redis initialized and connected 
+2026-04-28 15:11:52 [INFO]: Redis connected successfully 
+2026-04-28 15:11:52 [INFO]: Socket.IO server initialized 
+2026-04-28 15:11:52 [INFO]: getting to  port .. 
+2026-04-28 15:11:52 [INFO]: Server running on port 3000 
+2026-04-28 15:11:56 [INFO]: ... end of ther server call.. 
+2026-04-28 15:11:56 [INFO]: Database pool connected 
+2026-04-28 15:11:56 [INFO]: Database extensions initialized 
+2026-04-28 15:11:56 [INFO]: Database connected successfully at Tue Apr 28 2026 15:11:56 GMT+0100 (West Africa Time) 
+2026-04-28 15:11:56 [INFO]: Database connected successfully 
+2026-04-28 15:11:56 [INFO]: Redis connecting... 
+2026-04-28 15:11:56 [INFO]: Redis connected successfully 
+2026-04-28 15:11:56 [INFO]: Redis initialized and connected 
+2026-04-28 15:11:56 [INFO]: Redis connected successfully 
+2026-04-28 15:11:56 [INFO]: Socket.IO server initialized 
+2026-04-28 15:11:56 [INFO]: getting to  port .. 
+2026-04-28 15:11:56 [INFO]: Server running on port 3000 
+2026-04-28 15:14:51 [INFO]: Database pool connected 
+2026-04-28 15:14:52 [INFO]: Password reset for user: 5a891f92-081a-4cf4-931b-a4342800849d 
+2026-04-28 15:17:08 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:08 [INFO]: Database pool connected 
+2026-04-28 15:17:08 [INFO]: Database extensions initialized 
+2026-04-28 15:17:08 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:08 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:08 [INFO]: Database connected successfully 
+2026-04-28 15:17:08 [INFO]: Redis connecting... 
+2026-04-28 15:17:08 [INFO]: Redis connected successfully 
+2026-04-28 15:17:08 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:08 [INFO]: Redis connected successfully 
+2026-04-28 15:17:08 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:08 [INFO]: getting to  port .. 
+2026-04-28 15:17:08 [INFO]: Server running on port 3000 
+2026-04-28 15:17:11 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:11 [INFO]: Database pool connected 
+2026-04-28 15:17:11 [INFO]: Database extensions initialized 
+2026-04-28 15:17:11 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:11 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:11 [INFO]: Database connected successfully 
+2026-04-28 15:17:11 [INFO]: Redis connecting... 
+2026-04-28 15:17:11 [INFO]: Redis connected successfully 
+2026-04-28 15:17:11 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:11 [INFO]: Redis connected successfully 
+2026-04-28 15:17:11 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:11 [INFO]: getting to  port .. 
+2026-04-28 15:17:11 [INFO]: Server running on port 3000 
+2026-04-28 15:17:16 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:16 [INFO]: Database pool connected 
+2026-04-28 15:17:16 [INFO]: Database extensions initialized 
+2026-04-28 15:17:16 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:16 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:16 [INFO]: Database connected successfully 
+2026-04-28 15:17:16 [INFO]: Redis connecting... 
+2026-04-28 15:17:16 [INFO]: Redis connected successfully 
+2026-04-28 15:17:16 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:16 [INFO]: Redis connected successfully 
+2026-04-28 15:17:16 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:16 [INFO]: getting to  port .. 
+2026-04-28 15:17:16 [INFO]: Server running on port 3000 
+2026-04-28 15:17:22 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:22 [INFO]: Database pool connected 
+2026-04-28 15:17:22 [INFO]: Database extensions initialized 
+2026-04-28 15:17:22 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:22 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:22 [INFO]: Database connected successfully 
+2026-04-28 15:17:22 [INFO]: Redis connecting... 
+2026-04-28 15:17:22 [INFO]: Redis connected successfully 
+2026-04-28 15:17:22 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:22 [INFO]: Redis connected successfully 
+2026-04-28 15:17:22 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:22 [INFO]: getting to  port .. 
+2026-04-28 15:17:22 [INFO]: Server running on port 3000 
+2026-04-28 15:17:26 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:26 [INFO]: Database pool connected 
+2026-04-28 15:17:26 [INFO]: Database extensions initialized 
+2026-04-28 15:17:26 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:26 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:26 [INFO]: Database connected successfully 
+2026-04-28 15:17:26 [INFO]: Redis connecting... 
+2026-04-28 15:17:26 [INFO]: Redis connected successfully 
+2026-04-28 15:17:26 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:26 [INFO]: Redis connected successfully 
+2026-04-28 15:17:26 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:26 [INFO]: getting to  port .. 
+2026-04-28 15:17:26 [INFO]: Server running on port 3000 
+2026-04-28 15:17:35 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:35 [INFO]: Database pool connected 
+2026-04-28 15:17:35 [INFO]: Database extensions initialized 
+2026-04-28 15:17:35 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:35 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:35 [INFO]: Database connected successfully 
+2026-04-28 15:17:35 [INFO]: Redis connecting... 
+2026-04-28 15:17:35 [INFO]: Redis connected successfully 
+2026-04-28 15:17:35 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:35 [INFO]: Redis connected successfully 
+2026-04-28 15:17:35 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:35 [INFO]: getting to  port .. 
+2026-04-28 15:17:35 [INFO]: Server running on port 3000 
+2026-04-28 15:17:40 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:40 [INFO]: Database pool connected 
+2026-04-28 15:17:40 [INFO]: Database extensions initialized 
+2026-04-28 15:17:40 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:40 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:40 [INFO]: Database connected successfully 
+2026-04-28 15:17:40 [INFO]: Redis connecting... 
+2026-04-28 15:17:40 [INFO]: Redis connected successfully 
+2026-04-28 15:17:40 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:40 [INFO]: Redis connected successfully 
+2026-04-28 15:17:40 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:40 [INFO]: getting to  port .. 
+2026-04-28 15:17:40 [INFO]: Server running on port 3000 
+2026-04-28 15:17:48 [INFO]: ... end of ther server call.. 
+2026-04-28 15:17:48 [INFO]: Database pool connected 
+2026-04-28 15:17:48 [INFO]: Database extensions initialized 
+2026-04-28 15:17:48 [INFO]: Database connected successfully at Tue Apr 28 2026 15:17:48 GMT+0100 (West Africa Time) 
+2026-04-28 15:17:48 [INFO]: Database connected successfully 
+2026-04-28 15:17:48 [INFO]: Redis connecting... 
+2026-04-28 15:17:48 [INFO]: Redis connected successfully 
+2026-04-28 15:17:48 [INFO]: Redis initialized and connected 
+2026-04-28 15:17:48 [INFO]: Redis connected successfully 
+2026-04-28 15:17:48 [INFO]: Socket.IO server initialized 
+2026-04-28 15:17:48 [INFO]: getting to  port .. 
+2026-04-28 15:17:48 [INFO]: Server running on port 3000 
+2026-04-28 15:18:15 [INFO]: ... end of ther server call.. 
+2026-04-28 15:18:15 [INFO]: Database pool connected 
+2026-04-28 15:18:15 [INFO]: Database extensions initialized 
+2026-04-28 15:18:15 [INFO]: Database connected successfully at Tue Apr 28 2026 15:18:15 GMT+0100 (West Africa Time) 
+2026-04-28 15:18:15 [INFO]: Database connected successfully 
+2026-04-28 15:18:15 [INFO]: Redis connecting... 
+2026-04-28 15:18:15 [INFO]: Redis connected successfully 
+2026-04-28 15:18:15 [INFO]: Redis initialized and connected 
+2026-04-28 15:18:15 [INFO]: Redis connected successfully 
+2026-04-28 15:18:15 [INFO]: Socket.IO server initialized 
+2026-04-28 15:18:15 [INFO]: getting to  port .. 
+2026-04-28 15:18:15 [INFO]: Server running on port 3000 
+2026-04-28 15:33:17 [INFO]: Database pool connected 
+2026-04-28 15:33:18 [INFO]: User logged in: ade@gmail.com / +2348022688674 
+2026-04-28 15:36:10 [INFO]: Database pool connected 
+2026-04-28 15:36:10 [INFO]: Access token blacklisted for user: c1bf3b62-b5d1-4a4e-9edb-087b0f963132 
+2026-04-28 15:36:11 [INFO]: User logged out: c1bf3b62-b5d1-4a4e-9edb-087b0f963132 
+2026-04-28 15:36:22 [INFO]: Database pool connected 
+2026-04-28 15:37:42 [INFO]: ... end of ther server call.. 
+2026-04-28 15:37:42 [INFO]: Database pool connected 
+2026-04-28 15:37:42 [INFO]: Database extensions initialized 
+2026-04-28 15:37:42 [INFO]: Database connected successfully at Tue Apr 28 2026 15:37:42 GMT+0100 (West Africa Time) 
+2026-04-28 15:37:42 [INFO]: Database connected successfully 
+2026-04-28 15:37:42 [INFO]: Redis connecting... 
+2026-04-28 15:37:42 [INFO]: Redis connected successfully 
+2026-04-28 15:37:42 [INFO]: Redis initialized and connected 
+2026-04-28 15:37:42 [INFO]: Redis connected successfully 
+2026-04-28 15:37:42 [INFO]: Socket.IO server initialized 
+2026-04-28 15:37:42 [INFO]: getting to  port .. 
+2026-04-28 15:37:42 [INFO]: Server running on port 3000 
+2026-04-28 15:37:44 [INFO]: ... end of ther server call.. 
+2026-04-28 15:37:44 [INFO]: Database pool connected 
+2026-04-28 15:37:44 [INFO]: Database extensions initialized 
+2026-04-28 15:37:44 [INFO]: Database connected successfully at Tue Apr 28 2026 15:37:44 GMT+0100 (West Africa Time) 
+2026-04-28 15:37:44 [INFO]: Database connected successfully 
+2026-04-28 15:37:44 [INFO]: Redis connecting... 
+2026-04-28 15:37:44 [INFO]: Redis connected successfully 
+2026-04-28 15:37:44 [INFO]: Redis initialized and connected 
+2026-04-28 15:37:44 [INFO]: Redis connected successfully 
+2026-04-28 15:37:44 [INFO]: Socket.IO server initialized 
+2026-04-28 15:37:44 [INFO]: getting to  port .. 
+2026-04-28 15:37:44 [INFO]: Server running on port 3000 
+2026-04-28 15:37:46 [INFO]: ... end of ther server call.. 
+2026-04-28 15:37:46 [INFO]: Database pool connected 
+2026-04-28 15:37:46 [INFO]: Database extensions initialized 
+2026-04-28 15:37:46 [INFO]: Database connected successfully at Tue Apr 28 2026 15:37:46 GMT+0100 (West Africa Time) 
+2026-04-28 15:37:46 [INFO]: Database connected successfully 
+2026-04-28 15:37:46 [INFO]: Redis connecting... 
+2026-04-28 15:37:46 [INFO]: Redis connected successfully 
+2026-04-28 15:37:46 [INFO]: Redis initialized and connected 
+2026-04-28 15:37:46 [INFO]: Redis connected successfully 
+2026-04-28 15:37:46 [INFO]: Socket.IO server initialized 
+2026-04-28 15:37:46 [INFO]: getting to  port .. 
+2026-04-28 15:37:46 [INFO]: Server running on port 3000 
+2026-04-28 15:37:53 [INFO]: ... end of ther server call.. 
+2026-04-28 15:37:53 [INFO]: Database pool connected 
+2026-04-28 15:37:53 [INFO]: Database extensions initialized 
+2026-04-28 15:37:53 [INFO]: Database connected successfully at Tue Apr 28 2026 15:37:53 GMT+0100 (West Africa Time) 
+2026-04-28 15:37:53 [INFO]: Database connected successfully 
+2026-04-28 15:37:53 [INFO]: Redis connecting... 
+2026-04-28 15:37:53 [INFO]: Redis connected successfully 
+2026-04-28 15:37:53 [INFO]: Redis initialized and connected 
+2026-04-28 15:37:53 [INFO]: Redis connected successfully 
+2026-04-28 15:37:53 [INFO]: Socket.IO server initialized 
+2026-04-28 15:37:53 [INFO]: getting to  port .. 
+2026-04-28 15:37:53 [INFO]: Server running on port 3000 
+2026-04-28 15:37:55 [INFO]: ... end of ther server call.. 
+2026-04-28 15:37:55 [INFO]: Database pool connected 
+2026-04-28 15:37:55 [INFO]: Database extensions initialized 
+2026-04-28 15:37:55 [INFO]: Database connected successfully at Tue Apr 28 2026 15:37:55 GMT+0100 (West Africa Time) 
+2026-04-28 15:37:55 [INFO]: Database connected successfully 
+2026-04-28 15:37:55 [INFO]: Redis connecting... 
+2026-04-28 15:37:55 [INFO]: Redis connected successfully 
+2026-04-28 15:37:55 [INFO]: Redis initialized and connected 
+2026-04-28 15:37:55 [INFO]: Redis connected successfully 
+2026-04-28 15:37:55 [INFO]: Socket.IO server initialized 
+2026-04-28 15:37:55 [INFO]: getting to  port .. 
+2026-04-28 15:37:55 [INFO]: Server running on port 3000 
+2026-04-28 15:37:57 [INFO]: ... end of ther server call.. 
+2026-04-28 15:37:57 [INFO]: Database pool connected 
+2026-04-28 15:37:57 [INFO]: Database extensions initialized 
+2026-04-28 15:37:57 [INFO]: Database connected successfully at Tue Apr 28 2026 15:37:57 GMT+0100 (West Africa Time) 
+2026-04-28 15:37:57 [INFO]: Database connected successfully 
+2026-04-28 15:37:57 [INFO]: Redis connecting... 
+2026-04-28 15:37:57 [INFO]: Redis connected successfully 
+2026-04-28 15:37:57 [INFO]: Redis initialized and connected 
+2026-04-28 15:37:57 [INFO]: Redis connected successfully 
+2026-04-28 15:37:57 [INFO]: Socket.IO server initialized 
+2026-04-28 15:37:57 [INFO]: getting to  port .. 
+2026-04-28 15:37:57 [INFO]: Server running on port 3000 
+2026-04-28 15:38:01 [INFO]: ... end of ther server call.. 
+2026-04-28 15:38:01 [INFO]: Database pool connected 
+2026-04-28 15:38:01 [INFO]: Database extensions initialized 
+2026-04-28 15:38:01 [INFO]: Database connected successfully at Tue Apr 28 2026 15:38:01 GMT+0100 (West Africa Time) 
+2026-04-28 15:38:01 [INFO]: Database connected successfully 
+2026-04-28 15:38:01 [INFO]: Redis connecting... 
+2026-04-28 15:38:01 [INFO]: Redis connected successfully 
+2026-04-28 15:38:01 [INFO]: Redis initialized and connected 
+2026-04-28 15:38:01 [INFO]: Redis connected successfully 
+2026-04-28 15:38:01 [INFO]: Socket.IO server initialized 
+2026-04-28 15:38:01 [INFO]: getting to  port .. 
+2026-04-28 15:38:01 [INFO]: Server running on port 3000 
+2026-04-28 15:38:06 [INFO]: ... end of ther server call.. 
+2026-04-28 15:38:06 [INFO]: Database pool connected 
+2026-04-28 15:38:06 [INFO]: Database extensions initialized 
+2026-04-28 15:38:06 [INFO]: Database connected successfully at Tue Apr 28 2026 15:38:06 GMT+0100 (West Africa Time) 
+2026-04-28 15:38:06 [INFO]: Database connected successfully 
+2026-04-28 15:38:06 [INFO]: Redis connecting... 
+2026-04-28 15:38:06 [INFO]: Redis connected successfully 
+2026-04-28 15:38:06 [INFO]: Redis initialized and connected 
+2026-04-28 15:38:06 [INFO]: Redis connected successfully 
+2026-04-28 15:38:06 [INFO]: Socket.IO server initialized 
+2026-04-28 15:38:06 [INFO]: getting to  port .. 
+2026-04-28 15:38:06 [INFO]: Server running on port 3000 
+2026-04-28 15:38:09 [INFO]: ... end of ther server call.. 
+2026-04-28 15:38:09 [INFO]: Database pool connected 
+2026-04-28 15:38:09 [INFO]: Database extensions initialized 
+2026-04-28 15:38:09 [INFO]: Database connected successfully at Tue Apr 28 2026 15:38:09 GMT+0100 (West Africa Time) 
+2026-04-28 15:38:09 [INFO]: Database connected successfully 
+2026-04-28 15:38:09 [INFO]: Redis connecting... 
+2026-04-28 15:38:09 [INFO]: Redis connected successfully 
+2026-04-28 15:38:09 [INFO]: Redis initialized and connected 
+2026-04-28 15:38:09 [INFO]: Redis connected successfully 
+2026-04-28 15:38:09 [INFO]: Socket.IO server initialized 
+2026-04-28 15:38:09 [INFO]: getting to  port .. 
+2026-04-28 15:38:09 [INFO]: Server running on port 3000 
+2026-04-28 15:38:12 [INFO]: ... end of ther server call.. 
+2026-04-28 15:38:12 [INFO]: Database pool connected 
+2026-04-28 15:38:12 [INFO]: Database extensions initialized 
+2026-04-28 15:38:12 [INFO]: Database connected successfully at Tue Apr 28 2026 15:38:12 GMT+0100 (West Africa Time) 
+2026-04-28 15:38:12 [INFO]: Database connected successfully 
+2026-04-28 15:38:12 [INFO]: Redis connecting... 
+2026-04-28 15:38:12 [INFO]: Redis connected successfully 
+2026-04-28 15:38:12 [INFO]: Redis initialized and connected 
+2026-04-28 15:38:12 [INFO]: Redis connected successfully 
+2026-04-28 15:38:12 [INFO]: Socket.IO server initialized 
+2026-04-28 15:38:12 [INFO]: getting to  port .. 
+2026-04-28 15:38:12 [INFO]: Server running on port 3000 
+2026-04-28 15:39:03 [INFO]: ... end of ther server call.. 
+2026-04-28 15:39:03 [INFO]: Database pool connected 
+2026-04-28 15:39:03 [INFO]: Database extensions initialized 
+2026-04-28 15:39:03 [INFO]: Database connected successfully at Tue Apr 28 2026 15:39:03 GMT+0100 (West Africa Time) 
+2026-04-28 15:39:03 [INFO]: Database connected successfully 
+2026-04-28 15:39:03 [INFO]: Redis connecting... 
+2026-04-28 15:39:03 [INFO]: Redis connected successfully 
+2026-04-28 15:39:03 [INFO]: Redis initialized and connected 
+2026-04-28 15:39:03 [INFO]: Redis connected successfully 
+2026-04-28 15:39:03 [INFO]: Socket.IO server initialized 
+2026-04-28 15:39:03 [INFO]: getting to  port .. 
+2026-04-28 15:39:03 [INFO]: Server running on port 3000 
+2026-04-28 15:39:30 [INFO]: Test environment - Password reset link for joe@gmail.com: https://beaverworks.com/reset-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTg5MWY5Mi0wODFhLTRjZjQtOTMxYi1hNDM0MjgwMDg0OWQiLCJwdXJwb3NlIjoicGFzc3dvcmRfcmVzZXQiLCJpYXQiOjE3NzczODcxNzAsImV4cCI6MTc3NzM5MDc3MH0.RiFMdfILpYJ9A43Oj2OE2FUAWz-jKi9EeiQSYfVu0fs 
+2026-04-28 15:39:30 [INFO]: Password reset requested for: joe@gmail.com 
+2026-04-28 15:40:42 [INFO]: Decoded user id :  {"0":"5","1":"a","2":"8","3":"9","4":"1","5":"f","6":"9","7":"2","8":"-","9":"0","10":"8","11":"1","12":"a","13":"-","14":"4","15":"c","16":"f","17":"4","18":"-","19":"9","20":"3","21":"1","22":"b","23":"-","24":"a","25":"4","26":"3","27":"4","28":"2","29":"8","30":"0","31":"0","32":"8","33":"4","34":"9","35":"d"}
+2026-04-28 15:40:43 [INFO]: Database pool connected 
+2026-04-28 15:40:43 [INFO]: Password reset for user: 5a891f92-081a-4cf4-931b-a4342800849d 
+2026-04-28 15:46:53 [INFO]: Database pool connected 
+2026-04-28 15:46:53 [INFO]: User logged in: ade@gmail.com / +2348022688674 
+2026-04-28 15:50:36 [INFO]: Database pool connected 
+2026-04-28 15:50:36 [INFO]: Test environment - Password reset link for joe@gmail.com: https://beaverworks.com/reset-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTg5MWY5Mi0wODFhLTRjZjQtOTMxYi1hNDM0MjgwMDg0OWQiLCJwdXJwb3NlIjoicGFzc3dvcmRfcmVzZXQiLCJpYXQiOjE3NzczODc4MzYsImV4cCI6MTc3NzM5MTQzNn0.jCaStKb1GFaYN349dntGiOSW2QNk8B7ISLX6CiA5l7M 
+2026-04-28 15:50:36 [INFO]: Password reset requested for: joe@gmail.com 
+2026-04-28 15:51:30 [INFO]: ... end of ther server call.. 
+2026-04-28 15:51:30 [INFO]: Database pool connected 
+2026-04-28 15:51:30 [INFO]: Database extensions initialized 
+2026-04-28 15:51:30 [INFO]: Database connected successfully at Tue Apr 28 2026 15:51:30 GMT+0100 (West Africa Time) 
+2026-04-28 15:51:30 [INFO]: Database connected successfully 
+2026-04-28 15:51:30 [INFO]: Redis connecting... 
+2026-04-28 15:51:30 [INFO]: Redis connected successfully 
+2026-04-28 15:51:30 [INFO]: Redis initialized and connected 
+2026-04-28 15:51:30 [INFO]: Redis connected successfully 
+2026-04-28 15:51:30 [INFO]: Socket.IO server initialized 
+2026-04-28 15:51:30 [INFO]: getting to  port .. 
+2026-04-28 15:51:30 [INFO]: Server running on port 3000 
+2026-04-28 15:51:33 [INFO]: ... end of ther server call.. 
+2026-04-28 15:51:33 [INFO]: Database pool connected 
+2026-04-28 15:51:33 [INFO]: Database extensions initialized 
+2026-04-28 15:51:33 [INFO]: Database connected successfully at Tue Apr 28 2026 15:51:33 GMT+0100 (West Africa Time) 
+2026-04-28 15:51:33 [INFO]: Database connected successfully 
+2026-04-28 15:51:33 [INFO]: Redis connecting... 
+2026-04-28 15:51:33 [INFO]: Redis connected successfully 
+2026-04-28 15:51:33 [INFO]: Redis initialized and connected 
+2026-04-28 15:51:33 [INFO]: Redis connected successfully 
+2026-04-28 15:51:33 [INFO]: Socket.IO server initialized 
+2026-04-28 15:51:33 [INFO]: getting to  port .. 
+2026-04-28 15:51:33 [INFO]: Server running on port 3000 
+2026-04-28 15:51:35 [INFO]: ... end of ther server call.. 
+2026-04-28 15:51:35 [INFO]: Database pool connected 
+2026-04-28 15:51:35 [INFO]: Database extensions initialized 
+2026-04-28 15:51:35 [INFO]: Database connected successfully at Tue Apr 28 2026 15:51:35 GMT+0100 (West Africa Time) 
+2026-04-28 15:51:35 [INFO]: Database connected successfully 
+2026-04-28 15:51:35 [INFO]: Redis connecting... 
+2026-04-28 15:51:35 [INFO]: Redis connected successfully 
+2026-04-28 15:51:35 [INFO]: Redis initialized and connected 
+2026-04-28 15:51:35 [INFO]: Redis connected successfully 
+2026-04-28 15:51:35 [INFO]: Socket.IO server initialized 
+2026-04-28 15:51:35 [INFO]: getting to  port .. 
+2026-04-28 15:51:35 [INFO]: Server running on port 3000 
+2026-04-28 15:54:29 [INFO]: ... end of ther server call.. 
+2026-04-28 15:54:29 [INFO]: Database pool connected 
+2026-04-28 15:54:29 [INFO]: Database extensions initialized 
+2026-04-28 15:54:29 [INFO]: Database connected successfully at Tue Apr 28 2026 15:54:29 GMT+0100 (West Africa Time) 
+2026-04-28 15:54:29 [INFO]: Database connected successfully 
+2026-04-28 15:54:29 [INFO]: Redis connecting... 
+2026-04-28 15:54:29 [INFO]: Redis connected successfully 
+2026-04-28 15:54:29 [INFO]: Redis initialized and connected 
+2026-04-28 15:54:29 [INFO]: Redis connected successfully 
+2026-04-28 15:54:29 [INFO]: Socket.IO server initialized 
+2026-04-28 15:54:29 [INFO]: getting to  port .. 
+2026-04-28 15:54:29 [INFO]: Server running on port 3000 
+2026-04-28 15:55:31 [INFO]: ... end of ther server call.. 
+2026-04-28 15:55:31 [INFO]: Database pool connected 
+2026-04-28 15:55:31 [INFO]: Database extensions initialized 
+2026-04-28 15:55:31 [INFO]: Database connected successfully at Tue Apr 28 2026 15:55:31 GMT+0100 (West Africa Time) 
+2026-04-28 15:55:31 [INFO]: Database connected successfully 
+2026-04-28 15:55:31 [INFO]: Redis connecting... 
+2026-04-28 15:55:31 [INFO]: Redis connected successfully 
+2026-04-28 15:55:31 [INFO]: Redis initialized and connected 
+2026-04-28 15:55:31 [INFO]: Redis connected successfully 
+2026-04-28 15:55:31 [INFO]: Socket.IO server initialized 
+2026-04-28 15:55:31 [INFO]: getting to  port .. 
+2026-04-28 15:55:31 [INFO]: Server running on port 3000 
+2026-04-28 15:55:38 [INFO]: ... end of ther server call.. 
+2026-04-28 15:55:38 [INFO]: Database pool connected 
+2026-04-28 15:55:38 [INFO]: Database extensions initialized 
+2026-04-28 15:55:38 [INFO]: Database connected successfully at Tue Apr 28 2026 15:55:38 GMT+0100 (West Africa Time) 
+2026-04-28 15:55:38 [INFO]: Database connected successfully 
+2026-04-28 15:55:38 [INFO]: Redis connecting... 
+2026-04-28 15:55:38 [INFO]: Redis connected successfully 
+2026-04-28 15:55:38 [INFO]: Redis initialized and connected 
+2026-04-28 15:55:38 [INFO]: Redis connected successfully 
+2026-04-28 15:55:38 [INFO]: Socket.IO server initialized 
+2026-04-28 15:55:38 [INFO]: getting to  port .. 
+2026-04-28 15:55:38 [INFO]: Server running on port 3000 
+2026-04-28 15:56:00 [INFO]: ... end of ther server call.. 
+2026-04-28 15:56:00 [INFO]: Database pool connected 
+2026-04-28 15:56:00 [INFO]: Database extensions initialized 
+2026-04-28 15:56:00 [INFO]: Database connected successfully at Tue Apr 28 2026 15:56:00 GMT+0100 (West Africa Time) 
+2026-04-28 15:56:00 [INFO]: Database connected successfully 
+2026-04-28 15:56:00 [INFO]: Redis connecting... 
+2026-04-28 15:56:00 [INFO]: Redis connected successfully 
+2026-04-28 15:56:00 [INFO]: Redis initialized and connected 
+2026-04-28 15:56:00 [INFO]: Redis connected successfully 
+2026-04-28 15:56:00 [INFO]: Socket.IO server initialized 
+2026-04-28 15:56:00 [INFO]: getting to  port .. 
+2026-04-28 15:56:00 [INFO]: Server running on port 3000 
+2026-04-28 15:56:24 [INFO]: ... end of ther server call.. 
+2026-04-28 15:56:24 [INFO]: Database pool connected 
+2026-04-28 15:56:24 [INFO]: Database extensions initialized 
+2026-04-28 15:56:24 [INFO]: Database connected successfully at Tue Apr 28 2026 15:56:24 GMT+0100 (West Africa Time) 
+2026-04-28 15:56:24 [INFO]: Database connected successfully 
+2026-04-28 15:56:24 [INFO]: Redis connecting... 
+2026-04-28 15:56:24 [INFO]: Redis connected successfully 
+2026-04-28 15:56:24 [INFO]: Redis initialized and connected 
+2026-04-28 15:56:24 [INFO]: Redis connected successfully 
+2026-04-28 15:56:24 [INFO]: Socket.IO server initialized 
+2026-04-28 15:56:24 [INFO]: getting to  port .. 
+2026-04-28 15:56:24 [INFO]: Server running on port 3000 
+2026-04-28 15:56:36 [INFO]: ... end of ther server call.. 
+2026-04-28 15:56:36 [INFO]: Database pool connected 
+2026-04-28 15:56:36 [INFO]: Database extensions initialized 
+2026-04-28 15:56:36 [INFO]: Database connected successfully at Tue Apr 28 2026 15:56:36 GMT+0100 (West Africa Time) 
+2026-04-28 15:56:36 [INFO]: Database connected successfully 
+2026-04-28 15:56:36 [INFO]: Redis connecting... 
+2026-04-28 15:56:36 [INFO]: Redis connected successfully 
+2026-04-28 15:56:36 [INFO]: Redis initialized and connected 
+2026-04-28 15:56:36 [INFO]: Redis connected successfully 
+2026-04-28 15:56:36 [INFO]: Socket.IO server initialized 
+2026-04-28 15:56:36 [INFO]: getting to  port .. 
+2026-04-28 15:56:36 [INFO]: Server running on port 3000 
+2026-04-28 15:56:38 [INFO]: ... end of ther server call.. 
+2026-04-28 15:56:38 [INFO]: Database pool connected 
+2026-04-28 15:56:38 [INFO]: Database extensions initialized 
+2026-04-28 15:56:38 [INFO]: Database connected successfully at Tue Apr 28 2026 15:56:38 GMT+0100 (West Africa Time) 
+2026-04-28 15:56:38 [INFO]: Database connected successfully 
+2026-04-28 15:56:38 [INFO]: Redis connecting... 
+2026-04-28 15:56:38 [INFO]: Redis connected successfully 
+2026-04-28 15:56:38 [INFO]: Redis initialized and connected 
+2026-04-28 15:56:38 [INFO]: Redis connected successfully 
+2026-04-28 15:56:38 [INFO]: Socket.IO server initialized 
+2026-04-28 15:56:38 [INFO]: getting to  port .. 
+2026-04-28 15:56:38 [INFO]: Server running on port 3000 
+2026-04-28 15:56:51 [INFO]: ... end of ther server call.. 
+2026-04-28 15:56:51 [INFO]: Database pool connected 
+2026-04-28 15:56:51 [INFO]: Database extensions initialized 
+2026-04-28 15:56:51 [INFO]: Database connected successfully at Tue Apr 28 2026 15:56:51 GMT+0100 (West Africa Time) 
+2026-04-28 15:56:51 [INFO]: Database connected successfully 
+2026-04-28 15:56:51 [INFO]: Redis connecting... 
+2026-04-28 15:56:51 [INFO]: Redis connected successfully 
+2026-04-28 15:56:51 [INFO]: Redis initialized and connected 
+2026-04-28 15:56:51 [INFO]: Redis connected successfully 
+2026-04-28 15:56:51 [INFO]: Socket.IO server initialized 
+2026-04-28 15:56:51 [INFO]: getting to  port .. 
+2026-04-28 15:56:51 [INFO]: Server running on port 3000 
+2026-04-28 15:56:59 [INFO]: ... end of ther server call.. 
+2026-04-28 15:56:59 [INFO]: Database pool connected 
+2026-04-28 15:56:59 [INFO]: Database extensions initialized 
+2026-04-28 15:56:59 [INFO]: Database connected successfully at Tue Apr 28 2026 15:56:59 GMT+0100 (West Africa Time) 
+2026-04-28 15:56:59 [INFO]: Database connected successfully 
+2026-04-28 15:56:59 [INFO]: Redis connecting... 
+2026-04-28 15:56:59 [INFO]: Redis connected successfully 
+2026-04-28 15:56:59 [INFO]: Redis initialized and connected 
+2026-04-28 15:56:59 [INFO]: Redis connected successfully 
+2026-04-28 15:56:59 [INFO]: Socket.IO server initialized 
+2026-04-28 15:56:59 [INFO]: getting to  port .. 
+2026-04-28 15:56:59 [INFO]: Server running on port 3000 
+2026-04-28 15:57:01 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:01 [INFO]: Database pool connected 
+2026-04-28 15:57:01 [INFO]: Database extensions initialized 
+2026-04-28 15:57:01 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:01 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:01 [INFO]: Database connected successfully 
+2026-04-28 15:57:01 [INFO]: Redis connecting... 
+2026-04-28 15:57:01 [INFO]: Redis connected successfully 
+2026-04-28 15:57:01 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:01 [INFO]: Redis connected successfully 
+2026-04-28 15:57:01 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:01 [INFO]: getting to  port .. 
+2026-04-28 15:57:01 [INFO]: Server running on port 3000 
+2026-04-28 15:57:04 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:04 [INFO]: Database pool connected 
+2026-04-28 15:57:04 [INFO]: Database extensions initialized 
+2026-04-28 15:57:04 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:04 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:04 [INFO]: Database connected successfully 
+2026-04-28 15:57:04 [INFO]: Redis connecting... 
+2026-04-28 15:57:04 [INFO]: Redis connected successfully 
+2026-04-28 15:57:04 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:04 [INFO]: Redis connected successfully 
+2026-04-28 15:57:04 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:04 [INFO]: getting to  port .. 
+2026-04-28 15:57:04 [INFO]: Server running on port 3000 
+2026-04-28 15:57:06 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:06 [INFO]: Database pool connected 
+2026-04-28 15:57:06 [INFO]: Database extensions initialized 
+2026-04-28 15:57:06 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:06 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:06 [INFO]: Database connected successfully 
+2026-04-28 15:57:06 [INFO]: Redis connecting... 
+2026-04-28 15:57:06 [INFO]: Redis connected successfully 
+2026-04-28 15:57:06 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:06 [INFO]: Redis connected successfully 
+2026-04-28 15:57:06 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:06 [INFO]: getting to  port .. 
+2026-04-28 15:57:06 [INFO]: Server running on port 3000 
+2026-04-28 15:57:11 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:11 [INFO]: Database pool connected 
+2026-04-28 15:57:11 [INFO]: Database extensions initialized 
+2026-04-28 15:57:11 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:11 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:11 [INFO]: Database connected successfully 
+2026-04-28 15:57:11 [INFO]: Redis connecting... 
+2026-04-28 15:57:11 [INFO]: Redis connected successfully 
+2026-04-28 15:57:11 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:11 [INFO]: Redis connected successfully 
+2026-04-28 15:57:11 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:11 [INFO]: getting to  port .. 
+2026-04-28 15:57:11 [INFO]: Server running on port 3000 
+2026-04-28 15:57:13 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:13 [INFO]: Database pool connected 
+2026-04-28 15:57:13 [INFO]: Database extensions initialized 
+2026-04-28 15:57:13 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:13 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:13 [INFO]: Database connected successfully 
+2026-04-28 15:57:13 [INFO]: Redis connecting... 
+2026-04-28 15:57:13 [INFO]: Redis connected successfully 
+2026-04-28 15:57:13 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:13 [INFO]: Redis connected successfully 
+2026-04-28 15:57:13 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:13 [INFO]: getting to  port .. 
+2026-04-28 15:57:13 [INFO]: Server running on port 3000 
+2026-04-28 15:57:17 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:17 [INFO]: Database pool connected 
+2026-04-28 15:57:17 [INFO]: Database extensions initialized 
+2026-04-28 15:57:17 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:17 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:17 [INFO]: Database connected successfully 
+2026-04-28 15:57:17 [INFO]: Redis connecting... 
+2026-04-28 15:57:17 [INFO]: Redis connected successfully 
+2026-04-28 15:57:17 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:17 [INFO]: Redis connected successfully 
+2026-04-28 15:57:17 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:17 [INFO]: getting to  port .. 
+2026-04-28 15:57:17 [INFO]: Server running on port 3000 
+2026-04-28 15:57:22 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:22 [INFO]: Database pool connected 
+2026-04-28 15:57:22 [INFO]: Database extensions initialized 
+2026-04-28 15:57:22 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:22 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:22 [INFO]: Database connected successfully 
+2026-04-28 15:57:22 [INFO]: Redis connecting... 
+2026-04-28 15:57:22 [INFO]: Redis connected successfully 
+2026-04-28 15:57:22 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:22 [INFO]: Redis connected successfully 
+2026-04-28 15:57:22 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:22 [INFO]: getting to  port .. 
+2026-04-28 15:57:22 [INFO]: Server running on port 3000 
+2026-04-28 15:57:23 [INFO]: ... end of ther server call.. 
+2026-04-28 15:57:23 [INFO]: Database pool connected 
+2026-04-28 15:57:23 [INFO]: Database extensions initialized 
+2026-04-28 15:57:23 [INFO]: Database connected successfully at Tue Apr 28 2026 15:57:23 GMT+0100 (West Africa Time) 
+2026-04-28 15:57:23 [INFO]: Database connected successfully 
+2026-04-28 15:57:23 [INFO]: Redis connecting... 
+2026-04-28 15:57:23 [INFO]: Redis connected successfully 
+2026-04-28 15:57:23 [INFO]: Redis initialized and connected 
+2026-04-28 15:57:23 [INFO]: Redis connected successfully 
+2026-04-28 15:57:23 [INFO]: Socket.IO server initialized 
+2026-04-28 15:57:23 [INFO]: getting to  port .. 
+2026-04-28 15:57:23 [INFO]: Server running on port 3000 

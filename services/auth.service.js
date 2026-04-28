@@ -8,7 +8,7 @@ const { sendEmail, sendSMS } = require('./notification.service');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { upload } = require('../config/multer');
-const { profile } = require('winston');
+const { profile, log } = require('winston');
 
 class AuthService {
   static async registerClient(userData, uploadedFiles = {}) {
@@ -35,7 +35,7 @@ class AuthService {
       // Create user
       const userResult = await client.query(
         `INSERT INTO users (email, phone, password_hash, user_type, verification_status)
-         VALUES ($1, $2, $3, $4, 'pending') RETURNING id, email, phone, user_type, is_verified, is_email_verified, is_phone_verified, verification_status, is_active, is_logged_in, created_at`,
+         VALUES ($1, $2, $3, $4, 'pending') RETURNING id, email, phone, user_type,is_email_verified, is_phone_verified, is_logged_in, created_at`,
         [email, phone, hashedPassword, 'client']
       );
       
@@ -84,14 +84,9 @@ class AuthService {
           email: user.email,
           phone: user.phone,
           userType: user.user_type,
-          isVerified: user.is_verified,
           isEmailVerified: user.is_email_verified,
           isPhoneVerified: user.is_phone_verified,
-          isActive: user.is_active,
           is_logged_in: user.is_logged_in,
-          verificationStatus: user.verification_status,
-          profile: userProfile,
-          wallet: userWallet
         },
         message: 'Registration successful. Please verify your email.'
       };
@@ -128,31 +123,46 @@ class AuthService {
       const userResult = await client.query(
         `INSERT INTO users (email, phone, password_hash, user_type, verification_status)
          VALUES ($1, $2, $3, $4, 'pending')
-         RETURNING id, email, phone, user_type, created_at`,
+         RETURNING id, email, phone, user_type, is_phone_verified, is_email_verified, created_at`,
         [email, phone, hashedPassword, 'artisan']
       );
       
       const user = userResult.rows[0];
       
       // Create artisan profile
-      await client.query(
+      const userProfileResult = await client.query(
         `INSERT INTO artisan_profiles (user_id, full_legal_name, 
-        nin, residential_address, skill_category,passport_photo_url, onboarding_fee_paid)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+        nin, residential_address, skill_category, passport_photo_url, onboarding_fee_paid)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           user.id, fullLegalName, nin, residentialAddress, skillCategory, 
-          uploadedFiles.passportPhoto || null, onboardingFee === 0,
+          uploadedFiles.passportPhoto || null, !(onboardingFee === 0),
         ],
       );
+      const userProfile = userProfileResult.rows[0];
+
+       //Create the Wallte for the user
+      const userWalletResult = await client.query(
+        `INSERT INTO wallets (user_id, user_type, balance) VALUES ($1, $2, 0) RETURNING * `,
+        [user.id, 'artisan']
+      );
+      const userWallet = userWalletResult.rows[0];
       
       // Generate OTP for email verification
-      const otp = await generateAndStoreOTP(`email:${email}`, 600);
+      const mailOtp = await generateAndStoreOTP(`email:${email}`, 1200);
+      const phoneOtp = await generateAndStoreOTP(`phone:${phone}`, 600);
+      
       
       // Send verification email
-      await sendEmail(email,
-        'Verify Your Email',
-        `Your verification code is: ${otp}. This code expires in 10 minutes.`);
-      
+        if(process.env.NODE_ENV === 'production') {
+      await sendEmail(email, 'Verify Your Email', 
+        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`);
+      await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`);
+      }else {
+          logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
+          logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
+       }
+  
       await client.query('COMMIT');
       
       logger.info(`New artisan registered: ${email}`);
@@ -162,7 +172,10 @@ class AuthService {
           id: user.id,
           email: user.email,
           phone: user.phone,
-          userType: user.user_type
+          userType: user.user_type,
+          isPhoneVerified: user.is_phone_verified,
+          isEmailVerified: user.is_email_verified,
+          isLoggedIn: user.is_logged_in,
         },
         message: 'Registration successful. Please verify your email and pay onboarding fee.'
       };
@@ -256,9 +269,10 @@ class AuthService {
           [user.id]
         );
         
-        if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
+       /* if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
           throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
-        }
+        } */
+
       }
       
       // Generate tokens
@@ -361,9 +375,9 @@ class AuthService {
           [user.id]
         );
         
-        if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
+       /* if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
           throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
-        }
+        } */
       }
       
       // Generate tokens
@@ -386,7 +400,7 @@ class AuthService {
       );
 
       const userProfileResult = await client.query(
-        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1 RETURNING *`,
+        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1`,
         [user.id]
       );
       const userProfile = userProfileResult.rows[0];
@@ -636,8 +650,11 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       }
       
       const otp = await generateAndStoreOTP(`email:${identifier}`, 600);
+      if(process.env.NODE_ENV === 'production'){
       await sendEmail(identifier, 'Your Verification Code', `Your verification code is: ${otp}`);
-      
+     }else {
+        logger.info(`Test environment - Email OTP for ${identifier}: ${otp}`);
+     }
       return { message: 'Verification code sent' };
     } else {
       const formattedPhone = this.formatPhoneNumber(identifier);
@@ -648,8 +665,11 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       }
       
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
+      if(process.env.NODE_ENV === 'production'){
       await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`);
-      
+    }else{
+      logger.info(`Test environment - Phone OTP for ${formattedPhone}: ${otp}`);
+    }
       return { message: 'Verification code sent' };
     }
   }
@@ -677,8 +697,12 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     
     // Send reset email
     const resetUrl = `${process.env.APP_FRONTEND_URL}/reset-password?token=${resetToken}`;
+    if(process.env.NODE_ENV === 'production'){
     await sendEmail(email, 'Reset Your Password', 
       `Click here to reset your password: ${resetUrl}. This link expires in 1 hour.`);
+    }else{
+      logger.info(`Test environment - Password reset link for ${email}: ${resetUrl}`);
+    }
     
     logger.info(`Password reset requested for: ${email}`);
     
@@ -688,7 +712,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
   static async resetPassword(token, newPassword) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
+ 
       if (decoded.purpose !== 'password_reset') {
         throw new AppError(400, 'Invalid reset token');
       }
