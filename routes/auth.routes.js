@@ -9,10 +9,6 @@ const { uploadFields } = require('../config/multer');
 
 const router = express.Router();
 
-router.get('/test', (req, res) => {
-  res.status(200).json({ message: 'hello world' });
-});
-
 // Client registration
 router.post('/register/client', authLimiter, uploadFields([
 { name: 'ninPhoto', maxCount: 1 },
@@ -73,8 +69,6 @@ router.post('/login-otp', authLimiter, [
   body('otp').isLength({ min: 6, max: 6 }).matches(/^[0-9]+$/).withMessage('OTP must be 6 digits')
 ], AuthController.loginWithOTP);
 
-
-
 // Logout from current device (protected route)
 router.post('/logout', authenticateToken, AuthController.logout);
 
@@ -89,7 +83,6 @@ router.post('/send-verification', [
   body('email').optional().isEmail(),
   body('phone').optional().isMobilePhone(),
 ], AuthController.sendVerificationCode);
-
 
 // Forgot password - send reset link or OTP
 router.post('/forgot-password', [
@@ -110,11 +103,6 @@ router.post('/change-password', authenticateToken, [
 
 // Get current user profile (protected route)
 router.get('/me', authenticateToken, AuthController.getMe);
-
-
-
-
-
 
 
 module.exports = router;

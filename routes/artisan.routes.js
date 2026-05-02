@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { body, query, param, validationResult } = require('express-validator');
-const { authenticateToken, requireRole, requireVerification, requireActiveSubscription } = require('../middleware/auth.middleware');
+const { authenticateToken, requireRole, requireVerification, requireActiveSubscription 
+} = require('../middleware/auth.middleware');
 const { uploadFields, uploadSingle } = require('../config/multer');
 const Artisan = require('../models/Artisan');
 const Job = require('../models/Job');
@@ -10,64 +11,40 @@ const Training = require('../models/Training');
 const Payment = require('../models/Payment');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
+const { logger } = require('../config/logger');
+const ArtisanController = require('../controllers/artisan.controller');
+const { authLimiter } = require('../middleware/rateLimit.middleware');
+
+ 
 
 // Get artisan profile
-router.get('/profile', authenticateToken, requireRole(['artisan']), async (req, res, next) => {
-  try {
-    const profile = await Artisan.findByUserId(req.user.id);
-    if (!profile) {
-      throw new AppError(404, 'Artisan profile not found');
-    }
-    sendSuccess(res, profile, 'Profile retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/profile',
+  authenticateToken,
+  requireRole(['artisan']),
+  ArtisanController.getProfile,
+);
 
 // Update artisan profile
 router.put('/profile', authenticateToken, requireRole(['artisan']), [
-  body('fullLegalName').optional().notEmpty().trim(),
-  body('residentialAddress').optional().notEmpty(),
-  body('skillCategory').optional().notEmpty(),
-  body('subCategories').optional().isArray()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const updated = await Artisan.update(req.user.id, req.body);
-    sendSuccess(res, updated, 'Profile updated successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+  body('full_legal_name').optional().notEmpty().trim(),
+  body('residential_address').optional().notEmpty(),
+  body('skill_category').optional().notEmpty(),
+  body('sub_categories').optional().isArray(),
+], ArtisanController.updateProfile);
 
 // Upload artisan documents
 router.post('/upload-documents', authenticateToken, requireRole(['artisan']), uploadFields([
   { name: 'passportPhoto', maxCount: 1 },
   { name: 'ninPhoto', maxCount: 1 },
   { name: 'certificates', maxCount: 10 },
-  { name: 'tradeTestimony', maxCount: 5 }
-]), async (req, res, next) => {
-  try {
-    const documents = {};
-    if (req.files.passportPhoto) documents.passportPhoto = req.files.passportPhoto[0].path;
-    if (req.files.ninPhoto) documents.ninPhoto = req.files.ninPhoto[0].path;
-    if (req.files.certificates) documents.certificates = req.files.certificates.map(f => f.path);
-    if (req.files.tradeTestimony) documents.tradeTestimony = req.files.tradeTestimony.map(f => f.path);
-    
-    const profile = await Artisan.findByUserId(req.user.id);
-    const updated = await Artisan.update(req.user.id, {
-      documents: { ...profile.documents, ...documents }
-    });
-    
-    sendSuccess(res, updated, 'Documents uploaded successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+  { name: 'tradeTestimony', maxCount: 5 },
+]), ArtisanController.uploadDocuments);
+
+// Update availability and location status
+router.post('/availability', authenticateToken, requireRole(['artisan']), [
+  body('isAvailable').isBoolean(),
+  body('currentLocation').optional().isObject(),
+], ArtisanController.updateAvailability);
 
 // Pay onboarding fee
 router.post('/pay-onboarding-fee', authenticateToken, requireRole(['artisan']), [

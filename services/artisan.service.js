@@ -1,9 +1,12 @@
+const moment = require('moment');
 const { pool } = require('../config/database');
 const { cacheGet, cacheSet, cacheDel, addArtisanLocation } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
-const moment = require('moment');
+
+
+
 
 class ArtisanService {
   static async getProfile(userId) {
@@ -30,30 +33,27 @@ class ArtisanService {
     
     return profile;
   }
+
   
-  static async updateProfile(userId, updateData) {
-    const allowedFields = ['full_legal_name', 'residential_address', 'skill_category', 'sub_categories'];
-    const updates = {};
-    
-    for (const field of allowedFields) {
-      if (updateData[field] !== undefined) {
-        updates[field] = updateData[field];
-      }
-    }
-    
-    if (Object.keys(updates).length === 0) {
-      throw new AppError(400, 'No valid fields to update');
-    }
-    
+  
+  static async updateProfile(userId, updates) {
+      const allowedFields = [
+      'full_legal_name', 'residential_address',
+      'skill_category', 'sub_categories',
+    ];
     const setClause = [];
     const values = [];
     let paramIndex = 1;
     
     for (const [key, value] of Object.entries(updates)) {
-      setClause.push(`${key} = $${paramIndex}`);
-      values.push(value);
-      paramIndex++;
+      if (allowedFields.includes(key)) {
+        setClause.push(`${key} = $${paramIndex}`);
+        values.push(value);
+        paramIndex++;
+      }
     }
+    
+    if (setClause.length === 0) return null;
     
     values.push(userId);
     const query = `
@@ -93,7 +93,6 @@ class ArtisanService {
     
     await cacheDel(`artisan:profile:${userId}`);
     await cacheDel(`artisan:availability:${userId}`);
-    
     logger.info(`Artisan availability updated: ${userId} -> ${isAvailable}`);
     
     return result.rows[0];

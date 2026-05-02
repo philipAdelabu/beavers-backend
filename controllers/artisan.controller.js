@@ -2,6 +2,7 @@ const ArtisanService = require('../services/artisan.service');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
 const { validationResult } = require('express-validator');
+const { logger }  = require('../config/logger');
 
 class ArtisanController {
   static async getProfile(req, res, next) {
@@ -9,9 +10,11 @@ class ArtisanController {
       const profile = await ArtisanService.getProfile(req.user.id);
       sendSuccess(res, profile, 'Profile retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve profile', error.statusCode || 500);
       next(error);
     }
   }
+
 
   static async updateProfile(req, res, next) {
     const errors = validationResult(req);
@@ -23,6 +26,7 @@ class ArtisanController {
       const profile = await ArtisanService.updateProfile(req.user.id, req.body);
       sendSuccess(res, profile, 'Profile updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update profile', error.statusCode || 500);
       next(error);
     }
   }
@@ -34,10 +38,11 @@ class ArtisanController {
     }
 
     try {
-      const { isAvailable, location } = req.body;
-      const profile = await ArtisanService.updateAvailability(req.user.id, isAvailable, location);
+      const { isAvailable, currentLocation } = req.body;
+      const profile = await ArtisanService.updateAvailability(req.user.id, isAvailable, currentLocation);
       sendSuccess(res, profile, `Availability set to ${isAvailable}`);
     } catch (error) {
+      sendError(res, error.message || 'Failed to update availability', error.statusCode || 500);
       next(error);
     }
   }
@@ -53,6 +58,7 @@ class ArtisanController {
       const profile = await ArtisanService.updateProfile(req.user.id, { documents });
       sendSuccess(res, profile, 'Documents uploaded successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to upload documents', error.statusCode || 500);
       next(error);
     }
   }
@@ -68,6 +74,7 @@ class ArtisanController {
       const earnings = await ArtisanService.getEarnings(req.user.id, startDate, endDate);
       sendSuccess(res, earnings, 'Earnings retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve earnings', error.statusCode || 500);
       next(error);
     }
   }
@@ -83,6 +90,7 @@ class ArtisanController {
       const withdrawal = await ArtisanService.requestWithdrawal(req.user.id, amount, { bankCode, accountNumber, accountName });
       sendSuccess(res, withdrawal, 'Withdrawal request submitted successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Failed to request withdrawal', error.statusCode || 500);
       next(error);
     }
   }
@@ -98,6 +106,7 @@ class ArtisanController {
       const result = await ArtisanService.getWithdrawalHistory(req.user.id, page, limit);
       sendPaginated(res, result.withdrawals, page, limit, result.total, 'Withdrawal history retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve withdrawal history', error.statusCode || 500);
       next(error);
     }
   }
@@ -112,6 +121,7 @@ class ArtisanController {
       const profile = await ArtisanService.updateProfile(req.user.id, { bank_details: req.body });
       sendSuccess(res, profile, 'Bank account updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update bank account', error.statusCode || 500);
       next(error);
     }
   }
@@ -121,6 +131,7 @@ class ArtisanController {
       const metrics = await ArtisanService.getPerformanceMetrics(req.user.id);
       sendSuccess(res, metrics, 'Performance metrics retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve performance metrics', error.statusCode || 500);
       next(error);
     }
   }
@@ -136,6 +147,7 @@ class ArtisanController {
       const result = await ReviewService.getArtisanReviews(req.user.id, { page, limit });
       sendPaginated(res, result.ratings, page, limit, result.total, 'Ratings retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve ratings', error.statusCode || 500);
       next(error);
     }
   }
@@ -151,6 +163,7 @@ class ArtisanController {
       const schedule = await ArtisanService.getSchedule(req.user.id, date || new Date().toISOString().split('T')[0]);
       sendSuccess(res, schedule, 'Schedule retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve schedule', error.statusCode || 500);
       next(error);
     }
   }
@@ -165,6 +178,7 @@ class ArtisanController {
       const schedule = await ArtisanService.setSchedule(req.user.id, req.body);
       sendSuccess(res, schedule, 'Schedule set successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to set schedule', error.statusCode || 500);
       next(error);
     }
   }
@@ -174,6 +188,7 @@ class ArtisanController {
       const tools = await ArtisanService.getTools(req.user.id);
       sendSuccess(res, tools, 'Tools retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve tools', error.statusCode || 500);
       next(error);
     }
   }
@@ -188,6 +203,7 @@ class ArtisanController {
       const tool = await ArtisanService.addTool(req.user.id, req.body);
       sendSuccess(res, tool, 'Tool added successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Failed to add tool', error.statusCode || 500);
       next(error);
     }
   }
@@ -202,6 +218,7 @@ class ArtisanController {
       const tool = await ArtisanService.updateTool(req.params.toolId, req.user.id, req.body);
       sendSuccess(res, tool, 'Tool updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update tool', error.statusCode || 500);
       next(error);
     }
   }
@@ -217,6 +234,7 @@ class ArtisanController {
       const jobs = await ArtisanService.getUpcomingJobs(req.user.id, limit);
       sendSuccess(res, jobs, 'Upcoming jobs retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve upcoming jobs', error.statusCode || 500);
       next(error);
     }
   }
@@ -226,6 +244,7 @@ class ArtisanController {
       const stats = await ArtisanService.getStatistics(req.user.id);
       sendSuccess(res, stats, 'Statistics retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve statistics', error.statusCode || 500);
       next(error);
     }
   }
@@ -235,6 +254,7 @@ class ArtisanController {
       const status = await ArtisanService.checkMonthlyFeeStatus(req.user.id);
       sendSuccess(res, status, 'Monthly fee status retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve monthly fee status', error.statusCode || 500);
       next(error);
     }
   }
@@ -249,10 +269,11 @@ class ArtisanController {
       // Process payment logic here
       const profile = await ArtisanService.updateProfile(req.user.id, { 
         monthly_fee_status: 'paid',
-        last_fee_payment: new Date()
+        last_fee_payment: new Date(),
       });
       sendSuccess(res, profile, 'Monthly fee paid successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to pay monthly fee', error.statusCode || 500);
       next(error);
     }
   }
