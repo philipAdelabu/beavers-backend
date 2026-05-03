@@ -10,61 +10,35 @@ const Notification = require('../models/Notification');
 const Rating = require('../models/Rating');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
+const ClientController = require('../controllers/client.controller');
 
 // Get client profile
-router.get('/profile', authenticateToken, requireRole(['client']), async (req, res, next) => {
-  try {
-    const profile = await Client.findByUserId(req.user.id);
-    if (!profile) {
-      throw new AppError(404, 'Client profile not found');
-    }
-    sendSuccess(res, profile, 'Profile retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+router.get(
+  '/profile',
+  authenticateToken,
+  requireRole(['client']),
+  ClientController.getProfile,
+);
 
 // Update client profile
-router.put('/profile', authenticateToken, requireRole(['client']), [
-  body('fullLegalName').optional().notEmpty().trim(),
-  body('streetAddress').optional().notEmpty(),
-  body('serviceAddress').optional().notEmpty()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const updated = await Client.update(req.user.id, req.body);
-    sendSuccess(res, updated, 'Profile updated successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+router.put(
+  '/profile',
+  authenticateToken,
+  requireRole(['client']),
+  [
+    body('fullLegalName').optional().notEmpty().trim(),
+    body('streetAddress').optional().notEmpty(),
+    body('serviceAddress').optional().notEmpty(),
+  ],
+  ClientController.updateProfile,
+);
 
 // Upload verification documents
 router.post('/upload-documents', authenticateToken, requireRole(['client']), uploadFields([
   { name: 'ninPhoto', maxCount: 1 },
   { name: 'utilityBill', maxCount: 1 },
-  { name: 'passportPhoto', maxCount: 1 }
-]), async (req, res, next) => {
-  try {
-    const documents = {};
-    if (req.files.ninPhoto) documents.ninPhoto = req.files.ninPhoto[0].path;
-    if (req.files.utilityBill) documents.utilityBill = req.files.utilityBill[0].path;
-    if (req.files.passportPhoto) documents.passportPhoto = req.files.passportPhoto[0].path;
-    
-    const profile = await Client.findByUserId(req.user.id);
-    const updated = await Client.update(req.user.id, {
-      verification_documents: { ...profile.verification_documents, ...documents }
-    });
-    
-    sendSuccess(res, updated, 'Documents uploaded successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+  { name: 'passportPhoto', maxCount: 1 },
+]), ClientController.uploadDocuments);
 
 // Get client job history
 router.get('/jobs', authenticateToken, requireRole(['client']), [

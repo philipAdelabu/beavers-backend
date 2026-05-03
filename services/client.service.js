@@ -22,7 +22,7 @@ class ClientService {
       if (result.rows.length === 0) {
         throw new AppError(404, 'Client profile not found');
       }
-      
+       
       profile = result.rows[0];
       await cacheSet(cacheKey, profile, 3600);
     }

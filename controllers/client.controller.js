@@ -9,6 +9,7 @@ class ClientController {
       const profile = await ClientService.getProfile(req.user.id);
       sendSuccess(res, profile, 'Profile retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve profile', error.statusCode || 500);
       next(error);
     }
   }
@@ -23,6 +24,7 @@ class ClientController {
       const profile = await ClientService.updateProfile(req.user.id, req.body);
       sendSuccess(res, profile, 'Profile updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update profile', error.statusCode || 500);
       next(error);
     }
   }
@@ -37,6 +39,7 @@ class ClientController {
       const profile = await ClientService.updateProfile(req.user.id, { verification_documents: documents });
       sendSuccess(res, profile, 'Documents uploaded successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to upload documents', error.statusCode || 500);
       next(error);
     }
   }
@@ -46,6 +49,7 @@ class ClientController {
       const addresses = await ClientService.getAddresses(req.user.id);
       sendSuccess(res, addresses, 'Addresses retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve addresses', error.statusCode || 500);
       next(error);
     }
   }
@@ -60,6 +64,7 @@ class ClientController {
       const address = await ClientService.addAddress(req.user.id, req.body);
       sendSuccess(res, address, 'Address added successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Failed to add address', error.statusCode || 500);
       next(error);
     }
   }
