@@ -36,6 +36,7 @@ router.put('/profile', authenticateToken, requireRole(['artisan']), [
 router.post('/upload-documents', authenticateToken, requireRole(['artisan']), uploadFields([
   { name: 'passportPhoto', maxCount: 1 },
   { name: 'ninPhoto', maxCount: 1 },
+  { name: 'utilityBill', maxCount: 1 },
   { name: 'certificates', maxCount: 10 },
   { name: 'tradeTestimony', maxCount: 5 },
 ]), ArtisanController.uploadDocuments);

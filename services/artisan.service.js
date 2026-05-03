@@ -39,7 +39,7 @@ class ArtisanService {
   static async updateProfile(userId, updates) {
       const allowedFields = [
       'full_legal_name', 'residential_address',
-      'skill_category', 'sub_categories',
+      'skill_category', 'sub_categories', 'documents',
     ];
     const setClause = [];
     const values = [];

@@ -28,7 +28,7 @@ class ClientController {
       next(error);
     }
   }
-
+ 
   static async uploadDocuments(req, res, next) {
     try {
       const documents = {};

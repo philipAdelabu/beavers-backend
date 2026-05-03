@@ -31,7 +31,7 @@ class ClientService {
   }
   
   static async updateProfile(userId, updateData) {
-    const allowedFields = ['full_legal_name', 'street_address', 'service_address'];
+    const allowedFields = ['full_legal_name', 'street_address', 'service_address', 'verification_documents'];
     const updates = {};
     
     for (const field of allowedFields) {

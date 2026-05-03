@@ -34,11 +34,12 @@ class ArtisanController {
     static async uploadDocuments(req, res, next) {
     try {
       const documents = {};
+      if (req.files?.passportPhoto) documents.passportPhoto = req.files.passportPhoto[0].path;
       if (req.files?.ninPhoto) documents.ninPhoto = req.files.ninPhoto[0].path;
       if (req.files?.utilityBill) documents.utilityBill = req.files.utilityBill[0].path;
-      if (req.files?.passportPhoto) documents.passportPhoto = req.files.passportPhoto[0].path;
-      
-      const profile = await ArtisanService.updateProfile(req.user.id, { verification_documents: documents });
+      if (req.files?.certificates) documents.certificates = req.files.certificates[0].path;
+      if (req.files?.tradeTestimony) documents.tradeTestimony = req.files.tradeTestimony[0].path;
+      const profile = await ArtisanService.updateProfile(req.user.id, { documents });
       sendSuccess(res, profile, 'Documents uploaded successfully');
     } catch (error) {
       sendError(res, error.message || 'Failed to upload documents', error.statusCode || 500);

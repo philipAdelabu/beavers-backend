@@ -26,9 +26,9 @@ router.put(
   authenticateToken,
   requireRole(['client']),
   [
-    body('fullLegalName').optional().notEmpty().trim(),
-    body('streetAddress').optional().notEmpty(),
-    body('serviceAddress').optional().notEmpty(),
+    body('full_legal_name').optional().notEmpty().trim(),
+    body('street_address').optional().notEmpty(),
+    body('service_address').optional().notEmpty(),
   ],
   ClientController.updateProfile,
 );
@@ -39,6 +39,39 @@ router.post('/upload-documents', authenticateToken, requireRole(['client']), upl
   { name: 'utilityBill', maxCount: 1 },
   { name: 'passportPhoto', maxCount: 1 },
 ]), ClientController.uploadDocuments);
+
+
+
+// Add service address
+router.post('/addresses', authenticateToken, requireRole(['client']), [
+  body('address').notEmpty(),
+  body('label').optional().isString(),
+  body('isDefault').optional().isBoolean(),
+  body('latitude').optional().isFloat(),
+  body('longitude').optional().isFloat()
+], ClientController.addAddress);
+
+// Get service addresses
+router.get(
+  '/addresses',
+  authenticateToken,
+  requireRole(['client']),
+  ClientController.getAddresses);
+
+// Update service address
+router.put('/addresses/:addressId', authenticateToken, requireRole(['client']), [
+  param('addressId').isUUID(),
+  body('address').optional().notEmpty(),
+  body('label').optional().isString(),
+  body('isDefault').optional().isBoolean(),
+  body('latitude').optional().isFloat(),
+  body('longitude').optional().isFloat()
+], ClientController.updateAddress);
+
+// Delete service address
+router.delete('/addresses/:addressId', authenticateToken, requireRole(['client']), [
+  param('addressId').isUUID(),
+], ClientController.deleteAddress);
 
 // Get client job history
 router.get('/jobs', authenticateToken, requireRole(['client']), [
@@ -210,81 +243,7 @@ router.delete('/saved-artisans/:artisanId', authenticateToken, requireRole(['cli
   }
 });
 
-// Get service addresses
-router.get('/addresses', authenticateToken, requireRole(['client']), async (req, res, next) => {
-  try {
-    const addresses = await Client.getAddresses(req.user.id);
-    sendSuccess(res, addresses, 'Addresses retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
-// Add service address
-router.post('/addresses', authenticateToken, requireRole(['client']), [
-  body('address').notEmpty(),
-  body('label').optional().isString(),
-  body('isDefault').optional().isBoolean(),
-  body('latitude').optional().isFloat(),
-  body('longitude').optional().isFloat()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const address = await Client.addAddress(req.user.id, req.body);
-    sendSuccess(res, address, 'Address added successfully', 201);
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Update service address
-router.put('/addresses/:addressId', authenticateToken, requireRole(['client']), [
-  param('addressId').isUUID(),
-  body('address').optional().notEmpty(),
-  body('label').optional().isString(),
-  body('isDefault').optional().isBoolean(),
-  body('latitude').optional().isFloat(),
-  body('longitude').optional().isFloat()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const address = await Client.updateAddress(req.params.addressId, req.body);
-    if (!address) {
-      throw new AppError(404, 'Address not found');
-    }
-    sendSuccess(res, address, 'Address updated successfully');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Delete service address
-router.delete('/addresses/:addressId', authenticateToken, requireRole(['client']), [
-  param('addressId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const deleted = await Client.deleteAddress(req.params.addressId);
-    if (!deleted) {
-      throw new AppError(404, 'Address not found');
-    }
-    sendSuccess(res, null, 'Address deleted successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Get unread notifications count
 router.get('/notifications/unread/count', authenticateToken, requireRole(['client']), async (req, res, next) => {
