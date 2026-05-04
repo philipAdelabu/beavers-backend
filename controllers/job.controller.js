@@ -244,6 +244,7 @@ class JobController {
     }
   }
 
+  
   static async getJobTimeline(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

@@ -86,9 +86,14 @@ class ArtisanService {
        RETURNING *`,
       [isAvailable, location ? JSON.stringify(location) : null, userId]
     );
+
+     if(!result.rows[0]){
+       return null;
+     }
+    const {skill_category} = result.rows[0];
     
     if (isAvailable && location) {
-      await addArtisanLocation(userId, location.longitude, location.latitude);
+      await addArtisanLocation(skill_category, location.longitude, location.latitude, userId);
     }
     
     await cacheDel(`artisan:profile:${userId}`);

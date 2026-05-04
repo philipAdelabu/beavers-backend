@@ -6,182 +6,24 @@ const { authenticateToken, requireRole } = require('../middleware/auth.middlewar
 const { getNearbyArtisans, cacheSet, cacheGet } = require('../config/redis');
 const { emitToArtisan, emitToClient } = require('../socket/socket.handlers');
 const { calculateDistance } = require('../utils/geo.utils');
+const JobController = require('../controllers/job.controller');
 const router = express.Router();
 
-// Create job request
+// Create job request 
 router.post('/create', authenticateToken, requireRole(['client']), [
   body('category').notEmpty(),
   body('description').notEmpty(),
-  body('serviceType').isIn(['inspection', 'repair', 'installation', 'emergency'])
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    const { category, description, mediaUrls, serviceType, location } = req.body;
-    const clientId = req.user.id;
-
-    // Create job
-    const jobResult = await client.query(
-      `INSERT INTO jobs (client_id, category, description, media_urls, service_type, job_status)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [clientId, category, description, mediaUrls || [], serviceType, 'pending']
-    );
-
-    const job = jobResult.rows[0];
-
-    // Find nearby artisans
-    const nearbyArtisans = await getNearbyArtisans(location.longitude, location.latitude, 10);
-    
-    // Get artisan details and rank them
-    const artisanPromises = nearbyArtisans.map(async ([artisanId, distance]) => {
-      const artisanResult = await client.query(
-        `SELECT ap.*, u.is_active 
-         FROM artisan_profiles ap
-         JOIN users u ON ap.user_id = u.id
-         WHERE ap.user_id = $1 AND ap.is_available = true AND u.is_active = true
-         AND ap.monthly_fee_status = 'paid'`,
-        [artisanId]
-      );
-      
-      if (artisanResult.rows.length > 0) {
-        const artisan = artisanResult.rows[0];
-        return {
-          ...artisan,
-          distance: parseFloat(distance),
-          score: calculatePriorityScore(artisan, parseFloat(distance))
-        };
-      }
-      return null;
-    });
-
-    const availableArtisans = (await Promise.all(artisanPromises)).filter(a => a !== null);
-    
-    // Sort by priority score
-    availableArtisans.sort((a, b) => b.score - a.score);
-
-    // Send job offers to top 5 artisans
-    const offers = availableArtisans.slice(0, 5);
-    
-    for (const offer of offers) {
-      await client.query(
-        `INSERT INTO job_offers (job_id, artisan_id, status, expires_at)
-         VALUES ($1, $2, $3, NOW() + INTERVAL '2 minutes')`,
-        [job.id, offer.user_id, 'pending']
-      );
-      
-      // Send real-time notification
-      emitToArtisan(offer.user_id, 'new_job_offer', {
-        jobId: job.id,
-        category: job.category,
-        description: job.description,
-        distance: offer.distance,
-        serviceType: job.service_type
-      });
-    }
-
-    await client.query('COMMIT');
-
-    res.status(201).json({
-      message: 'Job created and offers sent',
-      job,
-      offersSent: offers.length
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Job creation error:', error);
-    res.status(500).json({ error: 'Failed to create job' });
-  } finally {
-    client.release();
-  }
-});
+  body('location').notEmpty(),
+  body('medialUrls').optional().notEmpty(),
+  body('serviceType').isIn(['inspection', 'repair', 'installation', 'emergency', 'maintenance'])
+], JobController.createJob);
 
 // Accept job offer (artisan)
-router.post('/:jobId/accept', authenticateToken, requireRole(['artisan']), async (req, res) => {
-  const { jobId } = req.params;
-  const artisanId = req.user.id;
-
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    // Check if job is still available
-    const jobResult = await client.query(
-      `SELECT * FROM jobs WHERE id = $1 AND job_status = 'pending'`,
-      [jobId]
-    );
-
-    if (jobResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Job not available' });
-    }
-
-    // Check offer
-    const offerResult = await client.query(
-      `SELECT * FROM job_offers 
-       WHERE job_id = $1 AND artisan_id = $2 AND status = 'pending'
-       AND expires_at > NOW()`,
-      [jobId, artisanId]
-    );
-
-    if (offerResult.rows.length === 0) {
-      return res.status(400).json({ error: 'No valid offer found' });
-    }
-
-    // Update job
-    await client.query(
-      `UPDATE jobs 
-       SET artisan_id = $1, job_status = 'accepted', updated_at = NOW()
-       WHERE id = $2`,
-      [artisanId, jobId]
-    );
-
-    // Update offer status
-    await client.query(
-      `UPDATE job_offers SET status = 'accepted' WHERE job_id = $1 AND artisan_id = $2`,
-      [jobId, artisanId]
-    );
-
-    // Reject other offers
-    await client.query(
-      `UPDATE job_offers SET status = 'rejected' 
-       WHERE job_id = $1 AND artisan_id != $2 AND status = 'pending'`,
-      [jobId, artisanId]
-    );
-
-    // Set artisan as unavailable
-    await client.query(
-      `UPDATE artisan_profiles SET is_available = false WHERE user_id = $1`,
-      [artisanId]
-    );
-
-    await client.query('COMMIT');
-
-    // Get client info for notification
-    const clientResult = await client.query(
-      `SELECT client_id FROM jobs WHERE id = $1`,
-      [jobId]
-    );
-
-    emitToClient(clientResult.rows[0].client_id, 'job_accepted', {
-      jobId,
-      artisanId,
-      status: 'accepted'
-    });
-
-    res.json({ message: 'Job accepted successfully' });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Job acceptance error:', error);
-    res.status(500).json({ error: 'Failed to accept job' });
-  } finally {
-    client.release();
-  }
-});
+router.post(
+  '/:jobId/accept',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.acceptJob);
 
 // Confirm arrival with PIN
 router.post('/:jobId/confirm-arrival', authenticateToken, requireRole(['client']), [

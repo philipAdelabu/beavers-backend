@@ -230,25 +230,30 @@ const cacheClearPattern = async (pattern) => {
 };
 
 // Geo location helpers
-const addArtisanLocation = async (artisanId, longitude, latitude) => {
+const addArtisanLocation = async (category, longitude, latitude, artisanId) => {
+  const skill_category = category.toUpperCase();
   try {
-    await redis.geoadd('artisans:locations', longitude, latitude, artisanId);
+    const geoadd = await redis.geoadd(skill_category, longitude, latitude, artisanId);
+    logger.info(`Added artisan location: ${artisanId} at (${longitude}, ${latitude}) - Geoadd result: ${geoadd}`);
     return true;
   } catch (error) {
     logger.error('Add artisan location error:', error);
     return false;
   }
 };
+ 
 
-const getNearbyArtisans = async (longitude, latitude, radius = 5) => {
+const getNearbyArtisans = async (category, longitude, latitude, radius = 20) => {
+  const skill_category = category.toUpperCase();
   try {
     const artisans = await redis.georadius(
-      'artisans:locations',
+      skill_category,
       longitude,
       latitude,
       radius,
       'km',
       'WITHDIST',
+      'WITHCOORD',
       'ASC',
     );
     return artisans;
@@ -258,9 +263,10 @@ const getNearbyArtisans = async (longitude, latitude, radius = 5) => {
   }
 };
 
-const removeArtisanLocation = async (artisanId) => {
+const removeArtisanLocation = async (category, artisanId) => {
+  const skill_category = category.toUpperCase();
   try {
-    await redis.zrem('artisans:locations', artisanId);
+    await redis.zrem(skill_category, artisanId);
     return true;
   } catch (error) {
     logger.error('Remove artisan location error:', error);
@@ -268,9 +274,10 @@ const removeArtisanLocation = async (artisanId) => {
   }
 };
 
-const getArtisanLocation = async (artisanId) => {
+const getArtisanLocation = async (category, artisanId) => {
+  const skill_category = category.toUpperCase();
   try {
-    const location = await redis.geopos('artisans:locations', artisanId);
+    const location = await redis.geopos(skill_category, artisanId);
     if (location && location[0] && location[0][0]) {
       return {
         longitude: location[0][0],

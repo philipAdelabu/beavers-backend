@@ -33,9 +33,12 @@ class JobService {
         [job.id]
       );
       
+    
+      const Google_map_radius = process.env.GOOGLE_MAP_RADIUS || 20;
+
       // Find and notify nearby artisans
-      const nearbyArtisans = await this.findNearbyArtisans(category, location, 10);
-      
+      const nearbyArtisans = await this.findNearbyArtisans(category, location, Google_map_radius);
+  
       const offers = [];
       for (const artisan of nearbyArtisans.slice(0, 5)) {
         const offerResult = await client.query(
@@ -46,6 +49,7 @@ class JobService {
         );
         
         offers.push(offerResult.rows[0]);
+        logger.info(`Sent job offer to artisan ${artisan.user_id} for job ${job.id}`);
         
         // Send real-time notification via Socket.IO
         await NotificationService.sendJobOfferNotification(artisan.user_id, {
@@ -73,50 +77,92 @@ class JobService {
     }
   }
   
-  static async findNearbyArtisans(category, location, radius = 10) {
-    // Get artisans from Redis geo index
-    const nearby = await getNearbyArtisans(location.longitude, location.latitude, radius);
-    
-    if (nearby.length === 0) {
-      return [];
+  static async findNearbyArtisans(category, location, radius = 20) {
+    try {
+      // Get artisans from Redis geo index
+      const nearby = await getNearbyArtisans(category, location.longitude, location.latitude, radius);
+
+      if (nearby.length === 0) {
+        logger.info('No nearby artisans found within radius');
+        return [];
+      }
+
+      const artisanIds = nearby.map(([id]) => id);
+      logger.info(`Found ${artisanIds.length} nearby artisans`);
+
+      // Get artisan details from database with ranking
+      //  AND ap.monthly_fee_status = 'paid' ; --- IGNORE for now, we can filter this in the future when we implement monthly fee
+      const result = await pool.query(
+        `SELECT ap.user_id, ap.full_legal_name, ap.tier_level, ap.star_rating, 
+                ap.completion_rate, ap.trust_score, ap.skill_category,
+                u.is_active
+        FROM artisan_profiles ap
+        JOIN users u ON ap.user_id = u.id
+        WHERE ap.user_id = ANY($1::uuid[])
+          AND ap.is_available = true
+          AND u.is_active = true
+          AND ap.skill_category = $2
+        ORDER BY ap.tier_level DESC, ap.star_rating DESC, ap.completion_rate DESC`,
+        [artisanIds, category]
+      );
+      
+      if (result.rows.length === 0) {
+        logger.info('No eligible artisans found in database');
+        return [];
+      }
+      
+      logger.info(`Found ${result.rows.length} eligible artisans from database`);
+      
+      // Calculate priority scores
+      const artisansWithDistance = result.rows.map((artisan) => {
+        const found = nearby.find(([id]) => id === artisan.user_id);
+        const distance = found ? parseFloat(found[1]) : 999;
+        logger.info(`Artisan ${artisan.full_legal_name} distance: ${distance}km`);
+        const score = this.calculatePriorityScore(artisan, distance);
+        return { ...artisan, distance, score };
+      });
+      
+      return artisansWithDistance.sort((a, b) => b.score - a.score);
+    } catch (error) {
+      logger.error('Error in findNearbyArtisans:', error);
+      throw error;
     }
-    
-    const artisanIds = nearby.map(([id]) => id);
-    
-    // Get artisan details from database with ranking
-    const result = await pool.query(
-      `SELECT ap.user_id, ap.full_legal_name, ap.tier_level, ap.star_rating, 
-              ap.completion_rate, ap.trust_score, ap.skill_category,
-              u.is_active
-       FROM artisan_profiles ap
-       JOIN users u ON ap.user_id = u.id
-       WHERE ap.user_id = ANY($1::uuid[])
-         AND ap.is_available = true
-         AND u.is_active = true
-         AND ap.monthly_fee_status = 'paid'
-         AND ap.skill_category = $2
-       ORDER BY ap.tier_level DESC, ap.star_rating DESC, ap.completion_rate DESC`,
-      [artisanIds, category]
-    );
-    
-    // Calculate priority scores
-    const artisansWithDistance = result.rows.map(artisan => {
-      const distance = nearby.find(([id]) => id === artisan.user_id)[1];
-      const score = this.calculatePriorityScore(artisan, parseFloat(distance));
-      return { ...artisan, distance: parseFloat(distance), score };
-    });
-    
-    return artisansWithDistance.sort((a, b) => b.score - a.score);
   }
-  
+
   static calculatePriorityScore(artisan, distance) {
-    const tierWeight = artisan.tier_level === 3 ? 0.4 : artisan.tier_level === 2 ? 0.3 : 0.2;
-    const ratingWeight = (artisan.star_rating / 5) * 0.3;
-    const distanceWeight = Math.max(0, 1 - (distance / 10)) * 0.2;
-    const completionWeight = (artisan.completion_rate / 100) * 0.1;
-    const trustWeight = (artisan.trust_score / 100) * 0.1;
+    // Normalize distance (0-100, closer is better)
+    const maxDistance = 20; // km
+    const distanceScore = Math.max(0, 100 - (distance / maxDistance) * 100);
     
-    return (tierWeight + ratingWeight + distanceWeight + completionWeight + trustWeight) * 100;
+    // Tier scores (1-3)
+    const tierScore = (artisan.tier_level / 3) * 100;
+    
+    // Rating score (0-5)
+    const ratingScore = (artisan.star_rating / 5) * 100;
+    
+    // Completion rate score (0-100)
+    const completionScore = artisan.completion_rate || 0;
+    
+    // Trust score (0-100)
+    const trustScore = artisan.trust_score || 0;
+    
+    // Weighted calculation
+    const weights = {
+      distance: 0.25,
+      tier: 0.30,
+      rating: 0.25,
+      completion: 0.10,
+      trust: 0.10
+    };
+    
+    const totalScore = 
+      (distanceScore * weights.distance) +
+      (tierScore * weights.tier) +
+      (ratingScore * weights.rating) +
+      (completionScore * weights.completion) +
+      (trustScore * weights.trust);
+    
+    return Math.round(totalScore);
   }
   
   static async acceptJob(jobId, artisanId) {
