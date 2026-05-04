@@ -1,17 +1,40 @@
+const twilio = require('twilio');
+const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
 const { pool } = require('../config/database');
 const { redis, cacheGet, cacheSet } = require('../config/redis');
 const { logger } = require('../config/logger');
-const nodemailer = require('nodemailer');
-const twilio = require('twilio');
+
+
+// Initialize Firebase Admin SDK if configured
+let firebaseApp = null;
+try {
+  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      }),
+    });
+    logger.info('Firebase Admin SDK initialized successfully');
+  } else {
+    logger.warn('Firebase credentials not configured. Push notifications disabled.');
+  }
+} catch (error) {
+  logger.error('Failed to initialize Firebase Admin SDK:', error);
+}
+
+
 
 // Email transporter
 const emailTransporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT),
+  port: parseInt(process.env.EMAIL_PORT, 10),
   secure: process.env.EMAIL_SECURE === 'true',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS,
   }
 });
 
@@ -72,30 +95,408 @@ class NotificationService {
       throw error;
     }
   }
-  
-  static async sendPushNotification(userId, title, body, data = {}) {
+
+   /////// ============================================= ///////////////////
+
+
+     /**
+   * Register FCM token for a user
+   * @param {string} userId - User ID
+   * @param {string} fcmToken - FCM token
+   * @param {Object} deviceInfo - Device information
+   * @returns {Promise<Object>} Registered device
+   */
+  static async registerFCMToken(userId, fcmToken, deviceInfo = {}) {
+    const {
+      deviceId,
+      deviceName,
+      deviceModel,
+      osVersion,
+      appVersion,
+      platform
+    } = deviceInfo;
+    
+    const client = await pool.connect();
+    
     try {
-      // Get user's FCM tokens
+      await client.query('BEGIN');
+      
+      // Deactivate any existing tokens for this device if deviceId provided
+      if (deviceId) {
+        await client.query(
+          `UPDATE user_devices 
+           SET is_active = false, unregistered_at = NOW()
+           WHERE user_id = $1 AND device_id = $2 AND fcm_token != $3`,
+          [userId, deviceId, fcmToken]
+        );
+      }
+      
+      // Insert or update the token
+      const result = await client.query(
+        `INSERT INTO user_devices 
+         (user_id, fcm_token, device_id, device_name, device_model, os_version, 
+          app_version, platform, is_active, last_used, registered_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, NOW(), NOW())
+         ON CONFLICT (fcm_token) 
+         DO UPDATE SET 
+           user_id = EXCLUDED.user_id,
+           device_id = COALESCE(EXCLUDED.device_id, user_devices.device_id),
+           device_name = COALESCE(EXCLUDED.device_name, user_devices.device_name),
+           device_model = COALESCE(EXCLUDED.device_model, user_devices.device_model),
+           os_version = COALESCE(EXCLUDED.os_version, user_devices.os_version),
+           app_version = COALESCE(EXCLUDED.app_version, user_devices.app_version),
+           platform = COALESCE(EXCLUDED.platform, user_devices.platform),
+           is_active = true,
+           unregistered_at = NULL,
+           last_used = NOW(),
+           updated_at = NOW()
+         RETURNING *`,
+        [userId, fcmToken, deviceId, deviceName, deviceModel, osVersion, appVersion, platform]
+      );
+      
+      // Cache the token for quick access
+      await cacheSet(`fcm:token:${userId}`, fcmToken, 86400); // 24 hours
+      
+      await client.query('COMMIT');
+      
+      logger.info(`FCM token registered for user ${userId}`);
+      
+      return result.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('Failed to register FCM token:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  /**
+   * Unregister FCM token (logout or remove device)
+   * @param {string} userId - User ID
+   * @param {string} fcmToken - FCM token
+   * @returns {Promise<boolean>} Success status
+   */
+  static async unregisterFCMToken(userId, fcmToken) {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const result = await client.query(
+        `UPDATE user_devices 
+         SET is_active = false, unregistered_at = NOW(), updated_at = NOW()
+         WHERE user_id = $1 AND fcm_token = $2
+         RETURNING *`,
+        [userId, fcmToken]
+      );
+      
+      // Remove from cache
+      await redis.del(`fcm:token:${userId}`);
+      
+      await client.query('COMMIT');
+      
+      if (result.rows.length > 0) {
+        logger.info(`FCM token unregistered for user ${userId}`);
+      }
+      
+      return result.rows.length > 0;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('Failed to unregister FCM token:', error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  /**
+   * Get user's active FCM tokens
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} Array of FCM tokens
+   */
+  static async getUserFCMTokens(userId) {
+    try {
+      // Check cache first
+      const cachedToken = await cacheGet(`fcm:token:${userId}`);
+      if (cachedToken) {
+        return [cachedToken];
+      }
+      
+      // Get from database
+      const result = await pool.query(
+        `SELECT fcm_token FROM user_devices 
+         WHERE user_id = $1 AND is_active = true
+         ORDER BY last_used DESC`,
+        [userId]
+      );
+      
+      const tokens = result.rows.map(row => row.fcm_token);
+      
+      // Cache the first token (most recent) for quick access
+      if (tokens.length > 0) {
+        await cacheSet(`fcm:token:${userId}`, tokens[0], 86400);
+      }
+      
+      return tokens;
+    } catch (error) {
+      logger.error('Failed to get user FCM tokens:', error);
+      return [];
+    }
+  }
+  
+  /**
+   * Send push notification to a user
+   * @param {string} userId - User ID
+   * @param {string} title - Notification title
+   * @param {string} body - Notification body
+   * @param {Object} data - Additional data payload
+   * @param {string} priority - Priority (high, normal)
+   * @returns {Promise<Object>} Send result
+   */
+  static async sendPushNotification(userId, title, body, data = {}, priority = 'high') {
+    if (!firebaseApp) {
+      logger.warn('Firebase not configured. Push notification not sent.');
+      return { success: false, error: 'Firebase not configured' };
+    }
+    
+    try {
+      // Get user's active tokens
       const tokens = await this.getUserFCMTokens(userId);
       
       if (tokens.length === 0) {
-        logger.info(`No FCM tokens found for user ${userId}`);
-        return;
+        logger.info(`No active FCM tokens for user ${userId}`);
+        return { success: false, error: 'No active tokens' };
       }
       
-      // Store notification in database
-      const notification = await this.storeNotification(userId, 'push', title, body, data);
+      // Create notification record
+      const notificationRecord = await pool.query(
+        `INSERT INTO push_notifications (user_id, title, body, data, priority, status)
+         VALUES ($1, $2, $3, $4, $5, 'sending')
+         RETURNING id`,
+        [userId, title, body, data, priority]
+      );
       
-      // Send to Firebase Cloud Messaging (would need FCM setup)
-      // This is a placeholder - actual FCM integration would go here
-      logger.info(`Push notification sent to user ${userId}: ${title}`);
+      const notificationId = notificationRecord.rows[0].id;
       
-      return notification;
+      // Prepare message
+      const message = {
+        notification: {
+          title,
+          body,
+        },
+        data: {
+          ...data,
+          notification_id: notificationId.toString(),
+          click_action: 'FLUTTER_NOTIFICATION_CLICK',
+          sound: 'default',
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1,
+            },
+          },
+        },
+        android: {
+          priority: priority === 'high' ? 'high' : 'normal',
+          notification: {
+            sound: 'default',
+            priority: priority,
+          },
+        },
+        tokens,
+      };
+      
+      // Send to Firebase
+      const response = await admin.messaging().sendEachForMulticast(message);
+      
+      // Process results
+      const failedTokens = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          failedTokens.push(tokens[idx]);
+          
+          // Log error
+          logger.warn(`Failed to send to token ${tokens[idx]}: ${resp.error?.message}`);
+        }
+      });
+      
+      // Update notification status
+      const {successCount} = response;
+      const {failureCount} = response;
+      
+      await pool.query(
+        `UPDATE push_notifications 
+         SET status = $1, 
+             sent_at = NOW(),
+             metadata = $2
+         WHERE id = $3`,
+        [
+          successCount > 0 ? 'sent' : 'failed',
+          JSON.stringify({ successCount, failureCount, failedTokens }),
+          notificationId
+        ]
+      );
+      
+      // Invalidate failed tokens
+      if (failedTokens.length > 0) {
+        await this.invalidateTokens(failedTokens);
+      }
+      
+      logger.info(`Push notification sent to user ${userId}: ${successCount}/${tokens.length} successful`);
+      
+      return {
+        success: true,
+        notificationId,
+        successCount,
+        failureCount,
+        failedTokens
+      };
     } catch (error) {
-      logger.error('Push notification failed:', error);
-      throw error;
+      logger.error('Failed to send push notification:', error);
+      return { success: false, error: error.message };
     }
   }
+  
+  /**
+   * Invalidate failed FCM tokens
+   * @param {Array} tokens - Array of tokens to invalidate
+   * @returns {Promise<void>}
+   */
+  static async invalidateTokens(tokens) {
+    if (!tokens || tokens.length === 0) return;
+    
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      for (const token of tokens) {
+        // Mark token as inactive
+        await client.query(
+          `UPDATE user_devices 
+           SET is_active = false, invalidated_at = NOW(), updated_at = NOW()
+           WHERE fcm_token = $1`,
+          [token]
+        );
+        
+        // Record invalid token for analytics
+        await client.query(
+          `INSERT INTO invalid_tokens (token, reason)
+           VALUES ($1, $2)`,
+          [token, 'send_failure']
+        );
+      }
+      
+      await client.query('COMMIT');
+      
+      logger.info(`Invalidated ${tokens.length} FCM tokens`);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('Failed to invalidate tokens:', error);
+    } finally {
+      client.release();
+    }
+  }
+  
+  /**
+   * Update token last used timestamp
+   * @param {string} fcmToken - FCM token
+   * @returns {Promise<void>}
+   */
+  static async updateTokenLastUsed(fcmToken) {
+    try {
+      await pool.query(
+        `UPDATE user_devices 
+         SET last_used = NOW()
+         WHERE fcm_token = $1`,
+        [fcmToken]
+      );
+    } catch (error) {
+      logger.error('Failed to update token last used:', error);
+    }
+  }
+  
+  /**
+   * Get user devices
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} User devices
+   */
+  static async getUserDevices(userId) {
+    const result = await pool.query(
+      `SELECT id, device_id, device_name, device_model, os_version, 
+              app_version, platform, is_active, last_used, registered_at
+       FROM user_devices
+       WHERE user_id = $1
+       ORDER BY last_used DESC`,
+      [userId]
+    );
+    
+    return result.rows;
+  }
+  
+  /**
+   * Remove old inactive devices (cleanup job)
+   * @param {number} daysInactive - Days of inactivity to consider
+   * @returns {Promise<number>} Number of devices removed
+   */
+  static async cleanupInactiveDevices(daysInactive = 90) {
+    const result = await pool.query(
+      `UPDATE user_devices 
+       SET is_active = false, 
+           unregistered_at = NOW(),
+           updated_at = NOW()
+       WHERE is_active = true 
+         AND last_used < NOW() - INTERVAL '${daysInactive} days'
+       RETURNING id`,
+      []
+    );
+    
+    logger.info(`Cleaned up ${result.rowCount} inactive devices`);
+    
+    return result.rowCount;
+  }
+  
+  /**
+   * Get push notification statistics
+   * @param {string} userId - User ID (optional)
+   * @param {number} days - Days to look back
+   * @returns {Promise<Object>} Statistics
+   */
+  static async getPushStats(userId = null, days = 30) {
+    let query = `
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'sent' THEN 1 END) as sent,
+        COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed,
+        COUNT(CASE WHEN clicked_at IS NOT NULL THEN 1 END) as clicked,
+        AVG(CASE WHEN clicked_at IS NOT NULL THEN EXTRACT(EPOCH FROM (clicked_at - sent_at)) END) as avg_click_time_seconds
+      FROM push_notifications
+      WHERE created_at > NOW() - INTERVAL '${days} days'
+    `;
+    
+    const params = [];
+    
+    if (userId) {
+      query += ` AND user_id = $1`;
+      params.push(userId);
+    }
+    
+    const result = await pool.query(query, params);
+    
+    return result.rows[0];
+  }
+
+
+
+
+
+
+   //////////////////////////  +++++++++++++++++++  ///////////////////////
+  
+
   
   static async storeNotification(userId, channel, title, message, metadata = {}) {
     const result = await pool.query(
@@ -108,36 +509,20 @@ class NotificationService {
     return result.rows[0];
   }
   
-  static async getUserFCMTokens(userId) {
-    const result = await pool.query(
-      `SELECT fcm_token FROM user_devices WHERE user_id = $1 AND is_active = true`,
-      [userId]
-    );
-    
-    return result.rows.map(row => row.fcm_token);
-  }
-  
-  static async registerFCMToken(userId, fcmToken, deviceInfo = {}) {
-    const result = await pool.query(
-      `INSERT INTO user_devices (user_id, fcm_token, device_info, is_active)
-       VALUES ($1, $2, $3, true)
-       ON CONFLICT (fcm_token) DO UPDATE SET is_active = true, last_used = NOW()
-       RETURNING *`,
-      [userId, fcmToken, deviceInfo]
-    );
-    
-    return result.rows[0];
-  }
-  
-  static async unregisterFCMToken(userId, fcmToken) {
-    const result = await pool.query(
-      `UPDATE user_devices SET is_active = false WHERE user_id = $1 AND fcm_token = $2
-       RETURNING *`,
-      [userId, fcmToken]
-    );
-    
-    return result.rows[0];
-  }
+
+
+
+
+
+
+
+
+
+
+   //////////////// **************************  ////////////////////////
+
+
+
   
   // Job-related notifications
   static async sendJobOfferNotification(artisanId, jobDetails) {
@@ -194,7 +579,7 @@ class NotificationService {
   }
   
   static async sendJobCompletionNotification(clientId, jobDetails) {
-    const message = `Your job has been completed. Please review and make payment.`;
+    const message = 'Your job has been completed. Please review and make payment.';
     
     await this.sendPushNotification(clientId, 'Job Completed', message, {
       type: 'job_completed',

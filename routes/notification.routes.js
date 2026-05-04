@@ -5,6 +5,70 @@ const { authenticateToken } = require('../middleware/auth.middleware');
 const Notification = require('../models/Notification');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
+const NotificationService = require('../services/notification.service');
+
+
+
+
+// Register FCM token
+router.post('/register-device', authenticateToken, [
+  body('fcmToken').notEmpty().withMessage('FCM token is required'),
+  body('platform').isIn(['ios', 'android', 'web']).withMessage('Platform must be ios, android, or web'),
+  body('deviceId').optional().isString(),
+  body('deviceName').optional().isString(),
+  body('deviceModel').optional().isString(),
+  body('osVersion').optional().isString(),
+  body('appVersion').optional().isString()
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { fcmToken, platform, deviceId, deviceName, deviceModel, osVersion, appVersion } = req.body;
+    
+    const device = await NotificationService.registerFCMToken(
+      req.user.id,
+      fcmToken,
+      { deviceId, deviceName, deviceModel, osVersion, appVersion, platform }
+    );
+    
+    sendSuccess(res, device, 'Device registered successfully');
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Unregister FCM token (logout)
+router.post('/unregister-device', authenticateToken, [
+  body('fcmToken').notEmpty().withMessage('FCM token is required')
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    await NotificationService.unregisterFCMToken(req.user.id, req.body.fcmToken);
+    sendSuccess(res, null, 'Device unregistered successfully');
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get user devices
+router.get('/devices', authenticateToken, async (req, res, next) => {
+  try {
+    const devices = await NotificationService.getUserDevices(req.user.id);
+    sendSuccess(res, devices, 'Devices retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ... rest of notification routes
+
 
 // Get user notifications
 router.get('/', authenticateToken, [

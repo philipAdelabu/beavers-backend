@@ -16185,3 +16185,323 @@
 2026-05-04 16:33:10 [INFO]: Socket.IO server initialized 
 2026-05-04 16:33:10 [INFO]: getting to  port .. 
 2026-05-04 16:33:10 [INFO]: Server running on port 3000 
+2026-05-04 16:57:33 [INFO]: ... end of ther server call.. 
+2026-05-04 16:57:33 [INFO]: Database pool connected 
+2026-05-04 16:57:33 [INFO]: Database extensions initialized 
+2026-05-04 16:57:33 [INFO]: Database connected successfully at Mon May 04 2026 16:57:33 GMT+0100 (West Africa Time) 
+2026-05-04 16:57:33 [INFO]: Database connected successfully 
+2026-05-04 16:57:33 [INFO]: Redis connecting... 
+2026-05-04 16:57:33 [INFO]: Redis connected successfully 
+2026-05-04 16:57:33 [INFO]: Redis initialized and connected 
+2026-05-04 16:57:33 [INFO]: Redis connected successfully 
+2026-05-04 16:57:33 [INFO]: Socket.IO server initialized 
+2026-05-04 16:57:33 [INFO]: getting to  port .. 
+2026-05-04 16:57:33 [INFO]: Server running on port 3000 
+2026-05-04 16:57:37 [INFO]: ... end of ther server call.. 
+2026-05-04 16:57:37 [INFO]: Database pool connected 
+2026-05-04 16:57:37 [INFO]: Database extensions initialized 
+2026-05-04 16:57:37 [INFO]: Database connected successfully at Mon May 04 2026 16:57:37 GMT+0100 (West Africa Time) 
+2026-05-04 16:57:37 [INFO]: Database connected successfully 
+2026-05-04 16:57:37 [INFO]: Redis connecting... 
+2026-05-04 16:57:37 [INFO]: Redis connected successfully 
+2026-05-04 16:57:37 [INFO]: Redis initialized and connected 
+2026-05-04 16:57:37 [INFO]: Redis connected successfully 
+2026-05-04 16:57:37 [INFO]: Socket.IO server initialized 
+2026-05-04 16:57:37 [INFO]: getting to  port .. 
+2026-05-04 16:57:37 [INFO]: Server running on port 3000 
+2026-05-04 16:57:39 [INFO]: ... end of ther server call.. 
+2026-05-04 16:57:39 [INFO]: Database pool connected 
+2026-05-04 16:57:39 [INFO]: Database extensions initialized 
+2026-05-04 16:57:39 [INFO]: Database connected successfully at Mon May 04 2026 16:57:39 GMT+0100 (West Africa Time) 
+2026-05-04 16:57:39 [INFO]: Database connected successfully 
+2026-05-04 16:57:39 [INFO]: Redis connecting... 
+2026-05-04 16:57:39 [INFO]: Redis connected successfully 
+2026-05-04 16:57:39 [INFO]: Redis initialized and connected 
+2026-05-04 16:57:39 [INFO]: Redis connected successfully 
+2026-05-04 16:57:39 [INFO]: Socket.IO server initialized 
+2026-05-04 16:57:39 [INFO]: getting to  port .. 
+2026-05-04 16:57:39 [INFO]: Server running on port 3000 
+2026-05-04 17:01:39 [INFO]: ... end of ther server call.. 
+2026-05-04 17:01:39 [INFO]: Database pool connected 
+2026-05-04 17:01:39 [INFO]: Database extensions initialized 
+2026-05-04 17:01:39 [INFO]: Database connected successfully at Mon May 04 2026 17:01:39 GMT+0100 (West Africa Time) 
+2026-05-04 17:01:39 [INFO]: Database connected successfully 
+2026-05-04 17:01:39 [INFO]: Redis connecting... 
+2026-05-04 17:01:39 [INFO]: Redis connected successfully 
+2026-05-04 17:01:39 [INFO]: Redis initialized and connected 
+2026-05-04 17:01:39 [INFO]: Redis connected successfully 
+2026-05-04 17:01:39 [INFO]: Socket.IO server initialized 
+2026-05-04 17:01:39 [INFO]: getting to  port .. 
+2026-05-04 17:01:39 [INFO]: Server running on port 3000 
+2026-05-04 17:07:06 [INFO]: ... end of ther server call.. 
+2026-05-04 17:07:06 [INFO]: Database pool connected 
+2026-05-04 17:07:06 [INFO]: Database extensions initialized 
+2026-05-04 17:07:06 [INFO]: Database connected successfully at Mon May 04 2026 17:07:06 GMT+0100 (West Africa Time) 
+2026-05-04 17:07:06 [INFO]: Database connected successfully 
+2026-05-04 17:07:06 [INFO]: Redis connecting... 
+2026-05-04 17:07:06 [INFO]: Redis connected successfully 
+2026-05-04 17:07:06 [INFO]: Redis initialized and connected 
+2026-05-04 17:07:06 [INFO]: Redis connected successfully 
+2026-05-04 17:07:06 [INFO]: Socket.IO server initialized 
+2026-05-04 17:07:06 [INFO]: getting to  port .. 
+2026-05-04 17:07:06 [INFO]: Server running on port 3000 
+2026-05-04 17:11:11 [INFO]: ... end of ther server call.. 
+2026-05-04 17:11:11 [INFO]: Database pool connected 
+2026-05-04 17:11:11 [INFO]: Database extensions initialized 
+2026-05-04 17:11:11 [INFO]: Database connected successfully at Mon May 04 2026 17:11:11 GMT+0100 (West Africa Time) 
+2026-05-04 17:11:11 [INFO]: Database connected successfully 
+2026-05-04 17:11:11 [INFO]: Redis connecting... 
+2026-05-04 17:11:11 [INFO]: Redis connected successfully 
+2026-05-04 17:11:11 [INFO]: Redis initialized and connected 
+2026-05-04 17:11:11 [INFO]: Redis connected successfully 
+2026-05-04 17:11:11 [INFO]: Socket.IO server initialized 
+2026-05-04 17:11:11 [INFO]: getting to  port .. 
+2026-05-04 17:11:11 [INFO]: Server running on port 3000 
+2026-05-04 17:11:22 [INFO]: ... end of ther server call.. 
+2026-05-04 17:11:22 [INFO]: Database pool connected 
+2026-05-04 17:11:22 [INFO]: Database extensions initialized 
+2026-05-04 17:11:22 [INFO]: Database connected successfully at Mon May 04 2026 17:11:22 GMT+0100 (West Africa Time) 
+2026-05-04 17:11:22 [INFO]: Database connected successfully 
+2026-05-04 17:11:22 [INFO]: Redis connecting... 
+2026-05-04 17:11:22 [INFO]: Redis connected successfully 
+2026-05-04 17:11:22 [INFO]: Redis initialized and connected 
+2026-05-04 17:11:22 [INFO]: Redis connected successfully 
+2026-05-04 17:11:22 [INFO]: Socket.IO server initialized 
+2026-05-04 17:11:22 [INFO]: getting to  port .. 
+2026-05-04 17:11:22 [INFO]: Server running on port 3000 
+2026-05-04 17:12:24 [INFO]: ... end of ther server call.. 
+2026-05-04 17:12:24 [INFO]: Database pool connected 
+2026-05-04 17:12:24 [INFO]: Database extensions initialized 
+2026-05-04 17:12:24 [INFO]: Database connected successfully at Mon May 04 2026 17:12:24 GMT+0100 (West Africa Time) 
+2026-05-04 17:12:24 [INFO]: Database connected successfully 
+2026-05-04 17:12:24 [INFO]: Redis connecting... 
+2026-05-04 17:12:24 [INFO]: Redis connected successfully 
+2026-05-04 17:12:24 [INFO]: Redis initialized and connected 
+2026-05-04 17:12:24 [INFO]: Redis connected successfully 
+2026-05-04 17:12:24 [INFO]: Socket.IO server initialized 
+2026-05-04 17:12:24 [INFO]: getting to  port .. 
+2026-05-04 17:12:24 [INFO]: Server running on port 3000 
+2026-05-04 17:12:33 [INFO]: ... end of ther server call.. 
+2026-05-04 17:12:33 [INFO]: Database pool connected 
+2026-05-04 17:12:33 [INFO]: Database extensions initialized 
+2026-05-04 17:12:33 [INFO]: Database connected successfully at Mon May 04 2026 17:12:33 GMT+0100 (West Africa Time) 
+2026-05-04 17:12:33 [INFO]: Database connected successfully 
+2026-05-04 17:12:33 [INFO]: Redis connecting... 
+2026-05-04 17:12:33 [INFO]: Redis connected successfully 
+2026-05-04 17:12:33 [INFO]: Redis initialized and connected 
+2026-05-04 17:12:33 [INFO]: Redis connected successfully 
+2026-05-04 17:12:33 [INFO]: Socket.IO server initialized 
+2026-05-04 17:12:33 [INFO]: getting to  port .. 
+2026-05-04 17:12:33 [INFO]: Server running on port 3000 
+2026-05-04 17:12:41 [INFO]: ... end of ther server call.. 
+2026-05-04 17:12:41 [INFO]: Database pool connected 
+2026-05-04 17:12:41 [INFO]: Database extensions initialized 
+2026-05-04 17:12:41 [INFO]: Database connected successfully at Mon May 04 2026 17:12:41 GMT+0100 (West Africa Time) 
+2026-05-04 17:12:41 [INFO]: Database connected successfully 
+2026-05-04 17:12:41 [INFO]: Redis connecting... 
+2026-05-04 17:12:41 [INFO]: Redis connected successfully 
+2026-05-04 17:12:41 [INFO]: Redis initialized and connected 
+2026-05-04 17:12:41 [INFO]: Redis connected successfully 
+2026-05-04 17:12:41 [INFO]: Socket.IO server initialized 
+2026-05-04 17:12:41 [INFO]: getting to  port .. 
+2026-05-04 17:12:41 [INFO]: Server running on port 3000 
+2026-05-04 17:13:03 [INFO]: ... end of ther server call.. 
+2026-05-04 17:13:03 [INFO]: Database pool connected 
+2026-05-04 17:13:03 [INFO]: Database extensions initialized 
+2026-05-04 17:13:03 [INFO]: Database connected successfully at Mon May 04 2026 17:13:03 GMT+0100 (West Africa Time) 
+2026-05-04 17:13:03 [INFO]: Database connected successfully 
+2026-05-04 17:13:03 [INFO]: Redis connecting... 
+2026-05-04 17:13:03 [INFO]: Redis connected successfully 
+2026-05-04 17:13:03 [INFO]: Redis initialized and connected 
+2026-05-04 17:13:03 [INFO]: Redis connected successfully 
+2026-05-04 17:13:03 [INFO]: Socket.IO server initialized 
+2026-05-04 17:13:03 [INFO]: getting to  port .. 
+2026-05-04 17:13:03 [INFO]: Server running on port 3000 
+2026-05-04 17:13:21 [INFO]: ... end of ther server call.. 
+2026-05-04 17:13:21 [INFO]: Database pool connected 
+2026-05-04 17:13:21 [INFO]: Database extensions initialized 
+2026-05-04 17:13:21 [INFO]: Database connected successfully at Mon May 04 2026 17:13:21 GMT+0100 (West Africa Time) 
+2026-05-04 17:13:21 [INFO]: Database connected successfully 
+2026-05-04 17:13:21 [INFO]: Redis connecting... 
+2026-05-04 17:13:21 [INFO]: Redis connected successfully 
+2026-05-04 17:13:21 [INFO]: Redis initialized and connected 
+2026-05-04 17:13:21 [INFO]: Redis connected successfully 
+2026-05-04 17:13:21 [INFO]: Socket.IO server initialized 
+2026-05-04 17:13:21 [INFO]: getting to  port .. 
+2026-05-04 17:13:21 [INFO]: Server running on port 3000 
+2026-05-04 17:13:53 [INFO]: ... end of ther server call.. 
+2026-05-04 17:13:53 [INFO]: Database pool connected 
+2026-05-04 17:13:53 [INFO]: Database extensions initialized 
+2026-05-04 17:13:53 [INFO]: Database connected successfully at Mon May 04 2026 17:13:53 GMT+0100 (West Africa Time) 
+2026-05-04 17:13:53 [INFO]: Database connected successfully 
+2026-05-04 17:13:53 [INFO]: Redis connecting... 
+2026-05-04 17:13:53 [INFO]: Redis connected successfully 
+2026-05-04 17:13:53 [INFO]: Redis initialized and connected 
+2026-05-04 17:13:53 [INFO]: Redis connected successfully 
+2026-05-04 17:13:53 [INFO]: Socket.IO server initialized 
+2026-05-04 17:13:53 [INFO]: getting to  port .. 
+2026-05-04 17:13:53 [INFO]: Server running on port 3000 
+2026-05-04 17:14:09 [INFO]: ... end of ther server call.. 
+2026-05-04 17:14:09 [INFO]: Database pool connected 
+2026-05-04 17:14:09 [INFO]: Database extensions initialized 
+2026-05-04 17:14:09 [INFO]: Database connected successfully at Mon May 04 2026 17:14:09 GMT+0100 (West Africa Time) 
+2026-05-04 17:14:09 [INFO]: Database connected successfully 
+2026-05-04 17:14:09 [INFO]: Redis connecting... 
+2026-05-04 17:14:09 [INFO]: Redis connected successfully 
+2026-05-04 17:14:09 [INFO]: Redis initialized and connected 
+2026-05-04 17:14:09 [INFO]: Redis connected successfully 
+2026-05-04 17:14:09 [INFO]: Socket.IO server initialized 
+2026-05-04 17:14:09 [INFO]: getting to  port .. 
+2026-05-04 17:14:09 [INFO]: Server running on port 3000 
+2026-05-04 17:14:51 [INFO]: ... end of ther server call.. 
+2026-05-04 17:14:51 [INFO]: Database pool connected 
+2026-05-04 17:14:51 [INFO]: Database extensions initialized 
+2026-05-04 17:14:51 [INFO]: Database connected successfully at Mon May 04 2026 17:14:51 GMT+0100 (West Africa Time) 
+2026-05-04 17:14:51 [INFO]: Database connected successfully 
+2026-05-04 17:14:51 [INFO]: Redis connecting... 
+2026-05-04 17:14:51 [INFO]: Redis connected successfully 
+2026-05-04 17:14:51 [INFO]: Redis initialized and connected 
+2026-05-04 17:14:51 [INFO]: Redis connected successfully 
+2026-05-04 17:14:51 [INFO]: Socket.IO server initialized 
+2026-05-04 17:14:51 [INFO]: getting to  port .. 
+2026-05-04 17:14:51 [INFO]: Server running on port 3000 
+2026-05-04 17:14:55 [INFO]: ... end of ther server call.. 
+2026-05-04 17:14:55 [INFO]: Database pool connected 
+2026-05-04 17:14:55 [INFO]: Database extensions initialized 
+2026-05-04 17:14:55 [INFO]: Database connected successfully at Mon May 04 2026 17:14:55 GMT+0100 (West Africa Time) 
+2026-05-04 17:14:55 [INFO]: Database connected successfully 
+2026-05-04 17:14:55 [INFO]: Redis connecting... 
+2026-05-04 17:14:55 [INFO]: Redis connected successfully 
+2026-05-04 17:14:55 [INFO]: Redis initialized and connected 
+2026-05-04 17:14:55 [INFO]: Redis connected successfully 
+2026-05-04 17:14:55 [INFO]: Socket.IO server initialized 
+2026-05-04 17:14:55 [INFO]: getting to  port .. 
+2026-05-04 17:14:55 [INFO]: Server running on port 3000 
+2026-05-04 17:15:16 [INFO]: ... end of ther server call.. 
+2026-05-04 17:15:16 [INFO]: Database pool connected 
+2026-05-04 17:15:16 [INFO]: Database extensions initialized 
+2026-05-04 17:15:16 [INFO]: Database connected successfully at Mon May 04 2026 17:15:16 GMT+0100 (West Africa Time) 
+2026-05-04 17:15:16 [INFO]: Database connected successfully 
+2026-05-04 17:15:16 [INFO]: Redis connecting... 
+2026-05-04 17:15:16 [INFO]: Redis connected successfully 
+2026-05-04 17:15:16 [INFO]: Redis initialized and connected 
+2026-05-04 17:15:16 [INFO]: Redis connected successfully 
+2026-05-04 17:15:16 [INFO]: Socket.IO server initialized 
+2026-05-04 17:15:16 [INFO]: getting to  port .. 
+2026-05-04 17:15:16 [INFO]: Server running on port 3000 
+2026-05-04 17:15:26 [INFO]: ... end of ther server call.. 
+2026-05-04 17:15:26 [INFO]: Database pool connected 
+2026-05-04 17:15:26 [INFO]: Database extensions initialized 
+2026-05-04 17:15:26 [INFO]: Database connected successfully at Mon May 04 2026 17:15:26 GMT+0100 (West Africa Time) 
+2026-05-04 17:15:26 [INFO]: Database connected successfully 
+2026-05-04 17:15:26 [INFO]: Redis connecting... 
+2026-05-04 17:15:26 [INFO]: Redis connected successfully 
+2026-05-04 17:15:26 [INFO]: Redis initialized and connected 
+2026-05-04 17:15:26 [INFO]: Redis connected successfully 
+2026-05-04 17:15:26 [INFO]: Socket.IO server initialized 
+2026-05-04 17:15:26 [INFO]: getting to  port .. 
+2026-05-04 17:15:26 [INFO]: Server running on port 3000 
+2026-05-04 17:16:27 [ERROR]: Failed to initialize Firebase Admin SDK: admin is not defined {"stack":"ReferenceError: admin is not defined\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:12:5)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)\n    at require (node:internal/modules/helpers:191:16)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/auth.service.js:7:32)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)"}
+2026-05-04 17:16:28 [INFO]: ... end of ther server call.. 
+2026-05-04 17:16:28 [INFO]: Database pool connected 
+2026-05-04 17:16:28 [INFO]: Database extensions initialized 
+2026-05-04 17:16:28 [INFO]: Database connected successfully at Mon May 04 2026 17:16:28 GMT+0100 (West Africa Time) 
+2026-05-04 17:16:28 [INFO]: Database connected successfully 
+2026-05-04 17:16:28 [INFO]: Redis connecting... 
+2026-05-04 17:16:28 [INFO]: Redis connected successfully 
+2026-05-04 17:16:28 [INFO]: Redis initialized and connected 
+2026-05-04 17:16:28 [INFO]: Redis connected successfully 
+2026-05-04 17:16:28 [INFO]: Socket.IO server initialized 
+2026-05-04 17:16:28 [INFO]: getting to  port .. 
+2026-05-04 17:16:28 [INFO]: Server running on port 3000 
+2026-05-04 17:18:56 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:18:57 [INFO]: ... end of ther server call.. 
+2026-05-04 17:18:57 [INFO]: Database pool connected 
+2026-05-04 17:18:57 [INFO]: Database extensions initialized 
+2026-05-04 17:18:57 [INFO]: Database connected successfully at Mon May 04 2026 17:18:57 GMT+0100 (West Africa Time) 
+2026-05-04 17:18:57 [INFO]: Database connected successfully 
+2026-05-04 17:18:57 [INFO]: Redis connecting... 
+2026-05-04 17:18:57 [INFO]: Redis connected successfully 
+2026-05-04 17:18:57 [INFO]: Redis initialized and connected 
+2026-05-04 17:18:57 [INFO]: Redis connected successfully 
+2026-05-04 17:18:57 [INFO]: Socket.IO server initialized 
+2026-05-04 17:18:57 [INFO]: getting to  port .. 
+2026-05-04 17:18:57 [INFO]: Server running on port 3000 
+2026-05-04 17:22:56 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:22:56 [INFO]: ... end of ther server call.. 
+2026-05-04 17:22:56 [INFO]: Database pool connected 
+2026-05-04 17:22:56 [INFO]: Database extensions initialized 
+2026-05-04 17:22:56 [INFO]: Database connected successfully at Mon May 04 2026 17:22:56 GMT+0100 (West Africa Time) 
+2026-05-04 17:22:56 [INFO]: Database connected successfully 
+2026-05-04 17:22:56 [INFO]: Redis connecting... 
+2026-05-04 17:22:56 [INFO]: Redis connected successfully 
+2026-05-04 17:22:56 [INFO]: Redis initialized and connected 
+2026-05-04 17:22:56 [INFO]: Redis connected successfully 
+2026-05-04 17:22:56 [INFO]: Socket.IO server initialized 
+2026-05-04 17:22:56 [INFO]: getting to  port .. 
+2026-05-04 17:22:56 [INFO]: Server running on port 3000 
+2026-05-04 17:23:00 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:23:00 [INFO]: ... end of ther server call.. 
+2026-05-04 17:23:00 [INFO]: Database pool connected 
+2026-05-04 17:23:00 [INFO]: Database extensions initialized 
+2026-05-04 17:23:00 [INFO]: Database connected successfully at Mon May 04 2026 17:23:00 GMT+0100 (West Africa Time) 
+2026-05-04 17:23:00 [INFO]: Database connected successfully 
+2026-05-04 17:23:00 [INFO]: Redis connecting... 
+2026-05-04 17:23:00 [INFO]: Redis connected successfully 
+2026-05-04 17:23:00 [INFO]: Redis initialized and connected 
+2026-05-04 17:23:00 [INFO]: Redis connected successfully 
+2026-05-04 17:23:00 [INFO]: Socket.IO server initialized 
+2026-05-04 17:23:00 [INFO]: getting to  port .. 
+2026-05-04 17:23:00 [INFO]: Server running on port 3000 
+2026-05-04 17:23:14 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:23:14 [INFO]: ... end of ther server call.. 
+2026-05-04 17:23:14 [INFO]: Database pool connected 
+2026-05-04 17:23:14 [INFO]: Database extensions initialized 
+2026-05-04 17:23:14 [INFO]: Database connected successfully at Mon May 04 2026 17:23:14 GMT+0100 (West Africa Time) 
+2026-05-04 17:23:14 [INFO]: Database connected successfully 
+2026-05-04 17:23:14 [INFO]: Redis connecting... 
+2026-05-04 17:23:14 [INFO]: Redis connected successfully 
+2026-05-04 17:23:14 [INFO]: Redis initialized and connected 
+2026-05-04 17:23:14 [INFO]: Redis connected successfully 
+2026-05-04 17:23:14 [INFO]: Socket.IO server initialized 
+2026-05-04 17:23:14 [INFO]: getting to  port .. 
+2026-05-04 17:23:14 [INFO]: Server running on port 3000 
+2026-05-04 17:23:18 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:23:18 [INFO]: ... end of ther server call.. 
+2026-05-04 17:23:18 [INFO]: Database pool connected 
+2026-05-04 17:23:18 [INFO]: Database extensions initialized 
+2026-05-04 17:23:18 [INFO]: Database connected successfully at Mon May 04 2026 17:23:18 GMT+0100 (West Africa Time) 
+2026-05-04 17:23:18 [INFO]: Database connected successfully 
+2026-05-04 17:23:18 [INFO]: Redis connecting... 
+2026-05-04 17:23:18 [INFO]: Redis connected successfully 
+2026-05-04 17:23:18 [INFO]: Redis initialized and connected 
+2026-05-04 17:23:18 [INFO]: Redis connected successfully 
+2026-05-04 17:23:18 [INFO]: Socket.IO server initialized 
+2026-05-04 17:23:18 [INFO]: getting to  port .. 
+2026-05-04 17:23:18 [INFO]: Server running on port 3000 
+2026-05-04 17:23:21 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:23:21 [INFO]: ... end of ther server call.. 
+2026-05-04 17:23:21 [INFO]: Database pool connected 
+2026-05-04 17:23:21 [INFO]: Database extensions initialized 
+2026-05-04 17:23:21 [INFO]: Database connected successfully at Mon May 04 2026 17:23:21 GMT+0100 (West Africa Time) 
+2026-05-04 17:23:21 [INFO]: Database connected successfully 
+2026-05-04 17:23:21 [INFO]: Redis connecting... 
+2026-05-04 17:23:21 [INFO]: Redis connected successfully 
+2026-05-04 17:23:21 [INFO]: Redis initialized and connected 
+2026-05-04 17:23:21 [INFO]: Redis connected successfully 
+2026-05-04 17:23:21 [INFO]: Socket.IO server initialized 
+2026-05-04 17:23:21 [INFO]: getting to  port .. 
+2026-05-04 17:23:21 [INFO]: Server running on port 3000 
+2026-05-04 17:24:10 [ERROR]: Failed to initialize Firebase Admin SDK: Failed to parse private key: Error: Too few bytes to parse DER. {"errorInfo":{"code":"app/invalid-credential","message":"Failed to parse private key: Error: Too few bytes to parse DER."},"codePrefix":"app","stack":"Error: Failed to parse private key: Error: Too few bytes to parse DER.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:182:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:14:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-04 17:24:10 [INFO]: ... end of ther server call.. 
+2026-05-04 17:24:10 [INFO]: Database pool connected 
+2026-05-04 17:24:10 [INFO]: Database extensions initialized 
+2026-05-04 17:24:10 [INFO]: Database connected successfully at Mon May 04 2026 17:24:10 GMT+0100 (West Africa Time) 
+2026-05-04 17:24:10 [INFO]: Database connected successfully 
+2026-05-04 17:24:10 [INFO]: Redis connecting... 
+2026-05-04 17:24:10 [INFO]: Redis connected successfully 
+2026-05-04 17:24:10 [INFO]: Redis initialized and connected 
+2026-05-04 17:24:10 [INFO]: Redis connected successfully 
+2026-05-04 17:24:10 [INFO]: Socket.IO server initialized 
+2026-05-04 17:24:10 [INFO]: getting to  port .. 
+2026-05-04 17:24:10 [INFO]: Server running on port 3000 
