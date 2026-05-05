@@ -10,7 +10,7 @@ exports.up = async (queryInterface) => {
       device_model VARCHAR(100),
       os_version VARCHAR(50),
       app_version VARCHAR(20),
-      platform VARCHAR(20) CHECK (platform IN ('ios', 'android', 'web')),
+      platform VARCHAR(20),
       is_active BOOLEAN DEFAULT TRUE,
       last_used TIMESTAMP,
       registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -20,14 +20,13 @@ exports.up = async (queryInterface) => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
-    -- Create indexes for performance
+    -- Create indexes
     CREATE INDEX IF NOT EXISTS idx_user_devices_user_id ON user_devices(user_id);
     CREATE INDEX IF NOT EXISTS idx_user_devices_fcm_token ON user_devices(fcm_token);
     CREATE INDEX IF NOT EXISTS idx_user_devices_is_active ON user_devices(is_active);
-    CREATE INDEX IF NOT EXISTS idx_user_devices_platform ON user_devices(platform);
     CREATE INDEX IF NOT EXISTS idx_user_devices_last_used ON user_devices(last_used);
     
-    -- Create push_notifications table for tracking sent notifications
+    -- Create push_notifications table
     CREATE TABLE IF NOT EXISTS push_notifications (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -45,12 +44,11 @@ exports.up = async (queryInterface) => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
-    -- Create indexes for push_notifications
     CREATE INDEX IF NOT EXISTS idx_push_notifications_user_id ON push_notifications(user_id);
     CREATE INDEX IF NOT EXISTS idx_push_notifications_status ON push_notifications(status);
     CREATE INDEX IF NOT EXISTS idx_push_notifications_created_at ON push_notifications(created_at);
     
-    -- Create notification_tokens table for storing invalid/expired tokens
+    -- Create invalid_tokens table
     CREATE TABLE IF NOT EXISTS invalid_tokens (
       id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
       token VARCHAR(255) NOT NULL,
@@ -65,9 +63,6 @@ exports.up = async (queryInterface) => {
     CREATE TRIGGER update_user_devices_updated_at 
       BEFORE UPDATE ON user_devices 
       FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-      
-    -- Create function to automatically deactivate old devices (optional)
-    -- This will run as a scheduled job
   `);
 };
 

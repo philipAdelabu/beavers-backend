@@ -87,8 +87,8 @@ class ArtisanService {
       [isAvailable, location ? JSON.stringify(location) : null, userId]
     );
 
-     if(!result.rows[0]){
-       return null;
+     if(result.rows.length === 0){
+       return [];
      }
     const {skill_category} = result.rows[0];
     
@@ -330,11 +330,12 @@ class ArtisanService {
   
   static async getUpcomingJobs(userId, limit = 10) {
     const result = await pool.query(
-      `SELECT j.*, cp.full_legal_name as client_name, cp.phone as client_phone,
+      `SELECT j.*, cp.full_legal_name as client_name, u.phone as client_phone,
               cp.service_address, jb.billing_status
        FROM jobs j
        JOIN client_profiles cp ON j.client_id = cp.user_id
        LEFT JOIN job_billing jb ON j.id = jb.job_id
+      LEFT JOIN  users u ON u.id = cp.user_id
        WHERE j.artisan_id = $1 
          AND j.job_status IN ('accepted', 'arrived', 'diagnostics', 'execution')
        ORDER BY j.created_at ASC
@@ -344,7 +345,30 @@ class ArtisanService {
     
     return result.rows;
   }
-  
+   
+  static async getJobOffers(userId, limit = 10) {
+
+    try{
+       const result = await pool.query(
+      `SELECT j.*, cp.full_legal_name as client_name, u.phone as client_phone,
+              cp.service_address, jo.status as job_offer_status, jo.distance, jo.match_score
+       FROM jobs j
+       JOIN client_profiles cp ON j.client_id = cp.user_id
+       LEFT JOIN job_offers jo ON j.id = jo.job_id
+       LEFT JOIN  users u ON u.id = cp.user_id
+       WHERE jo.artisan_id = $1 
+         AND jo.status = 'pending'
+       ORDER BY jo.created_at ASC
+       LIMIT $2`,
+      [userId, limit]
+    );
+      return result.rows;
+    }catch(error){
+      throw error;
+    }
+
+   }
+
   static async getStatistics(userId) {
     const stats = await pool.query(`
       SELECT 

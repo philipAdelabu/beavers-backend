@@ -1,4 +1,5 @@
 const twilio = require('twilio');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const { pool } = require('../config/database');
@@ -46,6 +47,12 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID ? twilio(
 
 class NotificationService {
   static async sendEmail(to, subject, text, html = null) {
+
+      if(process.env.NODE_ENV === 'development'){
+           logger.info(`Email sent to ${to}: ${subject}`); 
+           return `Email sent to ${to}: ${subject}`;
+      }
+
     try {
       const mailOptions = {
         from: `"BeaverWorks" <${process.env.EMAIL_FROM || 'noreply@beaverworks.com'}>`,
@@ -78,6 +85,12 @@ class NotificationService {
     }
     
     try {
+
+      if(process.env.NODE_ENV === 'development'){
+           logger.info(`SMS sent to ${to}: ${message}`); 
+           return `SMS sent to ${to}: ${message}`;
+      }
+
       const result = await twilioClient.messages.create({
         body: message,
         to,

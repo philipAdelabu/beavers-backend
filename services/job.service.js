@@ -14,14 +14,16 @@ class JobService {
     
     try {
       await client.query('BEGIN');
+
+      const {longitude, latitude} = location;
       
       // Create job
       const jobResult = await client.query(
         `INSERT INTO jobs 
-         (client_id, category, description, media_urls, service_type, job_status, location)
-         VALUES ($1, $2, $3, $4, $5, 'pending', $6)
+         (client_id, category, description, media_urls, service_type, job_status, location, longitude, latitude)
+         VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7, $8)
          RETURNING *`,
-        [clientId, category, description, mediaUrls || [], serviceType, location]
+        [clientId, category, description, mediaUrls || [], serviceType, location, longitude, latitude],
       );
       
       const job = jobResult.rows[0];
@@ -42,10 +44,10 @@ class JobService {
       const offers = [];
       for (const artisan of nearbyArtisans.slice(0, 5)) {
         const offerResult = await client.query(
-          `INSERT INTO job_offers (job_id, artisan_id, status, expires_at)
-           VALUES ($1, $2, 'pending', NOW() + INTERVAL '2 minutes')
+          `INSERT INTO job_offers (job_id, artisan_id, match_score, distance, status, expires_at)
+           VALUES ($1, $2, $3, $4, 'pending', NOW() + INTERVAL '2400 minutes')
            RETURNING *`,
-          [job.id, artisan.user_id]
+          [job.id, artisan.user_id, artisan.score, artisan.distance]
         );
         
         offers.push(offerResult.rows[0]);
@@ -80,7 +82,7 @@ class JobService {
   static async findNearbyArtisans(category, location, radius = 20) {
     try {
       // Get artisans from Redis geo index
-      const nearby = await getNearbyArtisans(category, location.longitude, location.latitude, radius);
+      const nearby = await getNearbyArtisans(category.toUpperCase(), location.longitude, location.latitude, radius);
 
       if (nearby.length === 0) {
         logger.info('No nearby artisans found within radius');
@@ -88,7 +90,8 @@ class JobService {
       }
 
       const artisanIds = nearby.map(([id]) => id);
-      logger.info(`Found ${artisanIds.length} nearby artisans`);
+      logger.info(`Found ${artisanIds.length} nearby artisans: ${artisanIds}` );
+      logger.info(`category: ${category}`);
 
       // Get artisan details from database with ranking
       //  AND ap.monthly_fee_status = 'paid' ; --- IGNORE for now, we can filter this in the future when we implement monthly fee
@@ -101,13 +104,13 @@ class JobService {
         WHERE ap.user_id = ANY($1::uuid[])
           AND ap.is_available = true
           AND u.is_active = true
-          AND ap.skill_category = $2
+          AND LOWER(ap.skill_category) = $2
         ORDER BY ap.tier_level DESC, ap.star_rating DESC, ap.completion_rate DESC`,
-        [artisanIds, category]
+        [artisanIds, category.toLowerCase()],
       );
       
       if (result.rows.length === 0) {
-        logger.info('No eligible artisans found in database');
+        logger.info('No eligible artisans found in database 2');
         return [];
       }
       
@@ -226,7 +229,7 @@ class JobService {
       const pin = generateArrivalPIN();
       await client.query(
         `INSERT INTO arrival_pins (job_id, pin, expires_at)
-         VALUES ($1, $2, NOW() + INTERVAL '30 minutes')`,
+         VALUES ($1, $2, NOW() + INTERVAL '2400 minutes')`,
         [jobId, pin]
       );
       
@@ -281,7 +284,7 @@ class JobService {
       );
       
       // Create base fee billing
-      const baseFee = 2500; // Configurable
+      const baseFee = process.env.JOB_BASE_FEE || 2500; // Configurable
       await client.query(
         `UPDATE job_billing 
          SET base_fee = $1, billing_status = 'base_charged'
@@ -818,6 +821,510 @@ class JobService {
     
     return result.rows[0];
   }
+
+   // Add these methods to the existing JobService class
+
+/**
+ * Get available jobs for artisans to browse
+ * @param {Object} filters - Filter options
+ * @param {string} artisanId - Artisan ID (for personalization)
+ * @returns {Promise<Object>} Available jobs with pagination
+ */
+static async getAvailableJobs(filters = {}, artisanId = null) {
+  const {
+    category,
+    minBudget,
+    maxBudget,
+    serviceType,
+    location,
+    radius = 20,
+    sortBy = 'distance', // distance, budget, created_at
+    page = 1,
+    limit = 20
+  } = filters;
+  
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT j.*,
+           cp.full_legal_name as client_name,
+           cp.street_address,
+           c.name as category_name,
+           COALESCE(jb.total_amount, 0) as estimated_budget,
+           CASE WHEN sa.artisan_id IS NOT NULL THEN true ELSE false END as is_saved,
+           CASE WHEN jv.artisan_id IS NOT NULL THEN true ELSE false END as is_viewed
+    FROM jobs j
+    JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN job_billing jb ON j.id = jb.job_id
+    LEFT JOIN categories c ON j.category = c.name
+    LEFT JOIN saved_jobs sa ON j.id = sa.job_id AND sa.artisan_id = $1
+    LEFT JOIN job_views jv ON j.id = jv.job_id AND jv.artisan_id = $1
+    WHERE j.job_status = 'pending'
+      AND j.is_public = true
+      AND (j.expires_at IS NULL OR j.expires_at > NOW())
+  `;
+  
+  const params = [artisanId];
+  let paramIndex = 2;
+  
+  // Apply filters
+  if (category) {
+    query += ` AND j.category = $${paramIndex}`;
+    params.push(category);
+    paramIndex++;
+  }
+  
+  if (minBudget) {
+    query += ` AND COALESCE(jb.total_amount, 0) >= $${paramIndex}`;
+    params.push(minBudget);
+    paramIndex++;
+  }
+  
+  if (maxBudget) {
+    query += ` AND COALESCE(jb.total_amount, 0) <= $${paramIndex}`;
+    params.push(maxBudget);
+    paramIndex++;
+  }
+  
+  if (serviceType) {
+    query += ` AND j.service_type = $${paramIndex}`;
+    params.push(serviceType);
+    paramIndex++;
+  }
+  
+  // Location-based filtering
+  if (location && location.latitude && location.longitude) {
+    query += `
+      AND ST_DWithin(
+        ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex + 1}), 4326),
+        ST_SetSRID(ST_MakePoint(
+          (j.location->>'longitude')::float,
+          (j.location->>'latitude')::float
+        ), 4326),
+        $${paramIndex + 2} * 1000
+      )
+    `;
+    params.push(location.longitude, location.latitude, radius);
+    paramIndex += 3;
+  }
+  
+  // Sorting
+  switch (sortBy) {
+    case 'distance':
+      if (location && location.latitude && location.longitude) {
+        query += `
+          ORDER BY ST_Distance(
+            ST_SetSRID(ST_MakePoint($${paramIndex}, $${paramIndex + 1}), 4326),
+            ST_SetSRID(ST_MakePoint(
+              (j.location->>'longitude')::float,
+              (j.location->>'latitude')::float
+            ), 4326)
+          ) ASC
+        `;
+        params.push(location.longitude, location.latitude);
+        paramIndex += 2;
+      } else {
+        query += ` ORDER BY j.created_at DESC`;
+      }
+      break;
+    case 'budget':
+      query += ` ORDER BY COALESCE(jb.total_amount, 0) ASC`;
+      break;
+    case 'created_at':
+    default:
+      query += ` ORDER BY j.created_at DESC`;
+      break;
+  }
+  
+  query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  // Get total count
+  const countQuery = `
+    SELECT COUNT(*) 
+    FROM jobs j
+    WHERE j.job_status = 'pending'
+      AND j.is_public = true
+      AND (j.expires_at IS NULL OR j.expires_at > NOW())
+      ${category ? `AND j.category = '${category}'` : ''}
+      ${serviceType ? `AND j.service_type = '${serviceType}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  // Calculate distance for each job if location provided
+  const jobsWithDetails = await Promise.all(result.rows.map(async (job) => {
+    let distance = null;
+    if (location && location.latitude && location.longitude && job.location) {
+      distance = this.calculateDistance(
+        location.latitude,
+        location.longitude,
+        job.location.latitude,
+        job.location.longitude
+      );
+    }
+    
+    // Get match score for this job
+    const matchScore = await this.calculateJobMatchScore(artisanId, job);
+    
+    return {
+      ...job,
+      distance: distance ? Math.round(distance / 1000) : null,
+      matchScore
+    };
+  }));
+  
+  return {
+    jobs: jobsWithDetails,
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Get job details for artisan browsing
+ * @param {string} jobId - Job ID
+ * @param {string} artisanId - Artisan ID
+ * @returns {Promise<Object>} Job details
+ */
+static async getAvailableJobDetails(jobId, artisanId) {
+  const client = await pool.connect();
+  
+  try {
+    // Track view
+    await client.query(
+      `INSERT INTO job_views (job_id, artisan_id)
+       VALUES ($1, $2)
+       ON CONFLICT (job_id, artisan_id) DO NOTHING`,
+      [jobId, artisanId]
+    );
+    
+    // Increment view count
+    await client.query(
+      `UPDATE jobs SET viewed_count = viewed_count + 1 WHERE id = $1`,
+      [jobId]
+    );
+    
+    // Get job details
+    const result = await client.query(
+      `SELECT j.*,
+              cp.full_legal_name as client_name,
+              cp.star_rating as client_rating,
+              cp.service_address,
+              c.name as category_name,
+              COALESCE(jb.total_amount, 0) as estimated_budget,
+              COALESCE(jb.materials_cost, 0) as materials_cost,
+              COALESCE(jb.workmanship_cost, 0) as workmanship_cost,
+              (SELECT COUNT(*) FROM job_offers WHERE job_id = j.id) as offer_count,
+              (SELECT COUNT(*) FROM job_views WHERE job_id = j.id) as view_count,
+              EXISTS(SELECT 1 FROM saved_jobs WHERE job_id = j.id AND artisan_id = $2) as is_saved
+       FROM jobs j
+       JOIN client_profiles cp ON j.client_id = cp.user_id
+       LEFT JOIN job_billing jb ON j.id = jb.job_id
+       LEFT JOIN categories c ON j.category = c.name
+       WHERE j.id = $1`,
+      [jobId, artisanId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Job not found');
+    }
+    
+    const job = result.rows[0];
+    
+    // Calculate match score
+    job.matchScore = await this.calculateJobMatchScore(artisanId, job);
+    
+    // Get similar jobs
+    job.similarJobs = await this.getSimilarJobs(jobId, artisanId);
+    
+    return job;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Calculate match score between artisan and job
+ * @param {string} artisanId - Artisan ID
+ * @param {Object} job - Job object
+ * @returns {Promise<number>} Match score (0-100)
+ */
+static async calculateJobMatchScore(artisanId, job) {
+  if (!artisanId) return 0;
+  
+  const artisanResult = await pool.query(
+    `SELECT skill_category, tier_level, star_rating, 
+            completion_rate, current_location
+     FROM artisan_profiles
+     WHERE user_id = $1`,
+    [artisanId]
+  );
+  
+  if (artisanResult.rows.length === 0) return 0;
+  
+  const artisan = artisanResult.rows[0];
+  
+  let score = 0;
+  let totalWeight = 0;
+  
+  // Category match (40% weight)
+  if (artisan.skill_category === job.category) {
+    score += 40;
+  }
+  totalWeight += 40;
+  
+  // Distance score (20% weight)
+  if (artisan.current_location && job.location) {
+    const distance = this.calculateDistance(
+      artisan.current_location.latitude,
+      artisan.current_location.longitude,
+      job.location.latitude,
+      job.location.longitude
+    );
+    const distanceScore = Math.max(0, 20 - (distance / 1000) * 2);
+    score += Math.min(20, distanceScore);
+  }
+  totalWeight += 20;
+  
+  // Budget match (20% weight)
+  const estimatedBudget = job.estimated_budget || 0;
+  const artisanAvgEarning = await this.getArtisanAverageEarning(artisanId);
+  if (artisanAvgEarning > 0 && estimatedBudget > 0) {
+    const budgetRatio = Math.min(estimatedBudget / artisanAvgEarning, 2);
+    const budgetScore = budgetRatio >= 1 ? 20 : (budgetRatio * 20);
+    score += budgetScore;
+  }
+  totalWeight += 20;
+  
+  // Artisan rating (10% weight)
+  const ratingScore = (artisan.star_rating / 5) * 10;
+  score += ratingScore;
+  totalWeight += 10;
+  
+  // Completion rate (10% weight)
+  const completionScore = (artisan.completion_rate / 100) * 10;
+  score += completionScore;
+  totalWeight += 10;
+  
+  return Math.round(score);
+}
+
+/**
+ * Get similar jobs
+ * @param {string} jobId - Job ID
+ * @param {string} artisanId - Artisan ID
+ * @returns {Promise<Array>} Similar jobs
+ */
+static async getSimilarJobs(jobId, artisanId) {
+  const result = await pool.query(
+    `SELECT j.id, j.category, j.description, j.created_at,
+            cp.full_legal_name as client_name,
+            COALESCE(jb.total_amount, 0) as estimated_budget
+     FROM jobs j
+     JOIN client_profiles cp ON j.client_id = cp.user_id
+     LEFT JOIN job_billing jb ON j.id = jb.job_id
+     WHERE j.job_status = 'pending'
+       AND j.is_public = true
+       AND j.id != $1
+       AND j.category = (SELECT category FROM jobs WHERE id = $1)
+     ORDER BY j.created_at DESC
+     LIMIT 5`,
+    [jobId]
+  );
+  
+  return result.rows;
+}
+
+/**
+ * Save job for later (bookmark)
+ * @param {string} jobId - Job ID
+ * @param {string} artisanId - Artisan ID
+ * @param {string} notes - Optional notes
+ * @returns {Promise<Object>} Saved job record
+ */
+static async saveJob(jobId, artisanId, notes = null) {
+  const result = await pool.query(
+    `INSERT INTO saved_jobs (job_id, artisan_id, notes)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (job_id, artisan_id) 
+     DO UPDATE SET notes = EXCLUDED.notes, created_at = NOW()
+     RETURNING *`,
+    [jobId, artisanId, notes]
+  );
+  
+  return result.rows[0];
+}
+
+/**
+ * Remove saved job
+ * @param {string} jobId - Job ID
+ * @param {string} artisanId - Artisan ID
+ * @returns {Promise<boolean>} Success status
+ */
+static async unsaveJob(jobId, artisanId) {
+  const result = await pool.query(
+    `DELETE FROM saved_jobs WHERE job_id = $1 AND artisan_id = $2 RETURNING *`,
+    [jobId, artisanId]
+  );
+  
+  return result.rows.length > 0;
+}
+
+/**
+ * Get saved jobs for artisan
+ * @param {string} artisanId - Artisan ID
+ * @param {Object} filters - Filter options
+ * @returns {Promise<Object>} Saved jobs
+ */
+static async getSavedJobs(artisanId, filters = {}) {
+  const { page = 1, limit = 20 } = filters;
+  const offset = (page - 1) * limit;
+  
+  const result = await pool.query(
+    `SELECT sj.*, j.category, j.description, j.created_at,
+            cp.full_legal_name as client_name,
+            COALESCE(jb.total_amount, 0) as estimated_budget
+     FROM saved_jobs sj
+     JOIN jobs j ON sj.job_id = j.id
+     JOIN client_profiles cp ON j.client_id = cp.user_id
+     LEFT JOIN job_billing jb ON j.id = jb.job_id
+     WHERE sj.artisan_id = $1
+       AND j.job_status = 'pending'
+     ORDER BY sj.created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [artisanId, limit, offset]
+  );
+  
+  const countResult = await pool.query(
+    `SELECT COUNT(*) FROM saved_jobs WHERE artisan_id = $1`,
+    [artisanId]
+  );
+  
+  return {
+    jobs: result.rows,
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Create job alert for artisan
+ * @param {string} artisanId - Artisan ID
+ * @param {Object} alertSettings - Alert settings
+ * @returns {Promise<Object>} Job alert
+ */
+static async createJobAlert(artisanId, alertSettings) {
+  const { categories, minBudget, maxDistance } = alertSettings;
+  
+  const result = await pool.query(
+    `INSERT INTO job_alerts (artisan_id, categories, min_budget, max_distance, is_active)
+     VALUES ($1, $2, $3, $4, true)
+     ON CONFLICT (artisan_id) 
+     DO UPDATE SET 
+       categories = EXCLUDED.categories,
+       min_budget = EXCLUDED.min_budget,
+       max_distance = EXCLUDED.max_distance,
+       is_active = true,
+       updated_at = NOW()
+     RETURNING *`,
+    [artisanId, categories, minBudget, maxDistance]
+  );
+  
+  return result.rows[0];
+}
+
+/**
+ * Get job alerts for artisan
+ * @param {string} artisanId - Artisan ID
+ * @returns {Promise<Object>} Job alert settings
+ */
+static async getJobAlert(artisanId) {
+  const result = await pool.query(
+    `SELECT * FROM job_alerts WHERE artisan_id = $1`,
+    [artisanId]
+  );
+  
+  return result.rows[0] || null;
+}
+
+/**
+ * Delete job alert
+ * @param {string} artisanId - Artisan ID
+ * @returns {Promise<boolean>} Success status
+ */
+static async deleteJobAlert(artisanId) {
+  const result = await pool.query(
+    `DELETE FROM job_alerts WHERE artisan_id = $1 RETURNING *`,
+    [artisanId]
+  );
+  
+  return result.rows.length > 0;
+}
+
+/**
+ * Get recommended jobs based on artisan's history and preferences
+ * @param {string} artisanId - Artisan ID
+ * @param {Object} filters - Filter options
+ * @returns {Promise<Object>} Recommended jobs
+ */
+static async getRecommendedJobs(artisanId, filters = {}) {
+  const { limit = 10 } = filters;
+  
+  // Get artisan's job alert preferences
+  const alert = await this.getJobAlert(artisanId);
+  
+  // Get artisan's past jobs
+  const pastJobs = await pool.query(
+    `SELECT category FROM jobs 
+     WHERE artisan_id = $1 AND job_status = 'completed'
+     GROUP BY category
+     ORDER BY COUNT(*) DESC
+     LIMIT 3`,
+    [artisanId]
+  );
+  
+  const preferredCategories = pastJobs.rows.map(row => row.category);
+  
+  // If no history, use alert preferences or default categories
+  const categories = alert?.categories || preferredCategories;
+  
+  let query = `
+    SELECT j.*, cp.full_legal_name as client_name,
+           COALESCE(jb.total_amount, 0) as estimated_budget,
+           CASE WHEN sj.artisan_id IS NOT NULL THEN true ELSE false END as is_saved
+    FROM jobs j
+    JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN job_billing jb ON j.id = jb.job_id
+    LEFT JOIN saved_jobs sj ON j.id = sj.job_id AND sj.artisan_id = $1
+    WHERE j.job_status = 'pending'
+      AND j.is_public = true
+      AND j.category = ANY($2::text[])
+    ORDER BY j.created_at DESC
+    LIMIT $3
+  `;
+  
+  const params = [artisanId, categories, limit];
+  
+  const result = await pool.query(query, params);
+  
+  // Calculate match scores
+  const jobsWithScores = await Promise.all(result.rows.map(async (job) => {
+    const matchScore = await this.calculateJobMatchScore(artisanId, job);
+    return { ...job, matchScore };
+  }));
+  
+  // Sort by match score
+  jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
+  
+  return jobsWithScores;
+}
+
 }
 
 module.exports = JobService;

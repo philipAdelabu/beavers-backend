@@ -1,6 +1,6 @@
 // routes/job.routes.js
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const { pool } = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 const { getNearbyArtisans, cacheSet, cacheGet } = require('../config/redis');
@@ -27,103 +27,34 @@ router.post(
 
 // Confirm arrival with PIN
 router.post('/:jobId/confirm-arrival', authenticateToken, requireRole(['client']), [
-  body('pin').isLength({ min: 6, max: 6 })
-], async (req, res) => {
-  const { jobId } = req.params;
-  const { pin } = req.body;
-  const clientId = req.user.id;
+  body('pin').isLength({ min: 6, max: 6 }),
+], JobController.confirmArrival);
 
-  const client = await pool.connect();
-  try {
-    // Verify PIN
-    const pinResult = await client.query(
-      `SELECT * FROM arrival_pins WHERE job_id = $1 AND pin = $2 AND is_used = false AND expires_at > NOW()`,
-      [jobId, pin]
-    );
-
-    if (pinResult.rows.length === 0) {
-      return res.status(400).json({ error: 'Invalid or expired PIN' });
-    }
-
-    await client.query('BEGIN');
-
-    // Mark PIN as used
-    await client.query(
-      `UPDATE arrival_pins SET is_used = true WHERE job_id = $1 AND pin = $2`,
-      [jobId, pin]
-    );
-
-    // Update job status
-    await client.query(
-      `UPDATE jobs SET job_status = 'arrived', updated_at = NOW() WHERE id = $1`,
-      [jobId]
-    );
-
-    // Create base fee billing
-    const baseFee = 2500; // Configurable
-    await client.query(
-      `INSERT INTO job_billing (job_id, base_fee, billing_status)
-       VALUES ($1, $2, 'base_charged')`,
-      [jobId, baseFee]
-    );
-
-    // Create escrow hold for base fee
-    await client.query(
-      `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
-       SELECT $1, $2, artisan_id, $3, 'base_fee', 'held'
-       FROM jobs WHERE id = $1`,
-      [jobId, clientId, baseFee]
-    );
-
-    await client.query('COMMIT');
-
-    // Notify artisan
-    const jobResult = await client.query(
-      `SELECT artisan_id FROM jobs WHERE id = $1`,
-      [jobId]
-    );
-    
-    emitToArtisan(jobResult.rows[0].artisan_id, 'arrival_confirmed', { jobId });
-
-    res.json({ message: 'Arrival confirmed', baseFee });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Arrival confirmation error:', error);
-    res.status(500).json({ error: 'Failed to confirm arrival' });
-  } finally {
-    client.release();
-  }
-});
 
 // Start diagnostics timer
-router.post('/:jobId/start-diagnostics', authenticateToken, requireRole(['artisan']), async (req, res) => {
-  const { jobId } = req.params;
+router.post(
+  '/:jobId/start-diagnostics',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.startDiagnostics,
+);
 
-  const client = await pool.connect();
-  try {
-    const diagnosticsStart = new Date();
-    
-    await client.query(
-      `UPDATE jobs SET diagnostics_started_at = $1, job_status = 'diagnostics' WHERE id = $2`,
-      [diagnosticsStart, jobId]
-    );
-
-    // Store in Redis for real-time tracking
-    await cacheSet(`job:${jobId}:diagnostics_start`, diagnosticsStart.toISOString(), 3600);
-
-    res.json({ message: 'Diagnostics started', startTime: diagnosticsStart });
-  } catch (error) {
-    console.error('Start diagnostics error:', error);
-    res.status(500).json({ error: 'Failed to start diagnostics' });
-  } finally {
-    client.release();
-  }
-});
+// Start diagnostics timer
+router.put(
+  '/:jobId/diagnostics-progress',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.startDiagnostics,
+);
 
 // Stop diagnostics and choose execution mode
 router.post('/:jobId/stop-diagnostics', authenticateToken, requireRole(['artisan']), [
-  body('executionMode').isIn(['time_based', 'quoted'])
-], async (req, res) => {
+  body('executionMode').isIn(['time_based', 'quoted']),
+], JobController.stopDiagnostics);
+
+
+/*
+async (req, res) => {
   const { jobId } = req.params;
   const { executionMode } = req.body;
 
@@ -180,40 +111,11 @@ router.post('/:jobId/stop-diagnostics', authenticateToken, requireRole(['artisan
   } finally {
     client.release();
   }
-});
+}; */
 
 // Get job details
-router.get('/:jobId', authenticateToken, async (req, res) => {
-  const { jobId } = req.params;
+router.get('/:jobId', authenticateToken, JobController.getJobDetails);
 
-  try {
-    const jobResult = await pool.query(
-      `SELECT j.*, 
-              cp.full_legal_name as client_name,
-              ap.full_legal_name as artisan_name,
-              jb.base_fee, jb.diagnostics_fee, jb.execution_fee, jb.materials_cost, jb.workmanship_cost,
-              boq.items as boq_items, boq.status as boq_status
-       FROM jobs j
-       LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
-       LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
-       LEFT JOIN job_billing jb ON j.id = jb.job_id
-       LEFT JOIN bill_of_quantities boq ON j.id = boq.job_id AND boq.version = (
-         SELECT MAX(version) FROM bill_of_quantities WHERE job_id = j.id
-       )
-       WHERE j.id = $1`,
-      [jobId]
-    );
-
-    if (jobResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Job not found' });
-    }
-
-    res.json(jobResult.rows[0]);
-  } catch (error) {
-    console.error('Get job error:', error);
-    res.status(500).json({ error: 'Failed to get job details' });
-  }
-});
 
 // Get client jobs
 router.get('/client/jobs', authenticateToken, requireRole(['client']), async (req, res) => {
@@ -296,5 +198,58 @@ function calculatePriorityScore(artisan, distance) {
   
   return (tierWeight + ratingWeight + distanceWeight + completionWeight) * 100;
 }
+
+
+// Add these routes to your existing job routes
+// This gives the artisan to  browse for available job.
+
+// Artisan job browsing routes
+router.get('/available', authenticateToken, requireRole(['artisan']), [
+  body('category').optional().isString(),
+  body('minBudget').optional().isFloat({ min: 0 }),
+  body('maxBudget').optional().isFloat({ min: 0 }),
+  body('serviceType').optional().isIn(['inspection', 'repair', 'installation', 'emergency']),
+  body('latitude').optional().isFloat({ min: -90, max: 90 }),
+  body('longitude').optional().isFloat({ min: -180, max: 180 }),
+  body('radius').optional().isFloat({ min: 1, max: 100 }),
+  body('sortBy').optional().isIn(['distance', 'budget', 'created_at']),
+  body('page').optional().isInt({ min: 1 }),
+  body('limit').optional().isInt({ min: 1, max: 100 })
+], JobController.getAvailableJobs);
+
+router.get('/available/:jobId', authenticateToken, requireRole(['artisan']), [
+  param('jobId').isUUID()
+], JobController.getAvailableJobDetails);
+
+// Saved jobs routes
+router.post('/save/:jobId', authenticateToken, requireRole(['artisan']), [
+  param('jobId').isUUID(),
+  body('notes').optional().isString()
+], JobController.saveJob);
+
+router.delete('/save/:jobId', authenticateToken, requireRole(['artisan']), [
+  param('jobId').isUUID()
+], JobController.unsaveJob);
+
+router.get('/saved', authenticateToken, requireRole(['artisan']), [
+  body('page').optional().isInt({ min: 1 }),
+  body('limit').optional().isInt({ min: 1, max: 100 })
+], JobController.getSavedJobs);
+
+// Job alert routes
+router.post('/alert', authenticateToken, requireRole(['artisan']), [
+  body('categories').optional().isArray(),
+  body('minBudget').optional().isFloat({ min: 0 }),
+  body('maxDistance').optional().isInt({ min: 1, max: 100 })
+], JobController.createJobAlert);
+
+router.get('/alert', authenticateToken, requireRole(['artisan']), JobController.getJobAlert);
+
+router.delete('/alert', authenticateToken, requireRole(['artisan']), JobController.deleteJobAlert);
+
+// Recommended jobs
+router.get('/recommended', authenticateToken, requireRole(['artisan']), [
+  body('limit').optional().isInt({ min: 1, max: 50 })
+], JobController.getRecommendedJobs);
 
 module.exports = router;

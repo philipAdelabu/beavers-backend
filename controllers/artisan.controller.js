@@ -140,7 +140,7 @@ class ArtisanController {
       sendError(res, error.message || 'Failed to update bank account', error.statusCode || 500);
       next(error);
     }
-  }
+  } 
 
   static async getPerformanceMetrics(req, res, next) {
     try {
@@ -151,7 +151,7 @@ class ArtisanController {
       next(error);
     }
   }
-
+ 
   static async getRatings(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -255,6 +255,22 @@ class ArtisanController {
     }
   }
 
+    static async getJobOffers(req, res, next){
+      const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+      const {limit = 10 } =  req.query;
+      const jobs = await ArtisanService.getJobOffers(req.user.id, limit);
+      sendSuccess(res, jobs, 'Available Jobs offer retrieved successfully');
+    }catch(error){
+      sendError(res, error.message || 'Failed to retrieve all jobs offer', error.statusCode || 500);
+      next(error);
+    }
+
+  }
+
   static async getStatistics(req, res, next) {
     try {
       const stats = await ArtisanService.getStatistics(req.user.id);
@@ -293,6 +309,9 @@ class ArtisanController {
       next(error);
     }
   }
+
+ 
+
 }
 
 module.exports = ArtisanController;

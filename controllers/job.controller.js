@@ -56,6 +56,7 @@ class JobController {
       const result = await JobService.confirmArrival(req.params.jobId, req.user.id, req.body.pin);
       sendSuccess(res, result, 'Arrival confirmed successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to confirm arrival', error.statusCode || 500);
       next(error);
     }
   }
@@ -70,6 +71,7 @@ class JobController {
       const result = await JobService.startDiagnostics(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Diagnostics started');
     } catch (error) {
+      sendError(res, error.message || 'Fail to start diagnostic', error.statusCode || 500);
       next(error);
     }
   }
@@ -279,6 +281,195 @@ class JobController {
       next(error);
     }
   }
+
+   // Add these methods to JobController
+
+/**
+ * Get available jobs for artisans to browse
+ * @route GET /api/v1/jobs/available
+ */
+static async getAvailableJobs(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const {
+      category,
+      minBudget,
+      maxBudget,
+      serviceType,
+      latitude,
+      longitude,
+      radius = 20,
+      sortBy = 'created_at',
+      page = 1,
+      limit = 20
+    } = req.query;
+    
+    const location = latitude && longitude ? { latitude: parseFloat(latitude), longitude: parseFloat(longitude) } : null;
+    
+    const result = await JobService.getAvailableJobs(
+      {
+        category,
+        minBudget: minBudget ? parseFloat(minBudget) : null,
+        maxBudget: maxBudget ? parseFloat(maxBudget) : null,
+        serviceType,
+        location,
+        radius: parseFloat(radius),
+        sortBy,
+        page: parseInt(page),
+        limit: parseInt(limit)
+      },
+      req.user.id
+    );
+    
+    sendPaginated(res, result.jobs, page, limit, result.total, 'Available jobs retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get job details for browsing
+ * @route GET /api/v1/jobs/available/:jobId
+ */
+static async getAvailableJobDetails(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const job = await JobService.getAvailableJobDetails(req.params.jobId, req.user.id);
+    sendSuccess(res, job, 'Job details retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Save a job for later
+ * @route POST /api/v1/jobs/save/:jobId
+ */
+static async saveJob(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const result = await JobService.saveJob(req.params.jobId, req.user.id, req.body.notes);
+    sendSuccess(res, result, 'Job saved successfully', 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Remove saved job
+ * @route DELETE /api/v1/jobs/save/:jobId
+ */
+static async unsaveJob(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    await JobService.unsaveJob(req.params.jobId, req.user.id);
+    sendSuccess(res, null, 'Job removed from saved list');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get saved jobs
+ * @route GET /api/v1/jobs/saved
+ */
+static async getSavedJobs(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const result = await JobService.getSavedJobs(req.user.id, { page: parseInt(page), limit: parseInt(limit) });
+    sendPaginated(res, result.jobs, page, limit, result.total, 'Saved jobs retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Create job alert
+ * @route POST /api/v1/jobs/alert
+ */
+static async createJobAlert(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const alert = await JobService.createJobAlert(req.user.id, req.body);
+    sendSuccess(res, alert, 'Job alert created successfully', 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get job alert
+ * @route GET /api/v1/jobs/alert
+ */
+static async getJobAlert(req, res, next) {
+  try {
+    const alert = await JobService.getJobAlert(req.user.id);
+    sendSuccess(res, alert, 'Job alert retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Delete job alert
+ * @route DELETE /api/v1/jobs/alert
+ */
+static async deleteJobAlert(req, res, next) {
+  try {
+    await JobService.deleteJobAlert(req.user.id);
+    sendSuccess(res, null, 'Job alert deleted successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get recommended jobs
+ * @route GET /api/v1/jobs/recommended
+ */
+static async getRecommendedJobs(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { limit = 10 } = req.query;
+    const jobs = await JobService.getRecommendedJobs(req.user.id, { limit: parseInt(limit) });
+    sendSuccess(res, jobs, 'Recommended jobs retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+
+
 }
 
 module.exports = JobController;

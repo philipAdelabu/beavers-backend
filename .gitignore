@@ -6,4 +6,5 @@ package-lock.json
 ../beavers-frontend/node_modules
 ../beavers-frontend/build
 ../beavers-frontend/.env
+../.vscode
 
