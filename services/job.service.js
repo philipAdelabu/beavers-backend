@@ -66,6 +66,7 @@ class JobService {
       await client.query('COMMIT');
       
       logger.info(`Job created: ${job.id} by client ${clientId}`);
+      //this.addTimelineEntry(jobId, status, description, metadata = {}) 
       
       return {
         job,
@@ -372,14 +373,14 @@ class JobService {
       
       if (result.rows.length === 0) {
         throw new AppError(404, 'Job not found or unauthorized');
-      }
+      } 
       
       // Update billing with diagnostics fee
       await client.query(
         `UPDATE job_billing 
          SET diagnostics_fee = $1, diagnostics_duration = $2
          WHERE job_id = $3`,
-        [diagnosticsFee, diagnosticsDuration, jobId]
+        [diagnosticsFee, diagnosticsDuration, jobId],
       );
       
       // Update escrow for diagnostics
@@ -387,7 +388,7 @@ class JobService {
         `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
          SELECT $1, client_id, artisan_id, $2, 'diagnostics_fee', 'held'
          FROM jobs WHERE id = $1`,
-        [jobId, diagnosticsFee]
+        [jobId, diagnosticsFee],
       );
       
       await client.query('COMMIT');
@@ -462,7 +463,6 @@ class JobService {
     }
     
     const pauseDuration = (new Date() - new Date(pauseData.pauseStart)) / 1000; // seconds
-    
     await cacheDel(`job:${jobId}:execution_paused`);
     
     await pool.query(
@@ -493,8 +493,8 @@ class JobService {
       const pauseDuration = (new Date(pauseData.pauseStart) - startTime) / 1000 / 60;
       totalDuration -= pauseDuration;
     }
-    
-    const executionFee = Math.ceil(totalDuration * 1000); // ₦1000 per minute
+    const job_exc_fee_min = process.env.JOB_EXEC_FEE_MIN || 1000;
+    const executionFee = Math.ceil(totalDuration * job_exc_fee_min); // ₦1000 per minute
     
     const client = await pool.connect();
     
@@ -766,10 +766,11 @@ class JobService {
     const result = await pool.query(
       `SELECT j.*, 
               cp.full_legal_name as client_name, 
-              cp.phone as client_phone,
-              cp.email as client_email,
+              uc.phone as client_phone,
+              uc.email as client_email,
               ap.full_legal_name as artisan_name,
-              ap.phone as artisan_phone,
+              ua.phone as artisan_phone,
+              ua.email as artisan_email,
               ap.star_rating as artisan_rating,
               jb.*,
               boq.items as boq_items,
@@ -779,6 +780,8 @@ class JobService {
        LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
        LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
        LEFT JOIN job_billing jb ON j.id = jb.job_id
+       LEFT JOIN users ua ON ua.id = j.artisan_id 
+       LEFT JOIN users uc ON uc.id = j.client_id
        LEFT JOIN bill_of_quantities boq ON j.id = boq.job_id AND boq.version = (
          SELECT MAX(version) FROM bill_of_quantities WHERE job_id = j.id
        )
@@ -821,6 +824,119 @@ class JobService {
     
     return result.rows[0];
   }
+
+
+   
+     static async getClientJobs(clientId, filters = {}) {
+       const { status, page = 1, limit = 10, startDate, endDate } = filters;
+       const offset = (page - 1) * limit;
+       
+       let query = `
+         SELECT j.*, ap.full_legal_name as artisan_name, ap.star_rating,
+         jb.base_fee, jb.total_amount, jb.billing_status, jb.paid_at 
+         FROM jobs j
+         LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+         LEFT JOIN job_billing jb ON j.id = jb.job_id
+         WHERE j.client_id = $1
+       `;
+       const params = [clientId];
+       let paramIndex = 2;
+       
+       if (status) {
+         query += ` AND j.job_status = $${paramIndex}`;
+         params.push(status);
+         paramIndex++;
+       }
+       
+       if (startDate) {
+         query += ` AND j.created_at >= $${paramIndex}`;
+         params.push(startDate);
+         paramIndex++;
+       }
+       
+       if (endDate) {
+         query += ` AND j.created_at <= $${paramIndex}`;
+         params.push(endDate);
+         paramIndex++;
+       }
+       
+       query += ` ORDER BY j.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+       params.push(limit, offset);
+       
+       const result = await pool.query(query, params);
+       
+       const countQuery = `
+         SELECT COUNT(*) FROM jobs WHERE client_id = $1
+         ${status ? 'AND job_status = $2' : ''}
+       `;
+       const countParams = status ? [clientId, status] : [clientId];
+       const countResult = await pool.query(countQuery, countParams);
+       
+       return {
+         jobs: result.rows,
+         total: parseInt(countResult.rows[0].count),
+         page,
+         limit
+       };
+     }
+   
+     static async getArtisanJobs(artisanId, filters = {}) {
+       const { status, page = 1, limit = 10, startDate, endDate } = filters;
+       const offset = (page - 1) * limit;
+       
+       let query = `
+         SELECT j.*, cp.full_legal_name as client_name,
+         jb.base_fee, jb.total_amount, jb.billing_status, jb.paid_at
+         FROM jobs j
+         LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+         LEFT JOIN job_billing jb ON j.id = jb.job_id
+         WHERE j.artisan_id = $1
+       `;
+       const params = [artisanId];
+       let paramIndex = 2;
+       
+       if (status) {
+         query += ` AND j.job_status = $${paramIndex}`;
+         params.push(status);
+         paramIndex++;
+       }
+       
+       if (startDate) {
+         query += ` AND j.created_at >= $${paramIndex}`;
+         params.push(startDate);
+         paramIndex++;
+       }
+       
+       if (endDate) {
+         query += ` AND j.created_at <= $${paramIndex}`;
+         params.push(endDate);
+         paramIndex++;
+       }
+       
+       query += ` ORDER BY j.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+       params.push(limit, offset);
+       
+       const result = await pool.query(query, params);
+       
+       const countQuery = `
+         SELECT COUNT(*) FROM jobs WHERE artisan_id = $1
+         ${status ? 'AND job_status = $2' : ''}
+       `;
+       const countParams = status ? [artisanId, status] : [artisanId];
+       const countResult = await pool.query(countQuery, countParams);
+
+       
+       return {
+         jobs: result.rows,
+         total: parseInt(countResult.rows[0].count),
+         page,
+         limit
+       };
+     }
+
+
+
+
 
    // Add these methods to the existing JobService class
 

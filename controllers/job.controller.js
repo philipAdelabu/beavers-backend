@@ -1,7 +1,9 @@
+const { validationResult } = require('express-validator');
 const JobService = require('../services/job.service');
+const ReviewService = require('../services/review.service');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
-const { validationResult } = require('express-validator');
+
 
 class JobController {
   static async createJob(req, res, next) {
@@ -14,6 +16,7 @@ class JobController {
       const result = await JobService.createJob(req.user.id, req.body);
       sendSuccess(res, result, 'Job created successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Fail to create Job', error.statusCode || 500);
       next(error);
     }
   }
@@ -28,6 +31,7 @@ class JobController {
       const result = await JobService.acceptJob(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Job accepted successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to accept job', error.statusCode || 500);
       next(error);
     }
   }
@@ -42,6 +46,7 @@ class JobController {
       await JobService.rejectJobOffer(req.params.jobId, req.user.id, req.body.reason);
       sendSuccess(res, null, 'Job offer rejected');
     } catch (error) {
+      sendError(res, error.message || 'Fail to reject job offer', error.statusCode || 500);
       next(error);
     }
   }
@@ -86,9 +91,11 @@ class JobController {
       const result = await JobService.stopDiagnostics(req.params.jobId, req.user.id, req.body.executionMode);
       sendSuccess(res, result, 'Diagnostics completed');
     } catch (error) {
+      sendError(res, error.message || 'Fail to stop diagnostics', error.statusCode || 500);
       next(error);
     }
   }
+
 
   static async startExecution(req, res, next) {
     const errors = validationResult(req);
@@ -100,6 +107,7 @@ class JobController {
       const result = await JobService.startExecution(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Execution started');
     } catch (error) {
+      sendError(res, error.message || 'Fail to start execution', error.statusCode || 500);
       next(error);
     }
   }
@@ -114,6 +122,7 @@ class JobController {
       const result = await JobService.pauseExecution(req.params.jobId, req.user.id, req.body.reason, req.body.duration);
       sendSuccess(res, result, 'Execution paused');
     } catch (error) {
+      sendError(res, error.message || 'Fail to pause execution', error.statusCode || 500);
       next(error);
     }
   }
@@ -128,6 +137,7 @@ class JobController {
       const result = await JobService.resumeExecution(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Execution resumed');
     } catch (error) {
+      sendError(res, error.message || 'Fail to resume execution', error.statusCode || 500);
       next(error);
     }
   }
@@ -142,6 +152,7 @@ class JobController {
       const result = await JobService.stopExecution(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Execution completed');
     } catch (error) {
+      sendError(res, error.message || 'Fail to stop execution', error.statusCode || 500);
       next(error);
     }
   }
@@ -156,6 +167,7 @@ class JobController {
       const result = await JobService.submitQuote(req.params.jobId, req.user.id, req.body);
       sendSuccess(res, result, 'Quote submitted successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to submit Quote', error.statusCode || 500);
       next(error);
     }
   }
@@ -170,6 +182,7 @@ class JobController {
       const result = await JobService.approveQuote(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Quote approved');
     } catch (error) {
+      sendError(res, error.message || 'Fail to approve quote', error.statusCode || 500);
       next(error);
     }
   }
@@ -184,6 +197,7 @@ class JobController {
       const result = await JobService.completeJob(req.params.jobId, req.user.id, req.body.completionNotes);
       sendSuccess(res, result, 'Job completed successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to complete Job', error.statusCode || 500);
       next(error);
     }
   }
@@ -198,6 +212,7 @@ class JobController {
       const result = await JobService.cancelJob(req.params.jobId, req.user.id, req.user.user_type, req.body.reason);
       sendSuccess(res, result, 'Job cancelled successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to cancle Job', error.statusCode || 500);
       next(error);
     }
   }
@@ -212,6 +227,7 @@ class JobController {
       const job = await JobService.getJobDetails(req.params.jobId, req.user.id, req.user.user_type);
       sendSuccess(res, job, 'Job details retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to get Job details', error.statusCode || 500);
       next(error);
     }
   }
@@ -227,6 +243,7 @@ class JobController {
       const result = await JobService.getClientJobs(req.user.id, { status, page, limit });
       sendPaginated(res, result.jobs, page, limit, result.total, 'Jobs retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to get client Jobs', error.statusCode || 500);
       next(error);
     }
   }
@@ -242,6 +259,7 @@ class JobController {
       const result = await JobService.getArtisanJobs(req.user.id, { status, page, limit });
       sendPaginated(res, result.jobs, page, limit, result.total, 'Jobs retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to get Artisan jobs', error.statusCode || 500);
       next(error);
     }
   }
@@ -257,6 +275,7 @@ class JobController {
       const timeline = await JobService.getJobTimeline(req.params.jobId);
       sendSuccess(res, timeline, 'Job timeline retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to get Job Time Line', error.statusCode || 500);
       next(error);
     }
   }
@@ -271,13 +290,13 @@ class JobController {
       const rating = await ReviewService.createReview({
         jobId: req.params.jobId,
         reviewerId: req.user.id,
-        revieweeId: req.body.artisanId,
         rating: req.body.rating,
         review: req.body.review,
-        categories: req.body.categories
+        categories: req.body.categories,
       });
       sendSuccess(res, rating, 'Rating submitted successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Fail to rate jobs', error.statusCode || 500);
       next(error);
     }
   }

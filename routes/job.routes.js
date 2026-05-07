@@ -45,160 +45,105 @@ router.put(
   authenticateToken,
   requireRole(['artisan']),
   JobController.startDiagnostics,
-);
+); 
 
 // Stop diagnostics and choose execution mode
 router.post('/:jobId/stop-diagnostics', authenticateToken, requireRole(['artisan']), [
   body('executionMode').isIn(['time_based', 'quoted']),
 ], JobController.stopDiagnostics);
 
+// Start Execution of the job
+router.post(
+  '/:jobId/start-execution',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.startExecution,
+);
 
-/*
-async (req, res) => {
-  const { jobId } = req.params;
-  const { executionMode } = req.body;
+// Pause Job Execution
+router.post(
+  '/:jobId/pause-execution',
+  authenticateToken,
+  requireRole(['artisan']),
+  [
+    body('reason').notEmpty(),
+    body('duration').isInt(),
+  ],
+  JobController.pauseExecution,
+);
 
-  const client = await pool.connect();
-  try {
-    const diagnosticsEnd = new Date();
-    const diagnosticsStart = await cacheGet(`job:${jobId}:diagnostics_start`);
-    
-    if (!diagnosticsStart) {
-      return res.status(400).json({ error: 'Diagnostics not started' });
-    }
+// Resume Execution of the job
+router.post(
+  '/:jobId/resume-execution',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.resumeExecution,
+);
 
-    const startTime = new Date(diagnosticsStart);
-    const diagnosticsDuration = (diagnosticsEnd - startTime) / 1000 / 60; // minutes
-    const diagnosticsFee = Math.ceil(diagnosticsDuration * 500); // ₦500 per minute
+// Stop Execution of the job
+router.post(
+  '/:jobId/stop-execution',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.stopExecution,
+);
 
-    await client.query('BEGIN');
+// Submit Quote
+router.post(
+  '/:jobId/submit-quote',
+  authenticateToken,
+  requireRole(['artisan']),
+  [
+    body('quoteAmount').isNumeric().notEmpty(),
+    body('quoteDetails').notEmpty(),
+    body('estimatedDuration').isInt().notEmpty(),
 
-    await client.query(
-      `UPDATE jobs 
-       SET diagnostics_ended_at = $1, billing_mode = $2, job_status = 'awaiting_execution_approval'
-       WHERE id = $3`,
-      [diagnosticsEnd, executionMode, jobId]
-    );
+  ],
+  JobController.submitQuote,
+);
 
-    // Update billing with diagnostics fee
-    await client.query(
-      `UPDATE job_billing 
-       SET diagnostics_fee = $1 
-       WHERE job_id = $2`,
-      [diagnosticsFee, jobId]
-    );
+// Job Completed
+router.post(
+  '/:jobId/complete',
+  authenticateToken,
+  requireRole(['artisan']),
+  [
+    body('completionNotes').notEmpty(),
+  ],
+  JobController.completeJob,
+);
 
-    // Update escrow for diagnostics
-    await client.query(
-      `UPDATE escrow_transactions 
-       SET amount = amount + $1 
-       WHERE job_id = $2 AND transaction_type = 'diagnostics_fee'`,
-      [diagnosticsFee, jobId]
-    );
-
-    await client.query('COMMIT');
-
-    res.json({
-      message: 'Diagnostics completed',
-      duration: diagnosticsDuration,
-      fee: diagnosticsFee,
-      executionMode
-    });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Stop diagnostics error:', error);
-    res.status(500).json({ error: 'Failed to stop diagnostics' });
-  } finally {
-    client.release();
-  }
-}; */
 
 // Get job details
 router.get('/:jobId', authenticateToken, JobController.getJobDetails);
 
+// Client Rate the Job 
+
+router.post('/:jobId/rate', authenticateToken, requireRole(['client']), [
+   body('rating').optional().notEmpty().isInt(),
+   body('review').optional().notEmpty(),
+   body('categories').optional().notEmpty(),
+], JobController.rateJob); 
+
 
 // Get client jobs
-router.get('/client/jobs', authenticateToken, requireRole(['client']), async (req, res) => {
-  const clientId = req.user.id;
-  const { status, page = 1, limit = 10 } = req.query;
-
-  try {
-    let query = `
-      SELECT j.*, ap.full_legal_name as artisan_name, ap.star_rating
-      FROM jobs j
-      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
-      WHERE j.client_id = $1
-    `;
-    const params = [clientId];
-    let paramIndex = 2;
-
-    if (status) {
-      query += ` AND j.job_status = $${paramIndex}`;
-      params.push(status);
-      paramIndex++;
-    }
-
-    query += ` ORDER BY j.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limit, (page - 1) * limit);
-
-    const result = await pool.query(query, params);
-    res.json({
-      jobs: result.rows,
-      page: parseInt(page),
-      limit: parseInt(limit)
-    });
-  } catch (error) {
-    console.error('Get client jobs error:', error);
-    res.status(500).json({ error: 'Failed to get jobs' });
-  }
-});
+router.get(
+  '/client/jobs',
+  authenticateToken,
+  requireRole(['client']),
+  JobController.getClientJobs,
+);
 
 // Get artisan jobs
-router.get('/artisan/jobs', authenticateToken, requireRole(['artisan']), async (req, res) => {
-  const artisanId = req.user.id;
-  const { status, page = 1, limit = 10 } = req.query;
+router.get(
+  '/artisan/jobs',
+  authenticateToken,
+  requireRole(['artisan']),
+  JobController.getArtisanJobs,
+);
 
-  try {
-    let query = `
-      SELECT j.*, cp.full_legal_name as client_name
-      FROM jobs j
-      LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
-      WHERE j.artisan_id = $1
-    `;
-    const params = [artisanId];
-    let paramIndex = 2;
-
-    if (status) {
-      query += ` AND j.job_status = $${paramIndex}`;
-      params.push(status);
-      paramIndex++;
-    }
-
-    query += ` ORDER BY j.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limit, (page - 1) * limit);
-
-    const result = await pool.query(query, params);
-    res.json({
-      jobs: result.rows,
-      page: parseInt(page),
-      limit: parseInt(limit)
-    });
-  } catch (error) {
-    console.error('Get artisan jobs error:', error);
-    res.status(500).json({ error: 'Failed to get jobs' });
-  }
-});
-
-// Calculate priority score for artisan matching
-function calculatePriorityScore(artisan, distance) {
-  const tierWeight = artisan.tier_level === 3 ? 0.4 : artisan.tier_level === 2 ? 0.3 : 0.2;
-  const ratingWeight = (artisan.star_rating / 5) * 0.3;
-  const distanceWeight = Math.max(0, 1 - (distance / 10)) * 0.2;
-  const completionWeight = (artisan.completion_rate / 100) * 0.1;
-  
-  return (tierWeight + ratingWeight + distanceWeight + completionWeight) * 100;
-}
-
+// Get job timeline
+router.get('/:jobId/timeline', authenticateToken, JobController.getJobTimeline);
 
 // Add these routes to your existing job routes
 // This gives the artisan to  browse for available job.

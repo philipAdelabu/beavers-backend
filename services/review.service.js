@@ -6,22 +6,34 @@ const NotificationService = require('./notification.service');
 
 class ReviewService {
   static async createReview(reviewData) {
-    const { jobId, reviewerId, revieweeId, rating, review, categories } = reviewData;
+    const { jobId, reviewerId, rating, review, categories } = reviewData;
     
     const client = await pool.connect();
     
     try {
       await client.query('BEGIN');
-      
+
       // Check if review already exists
       const existingReview = await client.query(
         `SELECT id FROM ratings WHERE job_id = $1 AND reviewer_id = $2`,
-        [jobId, reviewerId]
+        [jobId, reviewerId],
       );
       
       if (existingReview.rows.length > 0) {
         throw new AppError(400, 'Review already exists for this job');
       }
+
+         // Retrieve the artisan Id 
+      const artisan = await client.query(
+        `SELECT artisan_id FROM jobs where id = $1 AND client_id = $2`,
+        [jobId, reviewerId],
+      );
+
+      if (artisan.rows.length === 0){
+         throw new AppError(400, 'Job or the client not found');
+      }
+      
+     const revieweeId = artisan.rows[0].artisan_id;
       
       const result = await client.query(
         `INSERT INTO ratings 
