@@ -63,11 +63,20 @@ class JobService {
         });
       }
       
+      const descript = `Job created by client with id: ${clientId}`;
+      const metadata = {
+        jobId: job.id,
+        category: job.category,
+        jobDescription: job.description,
+        serviceType: job.service_type,
+      };
+      const userId = clientId;
+      const userType = 'client';
+     this.addTimelineEntry(job.id, 'Created', descript, userType, userId, metadata);
+
       await client.query('COMMIT');
-      
       logger.info(`Job created: ${job.id} by client ${clientId}`);
-      //this.addTimelineEntry(jobId, status, description, metadata = {}) 
-      
+
       return {
         job,
         offersSent: offers.length
@@ -186,7 +195,7 @@ class JobService {
       }
       
       const job = jobResult.rows[0];
-      
+
       // Check offer
       const offerResult = await client.query(
         `SELECT * FROM job_offers 
@@ -196,7 +205,7 @@ class JobService {
       );
       
       if (offerResult.rows.length === 0) {
-        throw new AppError(400, 'No valid offer found');
+        throw new AppError(400, 'No valid offer found 1');
       }
       
       // Update job
@@ -233,6 +242,11 @@ class JobService {
          VALUES ($1, $2, NOW() + INTERVAL '2400 minutes')`,
         [jobId, pin]
       );
+
+      const descript = `Job accepted by artisan with id: ${artisanId}`;
+      const userId = artisanId;
+      const userType = 'artisan';
+     this.addTimelineEntry(job.id, 'Accepted', descript, userType, userId);
       
       await client.query('COMMIT');
       
@@ -300,6 +314,9 @@ class JobService {
          FROM jobs WHERE id = $1`,
         [jobId, clientId, baseFee]
       );
+
+      const descript = 'Artisan arrived at location';
+      this.addTimelineEntry(jobId, 'arrived', descript);
       
       await client.query('COMMIT');
       
@@ -340,6 +357,9 @@ class JobService {
     await cacheSet(`job:${jobId}:diagnostics_start`, diagnosticsStart.toISOString(), 3600);
     
     logger.info(`Diagnostics started for job ${jobId}`);
+
+     const descript = 'Diagnostics started';
+      this.addTimelineEntry(jobId, 'diagnostics', descript);
     
     return { startTime: diagnosticsStart };
   }
@@ -391,6 +411,9 @@ class JobService {
         [jobId, diagnosticsFee],
       );
       
+      const descript = `Diagnostics completed for job ${jobId}: ${diagnosticsDuration} minutes`;
+      this.addTimelineEntry(jobId, 'diagnostics', descript, 'artisan', artisanId);
+
       await client.query('COMMIT');
       
       logger.info(`Diagnostics completed for job ${jobId}: ${diagnosticsDuration} minutes, ₦${diagnosticsFee}`);
@@ -426,6 +449,9 @@ class JobService {
     await cacheSet(`job:${jobId}:execution_start`, executionStart.toISOString(), 28800); // 8 hours
     
     logger.info(`Execution started for job ${jobId}`);
+
+    const descript = 'Execution started';
+    this.addTimelineEntry(jobId, 'execution', descript);
     
     return { startTime: executionStart };
   }
@@ -451,6 +477,9 @@ class JobService {
     );
     
     logger.info(`Execution paused for job ${jobId}: ${reason}`);
+
+     const descript = 'Execution paused';
+    this.addTimelineEntry(jobId, 'execution', descript);
     
     return { pauseStart, reason };
   }
@@ -472,6 +501,8 @@ class JobService {
     
     logger.info(`Execution resumed for job ${jobId}, paused for ${pauseDuration} seconds`);
     
+    const descript = 'Execution resumed';
+    this.addTimelineEntry(jobId, 'execution', descript);
     return { pauseDuration };
   }
   
@@ -520,6 +551,9 @@ class JobService {
          WHERE job_id = $3`,
         [executionFee, totalDuration, jobId]
       );
+
+    const descript = `Execution stopped for job ${jobId}: ${totalDuration} minutes`;
+    this.addTimelineEntry(jobId, 'execution completed', descript);
       
       await client.query('COMMIT');
       
@@ -658,6 +692,9 @@ class JobService {
 
     // if client paid via wallet, debit client's wallet
     // this would be handle in the payment service 
+
+    const descript = 'Job completed';
+    this.addTimelineEntry(jobId, 'completed', descript);
 
     await client.query('COMMIT');
     return { job, billing: billingResult.rows[0] };
@@ -805,7 +842,7 @@ class JobService {
   
   static async getJobTimeline(jobId) {
     const result = await pool.query(
-      `SELECT * FROM job_timeline 
+      `SELECT * FROM job_timeline
        WHERE job_id = $1 
        ORDER BY created_at ASC`,
       [jobId]
@@ -813,13 +850,33 @@ class JobService {
     
     return result.rows;
   }
+  //  this.addTimelineEntry(job.id, 'Created', descript, userType, userId, metadata);
+
+  static async addTimelineEntry(jobId, status, description, userType = null, userId = null, metadata = {}) {
+    
+    let res;
+    if (userType && userId){
+    if(userType === 'client'){
+     res = await pool.query(
+      `SELECT full_legal_name FROM client_profiles WHERE user_id = $1`, [userId]);
+      metadata.userType = 'Client';
+
+    }else if(userType === 'artisan'){
+      res = await pool.query(
+      `SELECT full_legal_name FROM artisan_profiles WHERE user_id = $1`, [userId]);
+      metadata.userType = 'Artisan';
+     }
+
+     metadata.ChangedBy = res.rows[0].full_legal_name;
+     metadata.userId = res.rows[0].user_id;
+   }
+
   
-  static async addTimelineEntry(jobId, status, description, metadata = {}) {
     const result = await pool.query(
       `INSERT INTO job_timeline (job_id, status, description, metadata)
        VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [jobId, status, description, metadata]
+      [jobId, status, description, metadata],
     );
     
     return result.rows[0];

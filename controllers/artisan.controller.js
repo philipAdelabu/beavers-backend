@@ -153,7 +153,7 @@ class ArtisanController {
   }
  
   static async getRatings(req, res, next) {
-    const errors = validationResult(req);
+    const errors = validationResult(req); 
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
     }

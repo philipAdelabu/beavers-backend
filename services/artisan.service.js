@@ -318,7 +318,7 @@ class ArtisanService {
            updated_at = NOW()
        WHERE id = $4 AND artisan_id = $5
        RETURNING *`,
-      [quantity, condition, notes, toolId, userId]
+      [quantity, condition, notes, toolId, userId],
     );
     
     if (result.rows.length === 0) {
@@ -350,14 +350,14 @@ class ArtisanService {
 
     try{
        const result = await pool.query(
-      `SELECT j.*, cp.full_legal_name as client_name, u.phone as client_phone,
-              cp.service_address, jo.status as job_offer_status, jo.distance, jo.match_score
-       FROM jobs j
-       JOIN client_profiles cp ON j.client_id = cp.user_id
-       LEFT JOIN job_offers jo ON j.id = jo.job_id
+      `SELECT jo.*, cp.full_legal_name as client_name, u.phone as client_phone,
+              cp.service_address, j.category, j.description, j.media_urls, j.service_type, j.location
+       FROM job_offers jo
+       JOIN jobs j ON j.id = jo.job_id
+       LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
        LEFT JOIN  users u ON u.id = cp.user_id
        WHERE jo.artisan_id = $1 
-         AND jo.status = 'pending'
+         AND jo.status = 'pending' AND jo.expires_at > NOW()
        ORDER BY jo.created_at ASC
        LIMIT $2`,
       [userId, limit]

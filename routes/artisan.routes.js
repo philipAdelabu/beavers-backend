@@ -185,6 +185,7 @@ router.get('/earnings', authenticateToken, requireRole(['artisan']), [
   query('endDate').optional().isISO8601()
 ], ArtisanController.getEarnings);
 
+
  
 // Request withdrawal
 router.post('/withdrawals', authenticateToken, requireRole(['artisan']), [
