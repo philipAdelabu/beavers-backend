@@ -1,6 +1,7 @@
 const twilio = require('twilio');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const admin = require('firebase-admin');
+const serviceAccount = require('../configurations/beaver-works-firebase.json');
 const nodemailer = require('nodemailer');
 const { pool } = require('../config/database');
 const { redis, cacheGet, cacheSet } = require('../config/redis');
@@ -13,9 +14,7 @@ try {
   if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
     firebaseApp = admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        credential: admin.credential.cert(serviceAccount),
       }),
     });
     logger.info('Firebase Admin SDK initialized successfully');
@@ -26,8 +25,7 @@ try {
   logger.error('Failed to initialize Firebase Admin SDK:', error);
 }
 
-
-
+ 
 // Email transporter
 const emailTransporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,

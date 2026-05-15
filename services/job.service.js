@@ -64,14 +64,15 @@ class JobService {
       }
       
       const descript = `Job created by client with id: ${clientId}`;
-      const metadata = {
-        jobId: job.id,
-        category: job.category,
-        jobDescription: job.description,
-        serviceType: job.service_type,
-      };
       const userId = clientId;
       const userType = 'client';
+      const metadata = {
+          jobId: job.id,
+          category: job.category,
+          description: job.description,
+          serviceType: job.service_type,
+          clientId: clientId,
+      }
      this.addTimelineEntry(job.id, 'Created', descript, userType, userId, metadata);
 
       await client.query('COMMIT');
@@ -246,7 +247,7 @@ class JobService {
       const descript = `Job accepted by artisan with id: ${artisanId}`;
       const userId = artisanId;
       const userType = 'artisan';
-     this.addTimelineEntry(job.id, 'Accepted', descript, userType, userId);
+     //this.addTimelineEntry(job.id, 'Accepted', descript, userType, userId);
       
       await client.query('COMMIT');
       
@@ -316,7 +317,7 @@ class JobService {
       );
 
       const descript = 'Artisan arrived at location';
-      this.addTimelineEntry(jobId, 'arrived', descript);
+      //this.addTimelineEntry(jobId, 'arrived', descript);
       
       await client.query('COMMIT');
       
@@ -359,7 +360,7 @@ class JobService {
     logger.info(`Diagnostics started for job ${jobId}`);
 
      const descript = 'Diagnostics started';
-      this.addTimelineEntry(jobId, 'diagnostics', descript);
+     // this.addTimelineEntry(jobId, 'diagnostics', descript);
     
     return { startTime: diagnosticsStart };
   }
@@ -412,7 +413,7 @@ class JobService {
       );
       
       const descript = `Diagnostics completed for job ${jobId}: ${diagnosticsDuration} minutes`;
-      this.addTimelineEntry(jobId, 'diagnostics', descript, 'artisan', artisanId);
+      //this.addTimelineEntry(jobId, 'diagnostics', descript, 'artisan', artisanId);
 
       await client.query('COMMIT');
       
@@ -437,7 +438,7 @@ class JobService {
     const result = await pool.query(
       `UPDATE jobs 
        SET execution_started_at = $1, job_status = 'execution'
-       WHERE id = $2 AND artisan_id = $3 AND billing_mode = 'time_based'
+       WHERE id = $2 AND artisan_id = $3 AND billing_mode = 'time_based' 
        RETURNING *`,
       [executionStart, jobId, artisanId]
     );
@@ -451,7 +452,7 @@ class JobService {
     logger.info(`Execution started for job ${jobId}`);
 
     const descript = 'Execution started';
-    this.addTimelineEntry(jobId, 'execution', descript);
+   // this.addTimelineEntry(jobId, 'execution', descript);
     
     return { startTime: executionStart };
   }
@@ -479,7 +480,7 @@ class JobService {
     logger.info(`Execution paused for job ${jobId}: ${reason}`);
 
      const descript = 'Execution paused';
-    this.addTimelineEntry(jobId, 'execution', descript);
+   // this.addTimelineEntry(jobId, 'execution', descript);
     
     return { pauseStart, reason };
   }
@@ -502,7 +503,7 @@ class JobService {
     logger.info(`Execution resumed for job ${jobId}, paused for ${pauseDuration} seconds`);
     
     const descript = 'Execution resumed';
-    this.addTimelineEntry(jobId, 'execution', descript);
+   // this.addTimelineEntry(jobId, 'execution', descript);
     return { pauseDuration };
   }
   
@@ -553,7 +554,7 @@ class JobService {
       );
 
     const descript = `Execution stopped for job ${jobId}: ${totalDuration} minutes`;
-    this.addTimelineEntry(jobId, 'execution completed', descript);
+   // this.addTimelineEntry(jobId, 'execution completed', descript);
       
       await client.query('COMMIT');
       
@@ -610,7 +611,8 @@ class JobService {
     const result = await pool.query(
       `UPDATE jobs 
        SET job_status = 'quote_approved', quote_approved_at = NOW()
-       WHERE id = $1 AND client_id = $2 AND job_status = 'pending_quote_approval'
+       WHERE id = $1 AND client_id = $2 AND (
+       job_status = 'pending_quote_approval' OR job_status = 'quote_rejected')
        RETURNING *`,
       [jobId, clientId]
     );
@@ -630,6 +632,35 @@ class JobService {
     );
     
     logger.info(`Quote approved for job ${jobId}`);
+    
+    return result.rows[0];
+  }
+
+    static async rejectQuote(jobId, clientId) {
+    const result = await pool.query(
+      `UPDATE jobs 
+       SET job_status = 'quote_rejected', quote_approved_at = NOW()
+       WHERE id = $1 AND client_id = $2 AND 
+       ( job_status = 'pending_quote_approval' OR job_status = 'quote_rejected')
+       RETURNING *`,
+      [jobId, clientId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Quote not found or already processed');
+    }
+    
+    const job = result.rows[0];
+    
+    // Notify artisan
+    await NotificationService.sendPushNotification(
+      job.artisan_id,
+      'Quote Rejected',
+      'Your quote has not been approved. You may not start the job.',
+      { jobId, type: 'quote_rejected' }
+    );
+    
+    logger.info(`Quote rejected for job ${jobId}`);
     
     return result.rows[0];
   }
@@ -768,6 +799,9 @@ class JobService {
           [job.artisan_id]
         );
       }
+
+      const descript = 'Job cancelled';
+      this.addTimelineEntry(jobId, 'cancelled', descript);
       
       await client.query('COMMIT');
       
@@ -854,29 +888,25 @@ class JobService {
 
   static async addTimelineEntry(jobId, status, description, userType = null, userId = null, metadata = {}) {
     
-    let res;
+    let name;
     if (userType && userId){
     if(userType === 'client'){
-     res = await pool.query(
+    const res = await pool.query(
       `SELECT full_legal_name FROM client_profiles WHERE user_id = $1`, [userId]);
-      metadata.userType = 'Client';
-
+      name = res.rows[0].full_legal_name;
     }else if(userType === 'artisan'){
-      res = await pool.query(
+     const res = await pool.query(
       `SELECT full_legal_name FROM artisan_profiles WHERE user_id = $1`, [userId]);
-      metadata.userType = 'Artisan';
+        name = res.rows[0].full_legal_name;
      }
-
-     metadata.ChangedBy = res.rows[0].full_legal_name;
-     metadata.userId = res.rows[0].user_id;
    }
 
-  
+    const descr = `${description}:  By: ${name}`;
     const result = await pool.query(
-      `INSERT INTO job_timeline (job_id, status, description, metadata)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO job_timeline (job_id, status, description, metadata, created_by)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [jobId, status, description, metadata],
+      [jobId, status, descr, metadata, userId],
     );
     
     return result.rows[0];

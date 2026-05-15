@@ -190,7 +190,7 @@ router.get('/earnings', authenticateToken, requireRole(['artisan']), [
 // Request withdrawal
 router.post('/withdrawals', authenticateToken, requireRole(['artisan']), [
   body('amount').isFloat({ min: 1000 }),
-  body('bankCode').notEmpty(),
+  body('bankCode').optional().notEmpty(),
   body('accountNumber').notEmpty(),
   body('accountName').notEmpty()
 ], async (req, res, next) => {
@@ -232,14 +232,15 @@ router.get('/withdrawals', authenticateToken, requireRole(['artisan']), [
 
 // Update bank account
 router.put('/bank-account', authenticateToken, requireRole(['artisan']), [
-  body('bankCode').notEmpty(),
+  body('bankCode').optional().notEmpty(),
+  body('bankName').notEmpty(),
   body('accountNumber').notEmpty(),
-  body('accountName').notEmpty()
+  body('accountName').notEmpty(),
 ], ArtisanController.updateBankAccount);
 
 // Get artisan schedule
 router.get('/schedule', authenticateToken, requireRole(['artisan']), [
-  query('date').optional().isISO8601(),
+  query('day_of_week').optional().isISO8601(),
 ], ArtisanController.getSchedule);
   
 

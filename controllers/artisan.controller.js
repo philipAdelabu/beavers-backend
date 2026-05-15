@@ -3,6 +3,7 @@ const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
 const { validationResult } = require('express-validator');
 const { logger }  = require('../config/logger');
+const ReviewService = require('../services/review.service');
 
 class ArtisanController {
   static async getProfile(req, res, next) {
@@ -135,7 +136,7 @@ class ArtisanController {
 
     try {
       const profile = await ArtisanService.updateProfile(req.user.id, { bank_details: req.body });
-      sendSuccess(res, profile, 'Bank account updated successfully');
+      sendSuccess(res, profile.bank_details, 'Bank account updated successfully');
     } catch (error) {
       sendError(res, error.message || 'Failed to update bank account', error.statusCode || 500);
       next(error);

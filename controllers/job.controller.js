@@ -187,6 +187,21 @@ class JobController {
     }
   }
 
+  static async rejectQuote(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const result = await JobService.rejectQuote(req.params.jobId, req.user.id);
+      sendSuccess(res, result, 'Quote rejected');
+    } catch (error) {
+      sendError(res, error.message || 'Fail to reject quote', error.statusCode || 500);
+      next(error);
+    }
+  }
+
   static async completeJob(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -485,8 +500,6 @@ static async getRecommendedJobs(req, res, next) {
     next(error);
   }
 }
-
-
 
 
 }

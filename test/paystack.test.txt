@@ -1,0 +1,18 @@
+# Test card numbers for Paystack
+# 4123 4501 1000 3151 - Visa (Success)
+# 4123 4501 1000 3152 - Visa (Requires OTP)
+# 4123 4501 1000 3153 - Visa (Declined)
+
+# Initialize payment
+curl -X POST http://localhost:3000/api/v1/payments/initialize/{jobId} \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Response:
+# {
+#   "success": true,
+#   "data": {
+#     "authorizationUrl": "https://paystack.com/pay/...",
+#     "reference": "BW-xxx-xxx",
+#     "amount": 61325
+#   }
+# }

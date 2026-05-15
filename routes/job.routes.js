@@ -102,6 +102,23 @@ router.post(
   JobController.submitQuote,
 );
 
+// client approve the quote
+router.post(
+  '/:jobId/approve-quote',
+  authenticateToken,
+  requireRole(['client']),
+  JobController.approveQuote,
+);
+
+// Client reject the quote
+router.post(
+  '/:jobId/reject-quote',
+  authenticateToken,
+  requireRole(['client']),
+  JobController.rejectQuote,
+);
+
+
 // Job Completed
 router.post(
   '/:jobId/complete',

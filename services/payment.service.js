@@ -1,18 +1,46 @@
+const axios = require('axios');
+const crypto = require('crypto');
 const { pool } = require('../config/database');
-const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
+const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Paystack API configuration
+let PAYSTACK_SECRET_KEY;
+let PAYSTACK_BASE_URL;
+if(process.env.NODE_ENV === 'production'){
+    PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+    PAYSTACK_BASE_URL = 'https://api.paystack.co';
+
+}else{
+    PAYSTACK_SECRET_KEY = process.env.PAYSTACK_TEST_SECRET_KEY;
+    PAYSTACK_BASE_URL = 'https://api.paystack.co';
+}
+const paystackAxios = axios.create({
+  baseURL: PAYSTACK_BASE_URL,
+  headers: {
+    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+    'Content-Type': 'application/json'
+  }
+});
 
 class PaymentService {
-  static async initializePayment(jobId, clientId, paymentMethodId = null) {
+  /**
+   * Initialize payment for a job
+   * @param {string} jobId - Job ID
+   * @param {string} clientId - Client ID
+   * @param {string} email - Client email
+   * @returns {Promise<Object>} Payment authorization URL
+   */
+  static async initializePayment(jobId, clientId, email) {
     const client = await pool.connect();
     
     try {
+      await client.query('BEGIN');
       // Get job billing details
       const billingResult = await client.query(
-        `SELECT jb.*, j.client_id, j.artisan_id, j.category
+        `SELECT jb.*, j.client_id, j.artisan_id, j.category, j.description, j.billing_mode
          FROM job_billing jb
          JOIN jobs j ON jb.job_id = j.id
          WHERE jb.job_id = $1 AND j.client_id = $2`,
@@ -24,258 +52,300 @@ class PaymentService {
       }
       
       const billing = billingResult.rows[0];
-      const totalAmount = (billing.base_fee || 0) + 
-                         (billing.diagnostics_fee || 0) + 
-                         (billing.execution_fee || 0) + 
-                         (billing.materials_cost || 0) + 
-                         (billing.workmanship_cost || 0);
+      let totalAmount = 0;
+     
+      if (billing.billing_mode === 'quoted'){
+        totalAmount = billing.quoted_amount;
+      }else {
+      totalAmount = (billing.base_fee || 0);
+      totalAmount += (billing.diagnostics_fee || 0);
+      totalAmount += (billing.execution_fee || 0);
+      totalAmount += (billing.materials_cost || 0);
+      totalAmount += (billing.workmanship_cost || 0);
+      }
       
       if (totalAmount <= 0) {
         throw new AppError(400, 'Invalid payment amount');
       }
+
+      totalAmount = parseInt(totalAmount);
+
+      // Create unique reference
+      const reference = this.generateReference(jobId);
       
-      // Get or create Stripe customer
-      let customerId = await cacheGet(`stripe:customer:${clientId}`);
-      
-      if (!customerId) {
-        const customerResult = await client.query(
-          `SELECT stripe_customer_id FROM client_profiles WHERE user_id = $1`,
-          [clientId]
-        );
-        
-        customerId = customerResult.rows[0]?.stripe_customer_id;
-        
-        if (!customerId) {
-          const userResult = await client.query(
-            `SELECT email, phone FROM users WHERE id = $1`,
-            [clientId]
-          );
-          
-          const customer = await stripe.customers.create({
-            email: userResult.rows[0].email,
-            phone: userResult.rows[0].phone,
-            metadata: { clientId }
-          });
-          
-          customerId = customer.id;
-          
-          await client.query(
-            `UPDATE client_profiles SET stripe_customer_id = $1 WHERE user_id = $2`,
-            [customerId, clientId]
-          );
-        }
-        
-        await cacheSet(`stripe:customer:${clientId}`, customerId, 86400);
-      }
-      
-      // Create payment intent
-      const paymentIntentData = {
-        amount: Math.round(totalAmount * 100), // Convert to kobo/cents
-        currency: 'ngn',
-        customer: customerId,
+
+      // Prepare Paystack initialization data
+      const paystackData = {
+        amount: Math.round(totalAmount * 100), // Convert to kobo
+        currency: 'NGN',
+        email: email,
+        reference: reference,
         metadata: {
-          jobId,
-          clientId,
-          billingId: billing.id
+          job_id: jobId,
+          client_id: clientId,
+          billing_id: billing.id,
+          custom_fields: [
+            {
+              display_name: "Job Category",
+              variable_name: "category",
+              value: billing.category
+            },
+            {
+              display_name: "Job ID",
+              variable_name: "job_id",
+              value: jobId
+            }
+          ]
         },
-        payment_method_types: ['card', 'bank_transfer', 'mobile_money'],
-        statement_descriptor: `BeaverWorks Job ${jobId.slice(0, 7)}`
+        callback_url: `${process.env.APP_FRONTEND_URL}/payment/verify?jobId=${jobId}`,
+        channels: ['card', 'bank_transfer', 'ussd', 'qr', 'mobile_money', 'bank']
       };
       
-      if (paymentMethodId) {
-        paymentIntentData.payment_method = paymentMethodId;
-        paymentIntentData.off_session = true;
-        paymentIntentData.confirm = true;
-      }
+      // Call Paystack API
+      const response = await paystackAxios.post('/transaction/initialize', paystackData);
       
-      const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+      if (!response.data.status) {
+        throw new AppError(400, response.data.message || 'Failed to initialize payment');
+      }
       
       // Store payment intent in database
+      const metadata = response.data.data;
+       logger.info(metadata.reference);
+       const client_secret = `${jobId}_${clientId}`;
       await client.query(
-        `INSERT INTO payment_intents (job_id, client_id, payment_intent_id, client_secret, amount, currency, status)
-         VALUES ($1, $2, $3, $4, $5, $6, 'pending')`,
-        [jobId, clientId, paymentIntent.id, paymentIntent.client_secret, totalAmount, 'ngn']
+        `INSERT INTO payment_intents (job_id, client_id, payment_intent_id, 
+        client_secret,  amount, currency, status, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7)`,
+        [jobId, clientId, metadata.reference, client_secret, totalAmount, 'NGN', metadata],
       );
       
-      logger.info(`Payment initialized for job ${jobId}: ₦${totalAmount}`);
-      
+      logger.info(`Payment initialized for job ${jobId}: ₦${totalAmount}, Reference: ${metadata.reference}`);
+      await client.query('COMMIT');
       return {
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id,
+        authorizationUrl: metadata.authorization_url,
+        reference: metadata.reference,
         amount: totalAmount,
-        requiresAction: paymentIntent.status === 'requires_action',
-        nextAction: paymentIntent.next_action
+        currency: 'NGN',
       };
     } catch (error) {
-      throw error;
+      await client.query('ROLLBACK');
+      throw new AppError(500, error.response?.data?.message || error.message || 'Failed to initialize payment');
     } finally {
       client.release();
     }
   }
   
-  static async confirmPayment(paymentIntentId, clientId) {
-    const result = await pool.query(
-      `SELECT * FROM payment_intents 
-       WHERE payment_intent_id = $1 AND client_id = $2`,
-      [paymentIntentId, clientId]
-    );
-    
-    if (result.rows.length === 0) {
-      throw new AppError(404, 'Payment intent not found');
-    }
-    
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
-    return {
-      status: paymentIntent.status,
-      amount: paymentIntent.amount / 100,
-      currency: paymentIntent.currency
-    };
-  }
-  
-  static async processWebhook(event) {
+  /**
+   * Verify payment after callback
+   * @param {string} reference - Paystack transaction reference
+   * @param {string} clientId - Client ID
+   * @returns {Promise<Object>} Payment verification result
+   */
+  static async verifyPayment(reference, clientId) {
     const client = await pool.connect();
     
     try {
-      switch (event.type) {
-        case 'payment_intent.succeeded':
-          await this.handleSuccessfulPayment(event.data.object, client);
-          break;
-          
-        case 'payment_intent.payment_failed':
-          await this.handleFailedPayment(event.data.object, client);
-          break;
-          
-        case 'charge.refunded':
-          await this.handleRefund(event.data.object, client);
-          break;
+      // Check if already processed
+      const existingPayment = await client.query(
+        `SELECT * FROM payment_intents WHERE paystack_reference = $1 AND client_id = $2`,
+        [reference, clientId]
+      );
+      
+      if (existingPayment.rows.length === 0) {
+        throw new AppError(404, 'Payment record not found');
+      }
+      
+      const payment = existingPayment.rows[0];
+      
+      if (payment.status === 'succeeded') {
+        return {
+          status: 'succeeded',
+          amount: payment.amount,
+          message: 'Payment already verified'
+        };
+      }
+      
+      // Verify with Paystack
+      const response = await paystackAxios.get(`/transaction/verify/${reference}`);
+      
+      if (!response.data.status) {
+        throw new AppError(400, response.data.message || 'Verification failed');
+      }
+      
+      const transaction = response.data.data;
+      
+      if (transaction.status === 'success') {
+        await client.query('BEGIN');
+        
+        // Update payment intent status
+        await client.query(
+          `UPDATE payment_intents 
+           SET status = 'succeeded', 
+               paid_at = NOW(),
+               paystack_transaction_id = $1,
+               payment_method_type = $2
+           WHERE paystack_reference = $3`,
+          [transaction.id, transaction.channel, reference]
+        );
+        
+        // Move funds to escrow
+        await client.query(
+          `INSERT INTO escrow_transactions (job_id, client_id, amount, transaction_type, status, dispute_buffer_until)
+           VALUES ($1, $2, $3, 'full_payment', 'held', NOW() + INTERVAL '3 days')`,
+          [payment.job_id, clientId, transaction.amount / 100]
+        );
+        
+        // Release base fee immediately (non-refundable)
+        await client.query(
+          `UPDATE escrow_transactions 
+           SET status = 'released', release_date = NOW()
+           WHERE job_id = $1 AND transaction_type = 'base_fee'`,
+          [payment.job_id]
+        );
+        
+        // Release materials cost immediately
+        await client.query(
+          `UPDATE escrow_transactions 
+           SET status = 'released', release_date = NOW()
+           WHERE job_id = $1 AND transaction_type = 'materials'`,
+          [payment.job_id]
+        );
+        
+        // Update job billing status
+        await client.query(
+          `UPDATE job_billing 
+           SET billing_status = 'paid', paid_at = NOW()
+           WHERE job_id = $1`,
+          [payment.job_id]
+        );
+        
+        await client.query('COMMIT');
+        
+        // Send notifications
+        await this.sendPaymentSuccessNotifications(payment.job_id, clientId, transaction.amount / 100);
+        
+        logger.info(`Payment verified successfully for job ${payment.job_id}: ₦${transaction.amount / 100}`);
+        
+        return {
+          status: 'succeeded',
+          amount: transaction.amount / 100,
+          reference: reference,
+          message: 'Payment verified successfully',
+        };
+      } else {
+        await client.query(
+          `UPDATE payment_intents 
+           SET status = 'failed', 
+               failure_reason = $1,
+               failed_at = NOW()
+           WHERE paystack_reference = $2`,
+          [transaction.gateway_response || 'Payment failed', reference]
+        );
+        
+        return {
+          status: 'failed',
+          message: transaction.gateway_response || 'Payment failed'
+        };
       }
     } catch (error) {
-      logger.error('Webhook processing error:', error);
-      throw error;
+      await client.query('ROLLBACK');
+      logger.error('Payment verification error:', error);
+      throw new AppError(500, error.response?.data?.message || error.message || 'Failed to verify payment');
     } finally {
       client.release();
     }
   }
   
-  static async handleSuccessfulPayment(paymentIntent, client) {
-    const { metadata, id, amount } = paymentIntent;
-    const { jobId, clientId, billingId } = metadata;
-    
-    await client.query('BEGIN');
-    
-    // Update payment intent status
-    await client.query(
-      `UPDATE payment_intents 
-       SET status = 'succeeded', paid_at = NOW()
-       WHERE payment_intent_id = $1`,
-      [id]
-    );
-    
-    // Move funds to escrow
-    await client.query(
-      `INSERT INTO escrow_transactions (job_id, client_id, amount, transaction_type, status, dispute_buffer_until)
-       VALUES ($1, $2, $3, 'full_payment', 'held', NOW() + INTERVAL '3 days')`,
-      [jobId, clientId, amount / 100]
-    );
-    
-    // Release base fee immediately (non-refundable)
-    await client.query(
-      `UPDATE escrow_transactions 
-       SET status = 'released', release_date = NOW()
-       WHERE job_id = $1 AND transaction_type = 'base_fee'`,
-      [jobId]
-    );
-    
-    // Release materials cost immediately
-    await client.query(
-      `UPDATE escrow_transactions 
-       SET status = 'released', release_date = NOW()
-       WHERE job_id = $1 AND transaction_type = 'materials'`,
-      [jobId]
-    );
-    
-    // Update job billing status
-    await client.query(
-      `UPDATE job_billing 
-       SET billing_status = 'paid', paid_at = NOW()
-       WHERE job_id = $1`,
-      [jobId]
-    );
-    
-    // Send confirmation email
-    const jobResult = await client.query(
-      `SELECT j.*, cp.email as client_email, cp.full_legal_name as client_name,
-              ap.email as artisan_email, ap.full_legal_name as artisan_name
-       FROM jobs j
-       JOIN client_profiles cp ON j.client_id = cp.user_id
-       JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
-       WHERE j.id = $1`,
-      [jobId]
-    );
-    
-    const job = jobResult.rows[0];
-    
-    await NotificationService.sendPaymentConfirmation(job.client_email, amount / 100, jobId);
-    await NotificationService.sendPaymentConfirmation(job.artisan_email, amount / 100, jobId);
-    
-    await client.query('COMMIT');
-    
-    logger.info(`Payment succeeded for job ${jobId}: ₦${amount / 100}`);
+  /**
+   * Generate unique transaction reference
+   * @param {string} jobId - Job ID
+   * @returns {string} Unique reference
+   */
+  static generateReference(jobId) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `BW-${jobId.slice(0, 8)}-${timestamp}-${random}`;
   }
   
-  static async handleFailedPayment(paymentIntent, client) {
-    const { metadata, id, last_payment_error } = paymentIntent;
-    const { jobId, clientId } = metadata;
+  /**
+   * Send payment success notifications
+   * @param {string} jobId - Job ID
+   * @param {string} clientId - Client ID
+   * @param {number} amount - Payment amount
+   * @returns {Promise<void>}
+   */
+  static async sendPaymentSuccessNotifications(jobId, clientId, amount) {
+    const client = await pool.connect();
     
-    await client.query(
-      `UPDATE payment_intents 
-       SET status = 'failed', failure_reason = $1, failed_at = NOW()
-       WHERE payment_intent_id = $2`,
-      [last_payment_error?.message, id]
-    );
-    
-    // Notify client
-    const clientResult = await client.query(
-      `SELECT email FROM users WHERE id = $1`,
-      [clientId]
-    );
-    
-    if (clientResult.rows[0]) {
-      await NotificationService.sendEmail(
-        clientResult.rows[0].email,
-        'Payment Failed',
-        `Your payment for job ${jobId} failed. Please try again or use a different payment method.`
+    try {
+      const jobResult = await client.query(
+        `SELECT j.*, 
+                cp.email as client_email, cp.full_legal_name as client_name, cp.phone as client_phone,
+                ap.email as artisan_email, ap.full_legal_name as artisan_name, ap.phone as artisan_phone
+         FROM jobs j
+         JOIN client_profiles cp ON j.client_id = cp.user_id
+         JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+         WHERE j.id = $1`,
+        [jobId]
       );
+      
+      const job = jobResult.rows[0];
+      
+      if (job) {
+        // Send email to client
+        await NotificationService.sendEmail(
+          job.client_email,
+          'Payment Confirmed',
+          `Your payment of ₦${amount.toLocaleString()} for job #${jobId.slice(0, 8)} has been confirmed.`,
+          `<h2>Payment Confirmed</h2>
+           <p>Dear ${job.client_name},</p>
+           <p>Your payment of <strong>₦${amount.toLocaleString()}</strong> for job #${jobId.slice(0, 8)} has been confirmed.</p>
+           <p>The funds are now held in escrow and will be released to the artisan upon job completion.</p>
+           <p>Thank you for using BeaverWorks!</p>`
+        );
+        
+        // Send SMS to client
+        if (job.client_phone) {
+          await NotificationService.sendSMS(
+            job.client_phone,
+            `BeaverWorks: Payment of ₦${amount.toLocaleString()} confirmed for job #${jobId.slice(0, 8)}.`
+          );
+        }
+        
+        // Send email to artisan (optional)
+        await NotificationService.sendEmail(
+          job.artisan_email,
+          'Payment Received for Job',
+          `Payment of ₦${amount.toLocaleString()} has been confirmed for job #${jobId.slice(0, 8)}. Funds will be released upon job completion.`,
+          `<h2>Payment Received</h2>
+           <p>Dear ${job.artisan_name},</p>
+           <p>Payment of <strong>₦${amount.toLocaleString()}</strong> has been confirmed for job #${jobId.slice(0, 8)}.</p>
+           <p>Funds will be released to your wallet after job completion and client confirmation.</p>
+           <p>Thank you for using BeaverWorks!</p>`
+        );
+      }
+    } finally {
+      client.release();
     }
-    
-    logger.warn(`Payment failed for job ${jobId}: ${last_payment_error?.message}`);
   }
   
-  static async handleRefund(charge, client) {
-    const { payment_intent, amount_refunded, id } = charge;
-    
-    await client.query(
-      `UPDATE refunds 
-       SET status = 'completed', 
-           transaction_id = $1,
-           completed_at = NOW()
-       WHERE payment_intent_id = $2`,
-      [id, payment_intent]
-    );
-    
-    logger.info(`Refund processed: ${id} for amount ₦${amount_refunded / 100}`);
-  }
-  
+  /**
+   * Process refund
+   * @param {string} jobId - Job ID
+   * @param {string} clientId - Client ID
+   * @param {number} amount - Refund amount
+   * @param {string} reason - Refund reason
+   * @returns {Promise<Object>} Refund result
+   */
   static async createRefund(jobId, clientId, amount, reason) {
     const client = await pool.connect();
     
     try {
       await client.query('BEGIN');
       
-      // Check if payment exists
+      // Get payment intent
       const paymentResult = await client.query(
-        `SELECT payment_intent_id, amount 
+        `SELECT paystack_reference, amount, paystack_transaction_id
          FROM payment_intents 
          WHERE job_id = $1 AND client_id = $2 AND status = 'succeeded'`,
         [jobId, clientId]
@@ -293,25 +363,32 @@ class PaymentService {
       
       // Create refund record
       const refundResult = await client.query(
-        `INSERT INTO refunds (job_id, payment_intent_id, amount, reason, status)
+        `INSERT INTO refunds (job_id, paystack_reference, amount, reason, status)
          VALUES ($1, $2, $3, $4, 'pending')
          RETURNING *`,
-        [jobId, payment.payment_intent_id, amount, reason]
+        [jobId, payment.paystack_reference, amount, reason]
       );
       
-      // Process refund with Stripe
-      const refund = await stripe.refunds.create({
-        payment_intent: payment.payment_intent_id,
+      // Process refund with Paystack
+      const refundData = {
+        transaction: payment.paystack_reference,
         amount: Math.round(amount * 100),
-        reason: 'requested_by_customer',
-        metadata: { jobId, refundId: refundResult.rows[0].id }
-      });
+        currency: 'NGN',
+        merchant_note: reason,
+        customer_note: `Refund for job ${jobId}: ${reason}`
+      };
+      
+      const response = await paystackAxios.post('/refund', refundData);
+      
+      if (!response.data.status) {
+        throw new AppError(400, response.data.message || 'Refund failed');
+      }
       
       await client.query(
         `UPDATE refunds 
-         SET transaction_id = $1, status = 'processing'
+         SET refund_id = $1, status = 'processing'
          WHERE id = $2`,
-        [refund.id, refundResult.rows[0].id]
+        [response.data.data.id, refundResult.rows[0].id]
       );
       
       // Update escrow
@@ -329,12 +406,410 @@ class PaymentService {
       return refundResult.rows[0];
     } catch (error) {
       await client.query('ROLLBACK');
+      logger.error('Refund error:', error);
+      throw new AppError(500, error.response?.data?.message || error.message || 'Failed to process refund');
+    } finally {
+      client.release();
+    }
+  }
+  
+  /**
+   * Get transaction history
+   * @param {string} userId - User ID
+   * @param {string} userType - User type (client/artisan)
+   * @param {Object} filters - Filter options
+   * @returns {Promise<Object>} Transaction history
+   */
+  static async getTransactionHistory(userId, userType, filters = {}) {
+    const { page = 1, limit = 10, startDate, endDate } = filters;
+    const offset = (page - 1) * limit;
+    
+    let query;
+    let params;
+    
+    if (userType === 'client') {
+      query = `
+        SELECT pi.*, j.category, j.service_type, j.job_status
+        FROM payment_intents pi
+        JOIN jobs j ON pi.job_id = j.id
+        WHERE j.client_id = $1
+        ORDER BY pi.created_at DESC
+        LIMIT $2 OFFSET $3
+      `;
+      params = [userId, limit, offset];
+    } else if (userType === 'artisan') {
+      query = `
+        SELECT ap.*, j.category, j.service_type, j.job_status
+        FROM artisan_payouts ap
+        JOIN jobs j ON ap.job_id = j.id
+        WHERE j.artisan_id = $1
+        ORDER BY ap.created_at DESC
+        LIMIT $2 OFFSET $3
+      `;
+      params = [userId, limit, offset];
+    } else {
+      query = `
+        SELECT pi.*, j.category, j.service_type
+        FROM payment_intents pi
+        JOIN jobs j ON pi.job_id = j.id
+        ORDER BY pi.created_at DESC
+        LIMIT $1 OFFSET $2
+      `;
+      params = [limit, offset];
+    }
+    
+    const result = await pool.query(query, params);
+    
+    const countQuery = userType === 'client'
+      ? `SELECT COUNT(*) FROM payment_intents pi JOIN jobs j ON pi.job_id = j.id WHERE j.client_id = $1`
+      : userType === 'artisan'
+        ? `SELECT COUNT(*) FROM artisan_payouts ap JOIN jobs j ON ap.job_id = j.id WHERE j.artisan_id = $1`
+        : `SELECT COUNT(*) FROM payment_intents`;
+    
+    const countParams = userType !== 'admin' ? [userId] : [];
+    const countResult = await pool.query(countQuery, countParams);
+    
+    return {
+      transactions: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+    };
+  }
+  
+  /**
+   * Get payment summary for user
+   * @param {string} userId - User ID
+   * @param {string} userType - User type
+   * @returns {Promise<Object>} Payment summary
+   */
+  static async getPaymentSummary(userId, userType) {
+    if (userType === 'client') {
+      const result = await pool.query(`
+        SELECT 
+          COUNT(*) as total_payments,
+          SUM(amount) as total_amount,
+          AVG(amount) as average_amount,
+          COUNT(CASE WHEN status = 'succeeded' THEN 1 END) as successful_payments,
+          SUM(CASE WHEN status = 'succeeded' THEN amount ELSE 0 END) as total_successful_amount
+        FROM payment_intents pi
+        JOIN jobs j ON pi.job_id = j.id
+        WHERE j.client_id = $1
+      `, [userId]);
+      
+      return result.rows[0];
+    } else if (userType === 'artisan') {
+      const result = await pool.query(`
+        SELECT 
+          COUNT(*) as total_payouts,
+          SUM(amount) as total_earned,
+          AVG(amount) as average_payout,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_payouts
+        FROM artisan_payouts ap
+        JOIN jobs j ON ap.job_id = j.id
+        WHERE j.artisan_id = $1
+      `, [userId]);
+      
+      return result.rows[0];
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Webhook handler for Paystack events
+   * @param {Object} payload - Webhook payload
+   * @param {string} signature - Paystack signature header
+   * @returns {Promise<void>}
+   */
+  static async handleWebhook(payload, signature) {
+    // Verify signature
+    const hash = crypto.createHmac('sha512', PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+    
+    if (hash !== signature) {
+      throw new AppError(401, 'Invalid webhook signature');
+    }
+    
+    const event = payload;
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      logger.info(`Processing Paystack webhook: ${event.event}`);
+      
+      switch (event.event) {
+        case 'charge.success':
+          await this.handleChargeSuccess(event.data, client);
+          break;
+          
+        case 'charge.dispute.create':
+          await this.handleDisputeCreated(event.data, client);
+          break;
+          
+        case 'charge.dispute.resolve':
+          await this.handleDisputeResolved(event.data, client);
+          break;
+          
+        case 'refund.processed':
+          await this.handleRefundProcessed(event.data, client);
+          break;
+          
+        case 'transfer.success':
+          await this.handleTransferSuccess(event.data, client);
+          break;
+          
+        case 'transfer.failed':
+          await this.handleTransferFailed(event.data, client);
+          break;
+          
+        default:
+          logger.info(`Unhandled Paystack event type: ${event.event}`);
+      }
+      
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      logger.error('Paystack webhook processing error:', error);
       throw error;
     } finally {
       client.release();
     }
   }
   
+  /**
+   * Handle successful charge webhook
+   * @param {Object} data - Webhook data
+   * @param {Object} client - Database client
+   * @returns {Promise<void>}
+   */
+  static async handleChargeSuccess(data, client) {
+    const { reference, amount, currency, metadata } = data;
+    const { job_id, client_id } = metadata;
+    
+    // Update payment intent status
+    await client.query(
+      `UPDATE payment_intents 
+       SET status = 'succeeded', 
+           paid_at = NOW(),
+           paystack_transaction_id = $1
+       WHERE paystack_reference = $2`,
+      [data.id, reference]
+    );
+    
+    // Move funds to escrow
+    await client.query(
+      `INSERT INTO escrow_transactions (job_id, client_id, amount, transaction_type, status, dispute_buffer_until)
+       VALUES ($1, $2, $3, 'full_payment', 'held', NOW() + INTERVAL '3 days')`,
+      [job_id, client_id, amount / 100]
+    );
+    
+    // Release base fee immediately
+    await client.query(
+      `UPDATE escrow_transactions 
+       SET status = 'released', release_date = NOW()
+       WHERE job_id = $1 AND transaction_type = 'base_fee'`,
+      [job_id]
+    );
+    
+    // Release materials cost immediately
+    await client.query(
+      `UPDATE escrow_transactions 
+       SET status = 'released', release_date = NOW()
+       WHERE job_id = $1 AND transaction_type = 'materials'`,
+      [job_id]
+    );
+    
+    // Update job billing
+    await client.query(
+      `UPDATE job_billing 
+       SET billing_status = 'paid', paid_at = NOW()
+       WHERE job_id = $1`,
+      [job_id]
+    );
+    
+    logger.info(`Charge success webhook processed for job ${job_id}: ₦${amount / 100}`);
+  }
+  
+  /**
+   * Handle dispute created webhook
+   * @param {Object} data - Webhook data
+   * @param {Object} client - Database client
+   * @returns {Promise<void>}
+   */
+  static async handleDisputeCreated(data, client) {
+    const { transaction, reason, id } = data;
+    const { reference } = transaction;
+    
+    const paymentResult = await client.query(
+      `SELECT job_id, client_id FROM payment_intents WHERE paystack_reference = $1`,
+      [reference]
+    );
+    
+    if (paymentResult.rows[0]) {
+      const { job_id, client_id } = paymentResult.rows[0];
+      
+      await client.query(
+        `INSERT INTO disputes (job_id, client_id, reason, description, status, external_reference)
+         VALUES ($1, $2, $3, $4, 'pending', $5)`,
+        [job_id, client_id, 'payment_dispute', `Paystack dispute created: ${reason}`, id]
+      );
+      
+      // Freeze escrow funds
+      await client.query(
+        `UPDATE escrow_transactions 
+         SET status = 'frozen', frozen_at = NOW(), freeze_reason = 'payment_dispute'
+         WHERE job_id = $1 AND status = 'held'`,
+        [job_id]
+      );
+      
+      logger.info(`Dispute created for job ${job_id}: ${reason}`);
+    }
+  }
+  
+  /**
+   * Handle dispute resolved webhook
+   * @param {Object} data - Webhook data
+   * @param {Object} client - Database client
+   * @returns {Promise<void>}
+   */
+  static async handleDisputeResolved(data, client) {
+    const { transaction, resolution, id } = data;
+    const { reference } = transaction;
+    
+    const paymentResult = await client.query(
+      `SELECT job_id FROM payment_intents WHERE paystack_reference = $1`,
+      [reference]
+    );
+    
+    if (paymentResult.rows[0]) {
+      const { job_id } = paymentResult.rows[0];
+      
+      await client.query(
+        `UPDATE disputes 
+         SET status = 'resolved', 
+             resolution = $1, 
+             resolved_at = NOW(),
+             external_resolution = $2
+         WHERE job_id = $3 AND status = 'pending'`,
+        [resolution, id, job_id]
+      );
+      
+      if (resolution === 'merchant_credited') {
+        // Release funds to artisan
+        await client.query(
+          `UPDATE escrow_transactions 
+           SET status = 'released', release_date = NOW(), release_reason = 'dispute_resolved'
+           WHERE job_id = $1 AND status = 'frozen'`,
+          [job_id]
+        );
+      } else if (resolution === 'customer_credited') {
+        // Refund client
+        await client.query(
+          `UPDATE escrow_transactions 
+           SET status = 'refunded', refunded_at = NOW(), refund_reason = 'dispute_resolved'
+           WHERE job_id = $1 AND status = 'frozen'`,
+          [job_id]
+        );
+      }
+      
+      logger.info(`Dispute resolved for job ${job_id}: ${resolution}`);
+    }
+  }
+  
+  /**
+   * Handle refund processed webhook
+   * @param {Object} data - Webhook data
+   * @param {Object} client - Database client
+   * @returns {Promise<void>}
+   */
+  static async handleRefundProcessed(data, client) {
+    const { transaction, amount, id } = data;
+    const { reference } = transaction;
+    
+    await client.query(
+      `UPDATE refunds 
+       SET status = 'completed', 
+           refund_id = $1,
+           completed_at = NOW()
+       WHERE paystack_reference = $2 AND status = 'processing'`,
+      [id, reference]
+    );
+    
+    logger.info(`Refund processed: ${id} for amount ₦${amount / 100}`);
+  }
+  
+  /**
+   * Handle transfer success webhook
+   * @param {Object} data - Webhook data
+   * @param {Object} client - Database client
+   * @returns {Promise<void>}
+   */
+  static async handleTransferSuccess(data, client) {
+    const { reference, amount, currency, recipient } = data;
+    
+    await client.query(
+      `UPDATE artisan_payouts 
+       SET status = 'completed', 
+           transfer_reference = $1,
+           completed_at = NOW()
+       WHERE transfer_reference = $2 AND status = 'processing'`,
+      [reference, reference]
+    );
+    
+    // Update withdrawal status
+    await client.query(
+      `UPDATE withdrawals 
+       SET status = 'completed', 
+           transfer_reference = $1,
+           completed_at = NOW()
+       WHERE transfer_reference = $2`,
+      [reference, reference]
+    );
+    
+    logger.info(`Transfer successful: ${reference} for amount ₦${amount / 100}`);
+  }
+  
+  /**
+   * Handle transfer failed webhook
+   * @param {Object} data - Webhook data
+   * @param {Object} client - Database client
+   * @returns {Promise<void>}
+   */
+  static async handleTransferFailed(data, client) {
+    const { reference, reason } = data;
+    
+    await client.query(
+      `UPDATE artisan_payouts 
+       SET status = 'failed', 
+           failure_reason = $1,
+           failed_at = NOW()
+       WHERE transfer_reference = $2 AND status = 'processing'`,
+      [reason, reference]
+    );
+    
+    // Update withdrawal status
+    await client.query(
+      `UPDATE withdrawals 
+       SET status = 'failed', 
+           failure_reason = $1,
+           failed_at = NOW()
+       WHERE transfer_reference = $2`,
+      [reason, reference]
+    );
+    
+    logger.error(`Transfer failed: ${reference} - ${reason}`);
+  }
+  
+  /**
+   * Release funds to artisan
+   * @param {string} jobId - Job ID
+   * @param {string} adminId - Admin ID
+   * @returns {Promise<Object>} Payout result
+   */
   static async releaseFundsToArtisan(jobId, adminId) {
     const client = await pool.connect();
     
@@ -391,202 +866,11 @@ class PaymentService {
       return payoutResult.rows[0];
     } catch (error) {
       await client.query('ROLLBACK');
-      throw error;
+      logger.error('Release funds error:', error);
+      throw new AppError(500, error.message || 'Failed to release funds');
     } finally {
       client.release();
     }
-  }
-  
-  static async getPaymentMethods(clientId) {
-    const cacheKey = `payment:methods:${clientId}`;
-    let methods = await cacheGet(cacheKey);
-    
-    if (!methods) {
-      const result = await pool.query(
-        `SELECT * FROM payment_methods 
-         WHERE client_id = $1 
-         ORDER BY is_default DESC, created_at DESC`,
-        [clientId]
-      );
-      
-      methods = result.rows;
-      await cacheSet(cacheKey, methods, 3600);
-    }
-    
-    return methods;
-  }
-  
-  static async addPaymentMethod(clientId, paymentMethodId, setAsDefault = false) {
-    const client = await pool.connect();
-    
-    try {
-      await client.query('BEGIN');
-      
-      // Retrieve payment method from Stripe
-      const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
-      
-      if (setAsDefault) {
-        await client.query(
-          `UPDATE payment_methods SET is_default = false WHERE client_id = $1`,
-          [clientId]
-        );
-      }
-      
-      const result = await client.query(
-        `INSERT INTO payment_methods 
-         (client_id, payment_method_id, type, last4, expiry_month, expiry_year, is_default)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING *`,
-        [
-          clientId, 
-          paymentMethodId, 
-          paymentMethod.type,
-          paymentMethod.card?.last4,
-          paymentMethod.card?.exp_month,
-          paymentMethod.card?.exp_year,
-          setAsDefault
-        ]
-      );
-      
-      // Attach to customer
-      const customerResult = await client.query(
-        `SELECT stripe_customer_id FROM client_profiles WHERE user_id = $1`,
-        [clientId]
-      );
-      
-      if (customerResult.rows[0]?.stripe_customer_id) {
-        await stripe.paymentMethods.attach(paymentMethodId, {
-          customer: customerResult.rows[0].stripe_customer_id
-        });
-      }
-      
-      await client.query('COMMIT');
-      
-      await cacheDel(`payment:methods:${clientId}`);
-      
-      return result.rows[0];
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
-  }
-  
-  static async deletePaymentMethod(methodId, clientId) {
-    const result = await pool.query(
-      `DELETE FROM payment_methods 
-       WHERE id = $1 AND client_id = $2
-       RETURNING *`,
-      [methodId, clientId]
-    );
-    
-    if (result.rows.length === 0) {
-      throw new AppError(404, 'Payment method not found');
-    }
-    
-    // Detach from Stripe
-    await stripe.paymentMethods.detach(result.rows[0].payment_method_id);
-    
-    await cacheDel(`payment:methods:${clientId}`);
-    
-    return result.rows[0];
-  }
-  
-  static async setDefaultPaymentMethod(methodId, clientId) {
-    const client = await pool.connect();
-    
-    try {
-      await client.query('BEGIN');
-      
-      await client.query(
-        `UPDATE payment_methods SET is_default = false WHERE client_id = $1`,
-        [clientId]
-      );
-      
-      const result = await client.query(
-        `UPDATE payment_methods 
-         SET is_default = true 
-         WHERE id = $1 AND client_id = $2
-         RETURNING *`,
-        [methodId, clientId]
-      );
-      
-      if (result.rows.length === 0) {
-        throw new AppError(404, 'Payment method not found');
-      }
-      
-      await client.query('COMMIT');
-      
-      await cacheDel(`payment:methods:${clientId}`);
-      
-      return result.rows[0];
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
-  }
-  
-  static async getTransactionHistory(userId, userType, filters = {}) {
-    const { page = 1, limit = 10, startDate, endDate } = filters;
-    const offset = (page - 1) * limit;
-    
-    let query;
-    let params;
-    
-    if (userType === 'client') {
-      query = `
-        SELECT pi.*, j.category, j.service_type, j.job_status
-        FROM payment_intents pi
-        JOIN jobs j ON pi.job_id = j.id
-        WHERE j.client_id = $1
-        ORDER BY pi.created_at DESC
-        LIMIT $2 OFFSET $3
-      `;
-      params = [userId, limit, offset];
-    } else {
-      query = `
-        SELECT ap.*, j.category, j.service_type, j.job_status
-        FROM artisan_payouts ap
-        JOIN jobs j ON ap.job_id = j.id
-        WHERE j.artisan_id = $1
-        ORDER BY ap.created_at DESC
-        LIMIT $2 OFFSET $3
-      `;
-      params = [userId, limit, offset];
-    }
-    
-    const result = await pool.query(query, params);
-    
-    const countQuery = userType === 'client'
-      ? `SELECT COUNT(*) FROM payment_intents pi JOIN jobs j ON pi.job_id = j.id WHERE j.client_id = $1`
-      : `SELECT COUNT(*) FROM artisan_payouts ap JOIN jobs j ON ap.job_id = j.id WHERE j.artisan_id = $1`;
-    
-    const countResult = await pool.query(countQuery, [userId]);
-    
-    return {
-      transactions: result.rows,
-      total: parseInt(countResult.rows[0].count),
-      page,
-      limit,
-      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
-    };
-  }
-  
-  static async getBalance(clientId) {
-    const result = await pool.query(
-      `SELECT 
-         COALESCE(SUM(CASE WHEN status = 'held' THEN amount ELSE 0 END), 0) as held_balance,
-         COALESCE(SUM(CASE WHEN status = 'released' THEN amount ELSE 0 END), 0) as released_balance,
-         COALESCE(SUM(CASE WHEN status = 'frozen' THEN amount ELSE 0 END), 0) as frozen_balance
-       FROM escrow_transactions
-       WHERE client_id = $1`,
-      [clientId]
-    );
-    
-    return result.rows[0];
   }
 }
 

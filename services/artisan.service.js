@@ -39,7 +39,9 @@ class ArtisanService {
   static async updateProfile(userId, updates) {
       const allowedFields = [
       'full_legal_name', 'residential_address',
-      'skill_category', 'sub_categories', 'documents',
+      'skill_category', 'sub_categories', 'documents', 'tier_level', 'bank_details', 'monthly_fee_status', 
+      'star_rating', 'total_ratings', 'completion_rate', 'trust_score', 'is_available', 'current_location', 'last_location_update',
+
     ];
     const setClause = [];
     const values = [];
@@ -257,7 +259,7 @@ class ArtisanService {
   static async getSchedule(userId, date) {
     const result = await pool.query(
       `SELECT * FROM artisan_schedules 
-       WHERE artisan_id = $1 AND date = $2
+       WHERE artisan_id = $1 AND day_of_week = $2
        ORDER BY start_time`,
       [userId, date]
     );

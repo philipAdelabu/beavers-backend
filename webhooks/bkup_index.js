@@ -1,12 +1,19 @@
 const express = require('express');
+const StripeWebhook = require('./stripe.webhook');
 const PaystackWebhook = require('./paystack.webhook');
-const { redis } = require('../config/redis');
+const FlutterwaveWebhook = require('./flutterwave.webhook');
 const { logger } = require('../config/logger');
 
 const router = express.Router();
 
-// Paystack webhook - needs raw body for signature verification
-router.post('/paystack', express.raw({ type: 'application/json' }), PaystackWebhook.handleWebhook);
+// Stripe webhook - needs raw body for signature verification
+router.post('/stripe', express.raw({ type: 'application/json' }), StripeWebhook.handleWebhook);
+
+// Paystack webhook
+router.post('/paystack', express.json(), PaystackWebhook.handleWebhook);
+
+// Flutterwave webhook
+router.post('/flutterwave', express.json(), FlutterwaveWebhook.handleWebhook);
 
 // Test webhook endpoint
 router.post('/test', express.json(), async (req, res) => {
@@ -29,12 +36,22 @@ router.post('/test', express.json(), async (req, res) => {
 
 // Webhook status endpoint
 router.get('/status', async (req, res) => {
-  
+  const { redis } = require('../config/redis');
   
   const webhooks = {
+    stripe: {
+      configured: !!process.env.STRIPE_WEBHOOK_SECRET,
+      lastEvent: await redis.get('webhook:stripe:last'),
+      status: 'active'
+    },
     paystack: {
       configured: !!process.env.PAYSTACK_SECRET_KEY,
       lastEvent: await redis.get('webhook:paystack:last'),
+      status: 'active'
+    },
+    flutterwave: {
+      configured: !!process.env.FLUTTERWAVE_SECRET_HASH,
+      lastEvent: await redis.get('webhook:flutterwave:last'),
       status: 'active'
     }
   };

@@ -270,7 +270,7 @@ class ClientService {
     await cacheDel(`client:saved_artisans:${clientId}`);
     
     return result.rows[0];
-  }
+  } 
   
   static async getJobHistory(userId, filters = {}) {
     const { status, page = 1, limit = 10, startDate, endDate } = filters;

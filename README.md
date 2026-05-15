@@ -229,7 +229,6 @@ database.js - PostgreSQL connection pool with query logging and transaction supp
 
 redis.js - Redis client with caching utilities and geolocation helpers
 
-stripe.js - Stripe payment gateway integration
 
 twilio.js - Twilio SMS service integration
 

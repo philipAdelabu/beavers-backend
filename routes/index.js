@@ -16,6 +16,7 @@ const supportRoutes = require('./support.routes');
 const analyticsRoutes = require('./analytics.routes');
 const webhookRoutes = require('./webhook.routes');
 
+
 router.use('/auth', authRoutes);
 router.use('/clients', clientRoutes);
 router.use('/artisans', artisanRoutes);

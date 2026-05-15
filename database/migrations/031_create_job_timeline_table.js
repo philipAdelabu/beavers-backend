@@ -7,7 +7,7 @@ exports.up = async (queryInterface) => {
       status VARCHAR(50) NOT NULL,
       description TEXT,
       metadata JSONB,
-      created_by UUID REFERENCES users(id),
+     -- created_by UUID REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
@@ -29,8 +29,7 @@ exports.up = async (queryInterface) => {
           'Job status changed from ' || COALESCE(OLD.job_status, 'null') || ' to ' || NEW.job_status,
           jsonb_build_object(
             'old_status', OLD.job_status,
-            'new_status', NEW.job_status,
-            'changed_by', current_user
+            'new_status', NEW.job_status
           ),
           NOW()
         );
