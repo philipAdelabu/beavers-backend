@@ -78,30 +78,14 @@ router.get('/jobs', authenticateToken, requireRole(['client']), [
   query('status').optional().isString(),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 })
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+],
+  ClientController.getJobHistory);
 
-  try {
-    const { status, page = 1, limit = 10 } = req.query;
-    const result = await Job.getClientJobs(req.user.id, { status, page, limit });
-    sendPaginated(res, result.jobs, page, limit, result.total, 'Jobs retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Get payment methods
-router.get('/payment-methods', authenticateToken, requireRole(['client']), async (req, res, next) => {
-  try {
-    const methods = await Payment.getPaymentMethods(req.user.id);
-    sendSuccess(res, methods, 'Payment methods retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/payment-methods', authenticateToken, requireRole(['client']), 
+   ClientController.getPaymentMethods);
+
 
 // Add payment method
 router.post('/payment-methods', authenticateToken, requireRole(['client']), [
@@ -110,40 +94,15 @@ router.post('/payment-methods', authenticateToken, requireRole(['client']), [
   body('last4').optional().isLength({ min: 4, max: 4 }),
   body('expiryMonth').optional().isInt({ min: 1, max: 12 }),
   body('expiryYear').optional().isInt({ min: 2024, max: 2035 }),
-  body('isDefault').optional().isBoolean()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+  body('isDefault').optional().isBoolean(),
+], ClientController.addPaymentMethod);
 
-  try {
-    const method = await Payment.addPaymentMethod(req.user.id, req.body);
-    sendSuccess(res, method, 'Payment method added successfully', 201);
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Delete payment method
 router.delete('/payment-methods/:methodId', authenticateToken, requireRole(['client']), [
   param('methodId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+], ClientController.deletePaymentMethod);
 
-  try {
-    const deleted = await Payment.deletePaymentMethod(req.params.methodId, req.user.id);
-    if (!deleted) {
-      throw new AppError(404, 'Payment method not found');
-    }
-    sendSuccess(res, null, 'Payment method deleted successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Get client notifications
 router.get('/notifications', authenticateToken, requireRole(['client']), [
@@ -208,41 +167,22 @@ router.get('/saved-artisans', authenticateToken, requireRole(['client']), async 
 
 // Save artisan
 router.post('/saved-artisans/:artisanId', authenticateToken, requireRole(['client']), [
-  param('artisanId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+  param('artisanId').isUUID(),
+], ClientController.saveArtisan);
 
-  try {
-    const saved = await Client.saveArtisan(req.user.id, req.params.artisanId);
-    sendSuccess(res, saved, 'Artisan saved successfully', 201);
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Remove saved artisan
 router.delete('/saved-artisans/:artisanId', authenticateToken, requireRole(['client']), [
-  param('artisanId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+  param('artisanId').isUUID(),
+], ClientController.removeSavedArtisan);
 
-  try {
-    const removed = await Client.removeSavedArtisan(req.user.id, req.params.artisanId);
-    if (!removed) {
-      throw new AppError(404, 'Saved artisan not found');
-    }
-    sendSuccess(res, null, 'Artisan removed from saved list');
-  } catch (error) {
-    next(error);
-  }
-});
 
+// Get client statistics
+router.get(
+  '/statistics',
+  authenticateToken, 
+  requireRole(['client']),
+  ClientController.getStatistics);
 
 
 // Get unread notifications count

@@ -872,6 +872,131 @@ class PaymentService {
       client.release();
     }
   }
+
+
+  static async getPaymentMethods(clientId) {
+      const cacheKey = `payment:methods:${clientId}`;
+      let methods = await cacheGet(cacheKey);
+      
+      if (!methods) {
+        const result = await pool.query(
+          `SELECT * FROM payment_methods 
+           WHERE client_id = $1 
+           ORDER BY is_default DESC, created_at DESC`,
+          [clientId]
+        );
+        
+        methods = result.rows;
+        await cacheSet(cacheKey, methods, 3600);
+      }
+      
+      return methods;
+    }
+    
+    static async addPaymentMethod(clientId, paymentMethodId, setAsDefault = false) {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        // Retrieve payment method from Stripe
+        const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+        
+        if (setAsDefault) {
+          await client.query(
+            `UPDATE payment_methods SET is_default = false WHERE client_id = $1`,
+            [clientId]
+          );
+        }
+        
+        const result = await client.query(
+          `INSERT INTO payment_methods 
+           (client_id, payment_method_id, type, last4, expiry_month, expiry_year, is_default)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           RETURNING *`,
+          [
+            clientId, 
+            paymentMethodId, 
+            paymentMethod.type,
+            paymentMethod.card?.last4,
+            paymentMethod.card?.exp_month,
+            paymentMethod.card?.exp_year,
+            setAsDefault
+          ]
+        );
+        
+      
+        
+        await client.query('COMMIT');
+        
+        await cacheDel(`payment:methods:${clientId}`);
+        
+        return result.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+    
+    static async deletePaymentMethod(methodId, clientId) {
+      const result = await pool.query(
+        `DELETE FROM payment_methods 
+         WHERE id = $1 AND client_id = $2
+         RETURNING *`,
+        [methodId, clientId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Payment method not found');
+      }
+      
+
+      await cacheDel(`payment:methods:${clientId}`);
+      
+      return result.rows[0];
+    }
+    
+    static async setDefaultPaymentMethod(methodId, clientId) {
+      const client = await pool.connect();
+      
+      try {
+        await client.query('BEGIN');
+        
+        await client.query(
+          `UPDATE payment_methods SET is_default = false WHERE client_id = $1`,
+          [clientId]
+        );
+        
+        const result = await client.query(
+          `UPDATE payment_methods 
+           SET is_default = true 
+           WHERE id = $1 AND client_id = $2
+           RETURNING *`,
+          [methodId, clientId]
+        );
+        
+        if (result.rows.length === 0) {
+          throw new AppError(404, 'Payment method not found');
+        }
+        
+        await client.query('COMMIT');
+        
+        await cacheDel(`payment:methods:${clientId}`);
+        
+        return result.rows[0];
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+  
+    
+
+
 }
 
 module.exports = PaymentService;

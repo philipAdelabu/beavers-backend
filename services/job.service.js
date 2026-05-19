@@ -6,6 +6,7 @@ const NotificationService = require('./notification.service');
 const { generateArrivalPIN, calculateDistance } = require('../utils/geo.utils');
 const Wallet = require('../models/Wallet');
 
+
 class JobService {
   static async createJob(clientId, jobData) {
     const { category, description, mediaUrls, serviceType, location } = jobData;
@@ -37,6 +38,7 @@ class JobService {
       
     
       const Google_map_radius = process.env.GOOGLE_MAP_RADIUS || 20;
+      const expires_at = process.env.JOB_GENERATED_PIN_ARRIVAL_EXPIRES_MINUTES || 2400;
 
       // Find and notify nearby artisans
       const nearbyArtisans = await this.findNearbyArtisans(category, location, Google_map_radius);
@@ -45,7 +47,7 @@ class JobService {
       for (const artisan of nearbyArtisans.slice(0, 5)) {
         const offerResult = await client.query(
           `INSERT INTO job_offers (job_id, artisan_id, match_score, distance, status, expires_at)
-           VALUES ($1, $2, $3, $4, 'pending', NOW() + INTERVAL '2400 minutes')
+           VALUES ($1, $2, $3, $4, 'pending', NOW() + INTERVAL  '${expires_at} minutes')
            RETURNING *`,
           [job.id, artisan.user_id, artisan.score, artisan.distance]
         );
@@ -121,7 +123,7 @@ class JobService {
       );
       
       if (result.rows.length === 0) {
-        logger.info('No eligible artisans found in database 2');
+        logger.info('No eligible artisans found in database');
         return [];
       }
       
@@ -178,6 +180,81 @@ class JobService {
     
     return Math.round(totalScore);
   }
+
+  static async repostJob(clientId, jobId){
+
+       const client = await pool.connect();
+    
+    try{
+   
+      await client.query('BEGIN');
+
+      await client.query(`
+            DELETE FROM job_offers WHERE job_id = $1 and status = 'pending'
+        `, [jobId]);
+      
+    
+    const res = await client.query(
+       `SELECT *
+        FROM jobs where id = $1 `, 
+       [jobId]
+    );
+    if(res.rows.length !== 1){
+      return 'The job is undefined';
+    }
+    const job = res.rows[0];
+
+    const location = job.location;
+    const category = job.category;
+      // Update offer status
+    const expires_at = process.env.JOB_OFFER_EXPIRY_MINUTES ||  2040;
+
+ 
+     const Google_map_radius = process.env.GOOGLE_MAP_RADIUS || 20;
+
+    
+      // Find and notify nearby artisans
+      const nearbyArtisans = await this.findNearbyArtisans(category, location, Google_map_radius);
+  
+      const offers = [];
+      for (const artisan of nearbyArtisans.slice(0, 5)) {
+        const offerResult = await client.query(
+          `INSERT INTO job_offers (job_id, artisan_id, match_score, distance, status, expires_at)
+           VALUES ($1, $2, $3, $4, 'pending', NOW() + INTERVAL  '${expires_at} minutes')
+           RETURNING *`,
+          [job.id, artisan.user_id, artisan.score, artisan.distance]
+        );
+        
+        offers.push(offerResult.rows[0]);
+        logger.info(`Sent job offer to artisan ${artisan.user_id} for job ${job.id}`);
+        
+        // Send real-time notification via Socket.IO
+        await NotificationService.sendJobOfferNotification(artisan.user_id, {
+          jobId: job.id,
+          category: job.category,
+          description: job.description,
+          distance: artisan.distance,
+          serviceType: job.service_type
+        });
+      }
+      
+ 
+      await client.query('COMMIT');
+      logger.info(`Job created: ${job.id} by client ${clientId}`);
+       
+
+      return {
+        job,
+        offersSent: offers.length
+      };
+      
+    } catch (error) {
+       await client.query('ROLLBACK');
+       throw error;
+    } finally {
+       client.release();
+    }
+  }
   
   static async acceptJob(jobId, artisanId) {
     const client = await pool.connect();
@@ -200,7 +277,7 @@ class JobService {
       // Check offer
       const offerResult = await client.query(
         `SELECT * FROM job_offers 
-         WHERE job_id = $1 AND artisan_id = $2 AND status = 'pending'
+         WHERE job_id = $1 AND artisan_id = $2 AND (status = 'pending' OR status = 'rejected') 
          AND expires_at > NOW()`,
         [jobId, artisanId]
       );
@@ -238,10 +315,11 @@ class JobService {
       
       // Generate arrival PIN
       const pin = generateArrivalPIN();
+      const pin_expires = process.env.JOB_GENERATED_PIN_ARRIVAL_EXPIRES_MINUTES || 2400;
       await client.query(
         `INSERT INTO arrival_pins (job_id, pin, expires_at)
-         VALUES ($1, $2, NOW() + INTERVAL '2400 minutes')`,
-        [jobId, pin]
+         VALUES ($1, $2, NOW() + INTERVAL '${pin_expires}  minutes')`,
+        [jobId, pin],
       );
 
       const descript = `Job accepted by artisan with id: ${artisanId}`;
@@ -920,10 +998,17 @@ class JobService {
        
        let query = `
          SELECT j.*, ap.full_legal_name as artisan_name, ap.star_rating,
-         jb.base_fee, jb.total_amount, jb.billing_status, jb.paid_at 
+         jb.base_fee, jb.total_amount, jb.billing_status, jb.paid_at,
+         jo.expires_at, 
+           CASE 
+              WHEN jo.expires_at < NOW() AND (j.job_status = 'pending'  OR j.job_status = 'rejected') THEN 'expired'
+              WHEN jo.expires_at > NOW() AND (j.job_status = 'pending'  OR  j.job_status = 'rejected')  THEN 'active'
+              ELSE 'treated'
+           END AS job_offer_status
          FROM jobs j
          LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
          LEFT JOIN job_billing jb ON j.id = jb.job_id
+         LEFT JOIN job_offers jo ON j.id = jo.job_id
          WHERE j.client_id = $1
        `;
        const params = [clientId];
@@ -1047,6 +1132,7 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
   } = filters;
   
   const offset = (page - 1) * limit;
+  logger.info('Stage number 1');
   
   let query = `
     SELECT j.*,
@@ -1095,6 +1181,7 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
     paramIndex++;
   }
   
+  logger.info('Stage number 2');
   // Location-based filtering
   if (location && location.latitude && location.longitude) {
     query += `
@@ -1110,7 +1197,7 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
     params.push(location.longitude, location.latitude, radius);
     paramIndex += 3;
   }
-  
+  logger.info('Stage number 3');
   // Sorting
   switch (sortBy) {
     case 'distance':
@@ -1138,12 +1225,12 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
       query += ` ORDER BY j.created_at DESC`;
       break;
   }
-  
+  logger.info('Stage number 4');
   query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
   params.push(limit, offset);
   
   const result = await pool.query(query, params);
-  
+  logger.info('Stage number 5');
   // Get total count
   const countQuery = `
     SELECT COUNT(*) 
@@ -1155,16 +1242,15 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
       ${serviceType ? `AND j.service_type = '${serviceType}'` : ''}
   `;
   const countResult = await pool.query(countQuery);
+  logger.info('Stage number 6');
   
   // Calculate distance for each job if location provided
   const jobsWithDetails = await Promise.all(result.rows.map(async (job) => {
     let distance = null;
     if (location && location.latitude && location.longitude && job.location) {
-      distance = this.calculateDistance(
-        location.latitude,
-        location.longitude,
-        job.location.latitude,
-        job.location.longitude
+      distance = calculateDistance(
+        location,
+        job.location,
       );
     }
     
@@ -1177,7 +1263,7 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
       matchScore
     };
   }));
-  
+    logger.info('Stage number 7');
   return {
     jobs: jobsWithDetails,
     total: parseInt(countResult.rows[0].count),
@@ -1185,8 +1271,10 @@ static async getAvailableJobs(filters = {}, artisanId = null) {
     limit,
     totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
   };
-}
 
+  logger.info('Stage number 8');
+}
+ 
 /**
  * Get job details for artisan browsing
  * @param {string} jobId - Job ID
@@ -1282,11 +1370,9 @@ static async calculateJobMatchScore(artisanId, job) {
   
   // Distance score (20% weight)
   if (artisan.current_location && job.location) {
-    const distance = this.calculateDistance(
-      artisan.current_location.latitude,
-      artisan.current_location.longitude,
-      job.location.latitude,
-      job.location.longitude
+    const distance = calculateDistance(
+      artisan.current_location,
+      job.location,
     );
     const distanceScore = Math.max(0, 20 - (distance / 1000) * 2);
     score += Math.min(20, distanceScore);
@@ -1315,6 +1401,42 @@ static async calculateJobMatchScore(artisanId, job) {
   
   return Math.round(score);
 }
+
+static async getArtisanAverageEarning(clientId){
+   const result = this.getEarnings(clientId);
+   return result.average_earning;
+}
+
+ static async getEarnings(artisanId, startDate = null, endDate = null) {
+    let query = `
+      SELECT 
+        SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_earned,
+        SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as pending_earnings,
+        COUNT(*) as total_jobs,
+        AVG(amount) as average_earning
+      FROM artisan_payouts
+      WHERE artisan_id = $1
+    `;
+    
+    const params = [artisanId];
+    let paramIndex = 2;
+    
+    if (startDate) {
+      query += ` AND created_at >= $${paramIndex}`;
+      params.push(startDate);
+      paramIndex++;
+    }
+    
+    if (endDate) {
+      query += ` AND created_at <= $${paramIndex}`;
+      params.push(endDate);
+      paramIndex++;
+    }
+    
+    const result = await pool.query(query, params);
+    return result.rows[0];
+  }
+
 
 /**
  * Get similar jobs

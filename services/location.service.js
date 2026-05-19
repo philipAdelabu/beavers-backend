@@ -3,6 +3,7 @@ const { redis, addArtisanLocation, getNearbyArtisans, cacheSet, cacheGet } = req
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { calculateDistance, calculateETA, calculateTravelPath } = require('../utils/geo.utils');
+const { emitLocationUpdate } = require('../socket/socket.handlers');
 
 class LocationService {
   static async updateArtisanLocation(artisanId, locationData) {
@@ -35,6 +36,23 @@ class LocationService {
         speed,
         timestamp: new Date().toISOString()
       }, 60);
+
+         // If there's an active job, emit location to client
+          if (jobId) {
+            const jobResult = await pool.query(
+              `SELECT client_id FROM jobs WHERE id = $1 AND artisan_id = $2`,
+              [jobId, artisanId]
+            );
+      
+            if (jobResult.rows.length > 0) {
+              emitLocationUpdate(jobResult.rows[0].client_id, {
+                artisanId,
+                jobId,
+                location: { latitude, longitude, heading, speed },
+                timestamp: new Date()
+              });
+            }
+          }
       
       logger.debug(`Location updated for artisan ${artisanId}`);
       
@@ -291,7 +309,7 @@ class LocationService {
     return {
       isWithinGeofence,
       distance,
-      requiredRadius: 100
+      requiredRadius: 100 
     };
   }
   

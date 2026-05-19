@@ -5,57 +5,12 @@ const { authenticateToken, requireRole } = require('../middleware/auth.middlewar
 const { addArtisanLocation, removeArtisanLocation, cacheSet } = require('../config/redis');
 const { emitLocationUpdate } = require('../socket/socket.handlers');
 const router = express.Router();
+const LocationController = require('../controllers/location.controller');
 
 // Update artisan location (real-time)
-router.post('/update', authenticateToken, requireRole(['artisan']), async (req, res) => {
-  const { latitude, longitude, heading, speed, jobId } = req.body;
-  const artisanId = req.user.id;
+router.post('/update', authenticateToken, requireRole(['artisan']),
+   LocationController.updateLocation);
 
-  try {
-    // Update Redis for real-time queries
-    await addArtisanLocation(artisanId, longitude, latitude);
-
-    // Store in PostgreSQL for history
-    await pool.query(
-      `INSERT INTO location_history (artisan_id, job_id, location)
-       VALUES ($1, $2, $3)`,
-      [artisanId, jobId || null, JSON.stringify({ latitude, longitude, heading, speed })]
-    );
-
-    // Update current location in artisan profile
-    await pool.query(
-      `UPDATE artisan_profiles 
-       SET current_location = $1, updated_at = NOW()
-       WHERE user_id = $2`,
-      [JSON.stringify({ latitude, longitude, heading, speed }), artisanId]
-    );
-
-    // If there's an active job, emit location to client
-    if (jobId) {
-      const jobResult = await pool.query(
-        `SELECT client_id FROM jobs WHERE id = $1 AND artisan_id = $2`,
-        [jobId, artisanId]
-      );
-
-      if (jobResult.rows.length > 0) {
-        emitLocationUpdate(jobResult.rows[0].client_id, {
-          artisanId,
-          jobId,
-          location: { latitude, longitude, heading, speed },
-          timestamp: new Date()
-        });
-      }
-    }
-
-    // Cache current location for quick access
-    await cacheSet(`location:${artisanId}`, { latitude, longitude, heading, speed, timestamp: new Date() }, 60);
-
-    res.json({ message: 'Location updated' });
-  } catch (error) {
-    console.error('Location update error:', error);
-    res.status(500).json({ error: 'Failed to update location' });
-  }
-});
 
 // Get artisan location (for client)
 router.get('/artisan/:artisanId', authenticateToken, async (req, res) => {

@@ -18,6 +18,14 @@ router.post('/create', authenticateToken, requireRole(['client']), [
   body('serviceType').isIn(['inspection', 'repair', 'installation', 'emergency', 'maintenance'])
 ], JobController.createJob);
 
+// Repost an expired job
+router.post(
+  '/:jobId/repost',
+  authenticateToken,
+  requireRole(['client']),
+  JobController.repostJob,
+);
+
 // Accept job offer (artisan)
 router.post(
   '/:jobId/accept',
@@ -166,18 +174,18 @@ router.get('/:jobId/timeline', authenticateToken, JobController.getJobTimeline);
 // This gives the artisan to  browse for available job.
 
 // Artisan job browsing routes
-router.get('/available', authenticateToken, requireRole(['artisan']), [
-  body('category').optional().isString(),
-  body('minBudget').optional().isFloat({ min: 0 }),
-  body('maxBudget').optional().isFloat({ min: 0 }),
-  body('serviceType').optional().isIn(['inspection', 'repair', 'installation', 'emergency']),
-  body('latitude').optional().isFloat({ min: -90, max: 90 }),
-  body('longitude').optional().isFloat({ min: -180, max: 180 }),
-  body('radius').optional().isFloat({ min: 1, max: 100 }),
-  body('sortBy').optional().isIn(['distance', 'budget', 'created_at']),
-  body('page').optional().isInt({ min: 1 }),
-  body('limit').optional().isInt({ min: 1, max: 100 })
-], JobController.getAvailableJobs);
+router.get('/available/jobs', authenticateToken, requireRole(['artisan']), [
+  param('category').optional().isString(),
+  param('minBudget').optional().isFloat({ min: 0 }),
+  param('maxBudget').optional().isFloat({ min: 0 }),
+  param('serviceType').optional().isIn(['inspection', 'repair', 'installation', 'emergency']),
+  param('latitude').optional().isFloat({ min: -90, max: 90 }),
+  param('longitude').optional().isFloat({ min: -180, max: 180 }),
+  param('radius').optional().isFloat({ min: 1, max: 100 }),
+  param('sortBy').optional().isIn(['distance', 'budget', 'created_at']),
+  param('page').optional().isInt({ min: 1 }),
+  param('limit').optional().isInt({ min: 1, max: 100 })
+], JobController.getAvailableJobs); 
 
 router.get('/available/:jobId', authenticateToken, requireRole(['artisan']), [
   param('jobId').isUUID()

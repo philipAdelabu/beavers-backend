@@ -3,6 +3,7 @@ const JobService = require('../services/job.service');
 const ReviewService = require('../services/review.service');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
+const { logger } = require('../config/logger');
 
 
 class JobController {
@@ -17,6 +18,20 @@ class JobController {
       sendSuccess(res, result, 'Job created successfully', 201);
     } catch (error) {
       sendError(res, error.message || 'Fail to create Job', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+  static async repostJob(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()){
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+       const result = await JobService.repostJob(req.user.id, req.params.jobId);
+       sendSuccess(res, result, 'Job reposted successfully', 201);
+    } catch (error){
+      sendError(res,error.message || 'Fail to repost Job', error.statusCode || 500);
       next(error);
     }
   }
@@ -318,16 +333,15 @@ class JobController {
 
    // Add these methods to JobController
 
-/**
- * Get available jobs for artisans to browse
- * @route GET /api/v1/jobs/available
- */
+
 static async getAvailableJobs(req, res, next) {
+  logger.info('Stage number 0');
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     return sendError(res, 'Validation error', 400, errors.array());
   }
-
+ 
   try {
     const {
       category,
@@ -356,7 +370,7 @@ static async getAvailableJobs(req, res, next) {
         page: parseInt(page),
         limit: parseInt(limit)
       },
-      req.user.id
+      req.user.id 
     );
     
     sendPaginated(res, result.jobs, page, limit, result.total, 'Available jobs retrieved successfully');

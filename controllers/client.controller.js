@@ -1,4 +1,5 @@
 const ClientService = require('../services/client.service');
+const PaymentService = require('../services/payment.service');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
 const { validationResult } = require('express-validator');
@@ -53,7 +54,7 @@ class ClientController {
       next(error);
     }
   }
-
+ 
   static async addAddress(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

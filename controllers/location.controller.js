@@ -10,8 +10,8 @@ class LocationController {
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
     }
-
-    try {
+ 
+    try { 
       const { latitude, longitude, heading, speed, accuracy, jobId } = req.body;
       const result = await LocationService.updateArtisanLocation(req.user.id, {
         latitude, longitude, heading, speed, accuracy, jobId
