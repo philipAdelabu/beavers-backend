@@ -44,6 +44,9 @@ const { redis, initializeRedis } = require('./config/redis');
 const { logger } = require('./config/logger');
 
 // Routes
+app.get('/', (req, res) => {
+  res.send(`Welcome to the BeaverWorks API!  ${new Date().toISOString()}`);
+});
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/clients', clientRoutes);
 app.use('/api/v1/artisans', artisanRoutes);

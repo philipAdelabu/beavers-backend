@@ -9607,3 +9607,331 @@ error: null value in column "job_id" of relation "job_timeline" violates not-nul
 2026-05-19 21:43:46 [INFO]: Socket.IO server initialized 
 2026-05-19 21:43:46 [INFO]: getting to  port .. 
 2026-05-19 21:43:46 [INFO]: Server running on port 3000 
+2026-05-20 14:17:43 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:17:46 [INFO]: ... end of ther server call.. 
+2026-05-20 14:17:46 [INFO]: Database pool connected 
+2026-05-20 14:17:46 [INFO]: Database extensions initialized 
+2026-05-20 14:17:47 [INFO]: Database connected successfully at Wed May 20 2026 14:17:47 GMT+0100 (West Africa Time) 
+2026-05-20 14:17:47 [INFO]: Database connected successfully 
+2026-05-20 14:17:47 [INFO]: Redis connecting... 
+2026-05-20 14:17:47 [INFO]: Redis connected successfully 
+2026-05-20 14:17:47 [INFO]: Redis initialized and connected 
+2026-05-20 14:17:47 [INFO]: Redis connected successfully 
+2026-05-20 14:17:47 [INFO]: Socket.IO server initialized 
+2026-05-20 14:17:47 [INFO]: getting to  port .. 
+2026-05-20 14:17:47 [INFO]: Server running on port 3000 
+2026-05-20 14:19:28 [INFO]: SIGINT received. Starting graceful shutdown... 
+2026-05-20 14:19:34 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:19:35 [INFO]: ... end of ther server call.. 
+2026-05-20 14:19:35 [INFO]: Database pool connected 
+2026-05-20 14:19:35 [INFO]: Database extensions initialized 
+2026-05-20 14:19:35 [INFO]: Database connected successfully at Wed May 20 2026 14:19:35 GMT+0100 (West Africa Time) 
+2026-05-20 14:19:35 [INFO]: Database connected successfully 
+2026-05-20 14:19:35 [INFO]: Redis connecting... 
+2026-05-20 14:19:35 [INFO]: Redis connected successfully 
+2026-05-20 14:19:35 [INFO]: Redis initialized and connected 
+2026-05-20 14:19:35 [INFO]: Redis connected successfully 
+2026-05-20 14:19:35 [INFO]: Socket.IO server initialized 
+2026-05-20 14:19:35 [INFO]: getting to  port .. 
+2026-05-20 14:19:35 [INFO]: Server running on port 3000 
+2026-05-20 14:20:32 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:20:33 [INFO]: ... end of ther server call.. 
+2026-05-20 14:20:33 [INFO]: Database pool connected 
+2026-05-20 14:20:33 [INFO]: Database extensions initialized 
+2026-05-20 14:20:33 [INFO]: Database connected successfully at Wed May 20 2026 14:20:33 GMT+0100 (West Africa Time) 
+2026-05-20 14:20:33 [INFO]: Database connected successfully 
+2026-05-20 14:20:33 [INFO]: Redis connecting... 
+2026-05-20 14:20:33 [INFO]: Redis connected successfully 
+2026-05-20 14:20:33 [INFO]: Redis initialized and connected 
+2026-05-20 14:20:33 [INFO]: Redis connected successfully 
+2026-05-20 14:20:33 [INFO]: Socket.IO server initialized 
+2026-05-20 14:20:33 [INFO]: getting to  port .. 
+2026-05-20 14:20:33 [INFO]: Server running on port 3000 
+2026-05-20 14:20:44 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:20:47 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:20:51 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:20:51 [INFO]: ... end of ther server call.. 
+2026-05-20 14:20:51 [INFO]: Database pool connected 
+2026-05-20 14:20:51 [INFO]: Database extensions initialized 
+2026-05-20 14:20:51 [INFO]: Database connected successfully at Wed May 20 2026 14:20:51 GMT+0100 (West Africa Time) 
+2026-05-20 14:20:51 [INFO]: Database connected successfully 
+2026-05-20 14:20:51 [INFO]: Redis connecting... 
+2026-05-20 14:20:51 [INFO]: Redis connected successfully 
+2026-05-20 14:20:51 [INFO]: Redis initialized and connected 
+2026-05-20 14:20:51 [INFO]: Redis connected successfully 
+2026-05-20 14:20:51 [INFO]: Socket.IO server initialized 
+2026-05-20 14:20:51 [INFO]: getting to  port .. 
+2026-05-20 14:20:51 [INFO]: Server running on port 3000 
+2026-05-20 14:20:54 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:20:55 [INFO]: ... end of ther server call.. 
+2026-05-20 14:20:55 [INFO]: Database pool connected 
+2026-05-20 14:20:55 [INFO]: Database extensions initialized 
+2026-05-20 14:20:55 [INFO]: Database connected successfully at Wed May 20 2026 14:20:55 GMT+0100 (West Africa Time) 
+2026-05-20 14:20:55 [INFO]: Database connected successfully 
+2026-05-20 14:20:55 [INFO]: Redis connecting... 
+2026-05-20 14:20:55 [INFO]: Redis connected successfully 
+2026-05-20 14:20:55 [INFO]: Redis initialized and connected 
+2026-05-20 14:20:55 [INFO]: Redis connected successfully 
+2026-05-20 14:20:55 [INFO]: Socket.IO server initialized 
+2026-05-20 14:20:55 [INFO]: getting to  port .. 
+2026-05-20 14:20:55 [INFO]: Server running on port 3000 
+2026-05-20 14:21:10 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:21:10 [INFO]: ... end of ther server call.. 
+2026-05-20 14:21:10 [INFO]: Database pool connected 
+2026-05-20 14:21:10 [INFO]: Database extensions initialized 
+2026-05-20 14:21:10 [INFO]: Database connected successfully at Wed May 20 2026 14:21:10 GMT+0100 (West Africa Time) 
+2026-05-20 14:21:10 [INFO]: Database connected successfully 
+2026-05-20 14:21:10 [INFO]: Redis connecting... 
+2026-05-20 14:21:10 [INFO]: Redis connected successfully 
+2026-05-20 14:21:10 [INFO]: Redis initialized and connected 
+2026-05-20 14:21:10 [INFO]: Redis connected successfully 
+2026-05-20 14:21:10 [INFO]: Socket.IO server initialized 
+2026-05-20 14:21:10 [INFO]: getting to  port .. 
+2026-05-20 14:21:10 [INFO]: Server running on port 3000 
+2026-05-20 14:21:11 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:21:12 [INFO]: ... end of ther server call.. 
+2026-05-20 14:21:12 [INFO]: Database pool connected 
+2026-05-20 14:21:12 [INFO]: Database extensions initialized 
+2026-05-20 14:21:12 [INFO]: Database connected successfully at Wed May 20 2026 14:21:12 GMT+0100 (West Africa Time) 
+2026-05-20 14:21:12 [INFO]: Database connected successfully 
+2026-05-20 14:21:12 [INFO]: Redis connecting... 
+2026-05-20 14:21:12 [INFO]: Redis connected successfully 
+2026-05-20 14:21:12 [INFO]: Redis initialized and connected 
+2026-05-20 14:21:12 [INFO]: Redis connected successfully 
+2026-05-20 14:21:12 [INFO]: Socket.IO server initialized 
+2026-05-20 14:21:12 [INFO]: getting to  port .. 
+2026-05-20 14:21:12 [INFO]: Server running on port 3000 
+2026-05-20 14:21:24 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:21:24 [INFO]: ... end of ther server call.. 
+2026-05-20 14:21:25 [INFO]: Database pool connected 
+2026-05-20 14:21:25 [INFO]: Database extensions initialized 
+2026-05-20 14:21:25 [INFO]: Database connected successfully at Wed May 20 2026 14:21:25 GMT+0100 (West Africa Time) 
+2026-05-20 14:21:25 [INFO]: Database connected successfully 
+2026-05-20 14:21:25 [INFO]: Redis connecting... 
+2026-05-20 14:21:25 [INFO]: Redis connected successfully 
+2026-05-20 14:21:25 [INFO]: Redis initialized and connected 
+2026-05-20 14:21:25 [INFO]: Redis connected successfully 
+2026-05-20 14:21:25 [INFO]: Socket.IO server initialized 
+2026-05-20 14:21:25 [INFO]: getting to  port .. 
+2026-05-20 14:21:25 [INFO]: Server running on port 3000 
+2026-05-20 14:21:26 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:21:27 [INFO]: ... end of ther server call.. 
+2026-05-20 14:21:27 [INFO]: Database pool connected 
+2026-05-20 14:21:27 [INFO]: Database extensions initialized 
+2026-05-20 14:21:27 [INFO]: Database connected successfully at Wed May 20 2026 14:21:27 GMT+0100 (West Africa Time) 
+2026-05-20 14:21:27 [INFO]: Database connected successfully 
+2026-05-20 14:21:27 [INFO]: Redis connecting... 
+2026-05-20 14:21:27 [INFO]: Redis connected successfully 
+2026-05-20 14:21:27 [INFO]: Redis initialized and connected 
+2026-05-20 14:21:27 [INFO]: Redis connected successfully 
+2026-05-20 14:21:27 [INFO]: Socket.IO server initialized 
+2026-05-20 14:21:27 [INFO]: getting to  port .. 
+2026-05-20 14:21:27 [INFO]: Server running on port 3000 
+2026-05-20 14:21:46 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:21:46 [INFO]: ... end of ther server call.. 
+2026-05-20 14:21:46 [INFO]: Database pool connected 
+2026-05-20 14:21:46 [INFO]: Database extensions initialized 
+2026-05-20 14:21:46 [INFO]: Database connected successfully at Wed May 20 2026 14:21:46 GMT+0100 (West Africa Time) 
+2026-05-20 14:21:46 [INFO]: Database connected successfully 
+2026-05-20 14:21:47 [INFO]: Redis connecting... 
+2026-05-20 14:21:47 [INFO]: Redis connected successfully 
+2026-05-20 14:21:47 [INFO]: Redis initialized and connected 
+2026-05-20 14:21:47 [INFO]: Redis connected successfully 
+2026-05-20 14:21:47 [INFO]: Socket.IO server initialized 
+2026-05-20 14:21:47 [INFO]: getting to  port .. 
+2026-05-20 14:21:47 [INFO]: Server running on port 3000 
+2026-05-20 14:21:52 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:21:53 [INFO]: ... end of ther server call.. 
+2026-05-20 14:21:53 [INFO]: Database pool connected 
+2026-05-20 14:21:53 [INFO]: Database extensions initialized 
+2026-05-20 14:21:53 [INFO]: Database connected successfully at Wed May 20 2026 14:21:53 GMT+0100 (West Africa Time) 
+2026-05-20 14:21:53 [INFO]: Database connected successfully 
+2026-05-20 14:21:53 [INFO]: Redis connecting... 
+2026-05-20 14:21:53 [INFO]: Redis connected successfully 
+2026-05-20 14:21:53 [INFO]: Redis initialized and connected 
+2026-05-20 14:21:53 [INFO]: Redis connected successfully 
+2026-05-20 14:21:53 [INFO]: Socket.IO server initialized 
+2026-05-20 14:21:53 [INFO]: getting to  port .. 
+2026-05-20 14:21:53 [INFO]: Server running on port 3000 
+2026-05-20 14:22:14 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:22:14 [INFO]: ... end of ther server call.. 
+2026-05-20 14:22:14 [INFO]: Database pool connected 
+2026-05-20 14:22:14 [INFO]: Database extensions initialized 
+2026-05-20 14:22:14 [INFO]: Database connected successfully at Wed May 20 2026 14:22:14 GMT+0100 (West Africa Time) 
+2026-05-20 14:22:14 [INFO]: Database connected successfully 
+2026-05-20 14:22:14 [INFO]: Redis connecting... 
+2026-05-20 14:22:14 [INFO]: Redis connected successfully 
+2026-05-20 14:22:14 [INFO]: Redis initialized and connected 
+2026-05-20 14:22:14 [INFO]: Redis connected successfully 
+2026-05-20 14:22:14 [INFO]: Socket.IO server initialized 
+2026-05-20 14:22:14 [INFO]: getting to  port .. 
+2026-05-20 14:22:14 [INFO]: Server running on port 3000 
+2026-05-20 14:37:07 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:08 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:08 [INFO]: Database pool connected 
+2026-05-20 14:37:08 [INFO]: Database extensions initialized 
+2026-05-20 14:37:08 [INFO]: Database connected successfully at Wed May 20 2026 14:37:08 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:08 [INFO]: Database connected successfully 
+2026-05-20 14:37:08 [INFO]: Redis connecting... 
+2026-05-20 14:37:08 [INFO]: Redis connected successfully 
+2026-05-20 14:37:08 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:08 [INFO]: Redis connected successfully 
+2026-05-20 14:37:08 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:08 [INFO]: getting to  port .. 
+2026-05-20 14:37:08 [INFO]: Server running on port 3000 
+2026-05-20 14:37:13 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:14 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:14 [INFO]: Database pool connected 
+2026-05-20 14:37:14 [INFO]: Database extensions initialized 
+2026-05-20 14:37:14 [INFO]: Database connected successfully at Wed May 20 2026 14:37:14 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:14 [INFO]: Database connected successfully 
+2026-05-20 14:37:14 [INFO]: Redis connecting... 
+2026-05-20 14:37:14 [INFO]: Redis connected successfully 
+2026-05-20 14:37:14 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:14 [INFO]: Redis connected successfully 
+2026-05-20 14:37:14 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:14 [INFO]: getting to  port .. 
+2026-05-20 14:37:14 [INFO]: Server running on port 3000 
+2026-05-20 14:37:17 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:18 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:18 [INFO]: Database pool connected 
+2026-05-20 14:37:18 [INFO]: Database extensions initialized 
+2026-05-20 14:37:18 [INFO]: Database connected successfully at Wed May 20 2026 14:37:18 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:18 [INFO]: Database connected successfully 
+2026-05-20 14:37:18 [INFO]: Redis connecting... 
+2026-05-20 14:37:18 [INFO]: Redis connected successfully 
+2026-05-20 14:37:18 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:18 [INFO]: Redis connected successfully 
+2026-05-20 14:37:18 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:18 [INFO]: getting to  port .. 
+2026-05-20 14:37:18 [INFO]: Server running on port 3000 
+2026-05-20 14:37:21 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:21 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:22 [INFO]: Database pool connected 
+2026-05-20 14:37:22 [INFO]: Database extensions initialized 
+2026-05-20 14:37:22 [INFO]: Database connected successfully at Wed May 20 2026 14:37:22 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:22 [INFO]: Database connected successfully 
+2026-05-20 14:37:22 [INFO]: Redis connecting... 
+2026-05-20 14:37:22 [INFO]: Redis connected successfully 
+2026-05-20 14:37:22 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:22 [INFO]: Redis connected successfully 
+2026-05-20 14:37:22 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:22 [INFO]: getting to  port .. 
+2026-05-20 14:37:22 [INFO]: Server running on port 3000 
+2026-05-20 14:37:23 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:24 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:24 [INFO]: Database pool connected 
+2026-05-20 14:37:24 [INFO]: Database extensions initialized 
+2026-05-20 14:37:24 [INFO]: Database connected successfully at Wed May 20 2026 14:37:24 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:24 [INFO]: Database connected successfully 
+2026-05-20 14:37:24 [INFO]: Redis connecting... 
+2026-05-20 14:37:24 [INFO]: Redis connected successfully 
+2026-05-20 14:37:24 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:24 [INFO]: Redis connected successfully 
+2026-05-20 14:37:24 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:24 [INFO]: getting to  port .. 
+2026-05-20 14:37:24 [INFO]: Server running on port 3000 
+2026-05-20 14:37:26 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:27 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:27 [INFO]: Database pool connected 
+2026-05-20 14:37:27 [INFO]: Database extensions initialized 
+2026-05-20 14:37:27 [INFO]: Database connected successfully at Wed May 20 2026 14:37:27 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:27 [INFO]: Database connected successfully 
+2026-05-20 14:37:27 [INFO]: Redis connecting... 
+2026-05-20 14:37:27 [INFO]: Redis connected successfully 
+2026-05-20 14:37:27 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:27 [INFO]: Redis connected successfully 
+2026-05-20 14:37:27 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:27 [INFO]: getting to  port .. 
+2026-05-20 14:37:27 [INFO]: Server running on port 3000 
+2026-05-20 14:37:33 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:33 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:33 [INFO]: Database pool connected 
+2026-05-20 14:37:33 [INFO]: Database extensions initialized 
+2026-05-20 14:37:33 [INFO]: Database connected successfully at Wed May 20 2026 14:37:33 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:33 [INFO]: Database connected successfully 
+2026-05-20 14:37:33 [INFO]: Redis connecting... 
+2026-05-20 14:37:33 [INFO]: Redis connected successfully 
+2026-05-20 14:37:33 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:33 [INFO]: Redis connected successfully 
+2026-05-20 14:37:33 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:33 [INFO]: getting to  port .. 
+2026-05-20 14:37:33 [INFO]: Server running on port 3000 
+2026-05-20 14:37:35 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:36 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:36 [INFO]: Database pool connected 
+2026-05-20 14:37:36 [INFO]: Database extensions initialized 
+2026-05-20 14:37:36 [INFO]: Database connected successfully at Wed May 20 2026 14:37:36 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:36 [INFO]: Database connected successfully 
+2026-05-20 14:37:36 [INFO]: Redis connecting... 
+2026-05-20 14:37:36 [INFO]: Redis connected successfully 
+2026-05-20 14:37:36 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:36 [INFO]: Redis connected successfully 
+2026-05-20 14:37:36 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:36 [INFO]: getting to  port .. 
+2026-05-20 14:37:36 [INFO]: Server running on port 3000 
+2026-05-20 14:37:40 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:41 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:41 [INFO]: Database pool connected 
+2026-05-20 14:37:41 [INFO]: Database extensions initialized 
+2026-05-20 14:37:41 [INFO]: Database connected successfully at Wed May 20 2026 14:37:41 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:41 [INFO]: Database connected successfully 
+2026-05-20 14:37:41 [INFO]: Redis connecting... 
+2026-05-20 14:37:41 [INFO]: Redis connected successfully 
+2026-05-20 14:37:41 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:41 [INFO]: Redis connected successfully 
+2026-05-20 14:37:41 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:41 [INFO]: getting to  port .. 
+2026-05-20 14:37:41 [INFO]: Server running on port 3000 
+2026-05-20 14:37:42 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:37:43 [INFO]: ... end of ther server call.. 
+2026-05-20 14:37:43 [INFO]: Database pool connected 
+2026-05-20 14:37:43 [INFO]: Database extensions initialized 
+2026-05-20 14:37:43 [INFO]: Database connected successfully at Wed May 20 2026 14:37:43 GMT+0100 (West Africa Time) 
+2026-05-20 14:37:43 [INFO]: Database connected successfully 
+2026-05-20 14:37:43 [INFO]: Redis connecting... 
+2026-05-20 14:37:43 [INFO]: Redis connected successfully 
+2026-05-20 14:37:43 [INFO]: Redis initialized and connected 
+2026-05-20 14:37:43 [INFO]: Redis connected successfully 
+2026-05-20 14:37:43 [INFO]: Socket.IO server initialized 
+2026-05-20 14:37:43 [INFO]: getting to  port .. 
+2026-05-20 14:37:43 [INFO]: Server running on port 3000 
+2026-05-20 14:43:45 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:43:46 [INFO]: ... end of ther server call.. 
+2026-05-20 14:43:46 [INFO]: Database pool connected 
+2026-05-20 14:43:46 [INFO]: Database extensions initialized 
+2026-05-20 14:43:46 [INFO]: Database connected successfully at Wed May 20 2026 14:43:46 GMT+0100 (West Africa Time) 
+2026-05-20 14:43:46 [INFO]: Database connected successfully 
+2026-05-20 14:43:46 [INFO]: Redis connecting... 
+2026-05-20 14:43:46 [INFO]: Redis connected successfully 
+2026-05-20 14:43:46 [INFO]: Redis initialized and connected 
+2026-05-20 14:43:46 [INFO]: Redis connected successfully 
+2026-05-20 14:43:46 [INFO]: Socket.IO server initialized 
+2026-05-20 14:43:46 [INFO]: getting to  port .. 
+2026-05-20 14:43:46 [INFO]: Server running on port 3000 
+2026-05-20 14:43:50 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:43:50 [INFO]: ... end of ther server call.. 
+2026-05-20 14:43:50 [INFO]: Database pool connected 
+2026-05-20 14:43:50 [INFO]: Database extensions initialized 
+2026-05-20 14:43:50 [INFO]: Database connected successfully at Wed May 20 2026 14:43:50 GMT+0100 (West Africa Time) 
+2026-05-20 14:43:50 [INFO]: Database connected successfully 
+2026-05-20 14:43:50 [INFO]: Redis connecting... 
+2026-05-20 14:43:50 [INFO]: Redis connected successfully 
+2026-05-20 14:43:50 [INFO]: Redis initialized and connected 
+2026-05-20 14:43:50 [INFO]: Redis connected successfully 
+2026-05-20 14:43:50 [INFO]: Socket.IO server initialized 
+2026-05-20 14:43:50 [INFO]: getting to  port .. 
+2026-05-20 14:43:50 [INFO]: Server running on port 3000 
+2026-05-20 14:43:54 [ERROR]: Failed to initialize Firebase Admin SDK: Service account object must contain a string "project_id" property. {"errorInfo":{"code":"app/invalid-credential","message":"Service account object must contain a string \"project_id\" property."},"codePrefix":"app","stack":"Error: Service account object must contain a string \"project_id\" property.\n    at new ServiceAccount (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:174:19)\n    at new ServiceAccountCredential (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-internal.js:118:15)\n    at Object.cert (/home/philip/beavers/beavers-backend/node_modules/firebase-admin/lib/app/credential-factory.js:105:54)\n    at Object.<anonymous> (/home/philip/beavers/beavers-backend/services/notification.service.js:16:36)\n    at Module._compile (node:internal/modules/cjs/loader:1829:14)\n    at Object..js (node:internal/modules/cjs/loader:1969:10)\n    at Module.load (node:internal/modules/cjs/loader:1552:32)\n    at Module._load (node:internal/modules/cjs/loader:1354:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1575:12)"}
+2026-05-20 14:43:54 [INFO]: ... end of ther server call.. 
+2026-05-20 14:43:54 [INFO]: Database pool connected 
+2026-05-20 14:43:54 [INFO]: Database extensions initialized 
+2026-05-20 14:43:54 [INFO]: Database connected successfully at Wed May 20 2026 14:43:54 GMT+0100 (West Africa Time) 
+2026-05-20 14:43:54 [INFO]: Database connected successfully 
+2026-05-20 14:43:54 [INFO]: Redis connecting... 
+2026-05-20 14:43:54 [INFO]: Redis connected successfully 
+2026-05-20 14:43:54 [INFO]: Redis initialized and connected 
+2026-05-20 14:43:54 [INFO]: Redis connected successfully 
+2026-05-20 14:43:54 [INFO]: Socket.IO server initialized 
+2026-05-20 14:43:54 [INFO]: getting to  port .. 
+2026-05-20 14:43:54 [INFO]: Server running on port 3000 

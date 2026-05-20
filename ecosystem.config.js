@@ -26,7 +26,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000
       },
-      
+      // Tell PM2 to use dotenv for environment variables
+      node_args: '-r dotenv/config',
       // Error logs
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',

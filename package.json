@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "BeaverWorks - Artisan Service Platform Backend API",
   "main": "server.js",
+
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node -r dotenv/config server.js",
+    "start:prod": "NODE_ENV=production node -r dotenv/config server.js",
+    "migrate": "node -r dotenv/config scripts/migrate.js",
+    "seed": "node -r dotenv/config scripts/seed.js",
+    "dev": "nodemon -r dotenv/config server.js"
   },
   "keywords": [
     "beaverworks",
