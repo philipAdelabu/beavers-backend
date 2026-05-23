@@ -1,6 +1,6 @@
-const twilio = require('twilio');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const admin = require('firebase-admin');
+const axios = require('axios');
 const serviceAccount = require('../configurations/beaver-works-firebase.json');
 const nodemailer = require('nodemailer');
 const { pool } = require('../config/database');
@@ -11,12 +11,12 @@ const { logger } = require('../config/logger');
 // Initialize Firebase Admin SDK if configured
 let firebaseApp = null;
 try {
-  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY) {
     firebaseApp = admin.initializeApp({
-      credential: admin.credential.cert({
-        credential: admin.credential.cert(serviceAccount),
-      }),
-    });
+        credential: admin.credential.cert(serviceAccount)
+       });
+
+     if (firebaseApp) {
+
     logger.info('Firebase Admin SDK initialized successfully');
   } else {
     logger.warn('Firebase credentials not configured. Push notifications disabled.');
@@ -24,27 +24,47 @@ try {
 } catch (error) {
   logger.error('Failed to initialize Firebase Admin SDK:', error);
 }
-
+ 
  
 // Email transporter
 const emailTransporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: parseInt(process.env.EMAIL_PORT, 10),
   secure: process.env.EMAIL_SECURE === 'true',
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   }
 });
 
-// Twilio client for SMS
-const twilioClient = process.env.TWILIO_ACCOUNT_SID ? twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-) : null;
+
+
+// Termii client for SMS
+const termii_api_key = process.env.TERMII_SMS_LIVE_API_KEY || null;
+const termii_base_url = process.env.TERMII_BASE_URL || 'https://v3.api.termii.com';
+
 
 class NotificationService {
-  static async sendEmail(to, subject, text, html = null) {
+
+
+
+   
+  static async storeNotification(userId, channel, title, message, metadata = {}) {
+
+    const result = await pool.query(
+      `INSERT INTO notifications (user_id, type, title, message, data, channel)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [userId, channel, title, message, metadata, channel]
+    );
+    
+    return result.rows[0];
+  }
+
+
+  
+  static async sendEmail(to, subject, text, userId, html = null) {
 
       if(process.env.NODE_ENV === 'development'){
            logger.info(`Email sent to ${to}: ${subject}`); 
@@ -53,7 +73,7 @@ class NotificationService {
 
     try {
       const mailOptions = {
-        from: `"BeaverWorks" <${process.env.EMAIL_FROM || 'noreply@beaverworks.com'}>`,
+        from: `"BeaverWorks" <${process.env.EMAIL_FROM || 'noreply@beaverworksdev.com'}>`,
         to,
         subject,
         text
@@ -62,12 +82,13 @@ class NotificationService {
       if (html) {
         mailOptions.html = html;
       }
+      logger.info("User id :" + userId);
       
       const info = await emailTransporter.sendMail(mailOptions);
       logger.info(`Email sent to ${to}: ${info.messageId}`);
       
       // Store notification in database
-      await this.storeNotification(null, 'email', subject, text, { to, messageId: info.messageId });
+     // await NotificationService.storeNotification(userId, 'email', subject, text, { to, messageId: info.messageId });
       
       return info;
     } catch (error) {
@@ -76,12 +97,8 @@ class NotificationService {
     }
   }
   
-  static async sendSMS(to, message) {
-    if (!twilioClient) {
-      logger.warn('Twilio not configured, SMS not sent');
-      return null;
-    }
-    
+  static async sendSMS(to, message, userId) {
+ 
     try {
 
       if(process.env.NODE_ENV === 'development'){
@@ -89,25 +106,44 @@ class NotificationService {
            return `SMS sent to ${to}: ${message}`;
       }
 
-      const result = await twilioClient.messages.create({
-        body: message,
-        to,
-        from: process.env.TWILIO_PHONE_NUMBER
-      });
+
+      const data = {
+              "to":to,
+              "from":"talert",
+              "sms": message,
+              "type":"plain",
+              "api_key":termii_api_key,
+              "channel":"generic",
+            };
+    const options = {
+    'method': 'POST',
+    'url': `${termii_base_url}/api/sms/send`,
+    'headers': {
+      'Content-Type': ['application/json', 'application/json']
+    },
+    body: JSON.stringify(data)
+
+    };
+        
+
+      const response = await axios.request(options);
+      if(response.status !== 200) {
+        logger.error(`Failed to send SMS to ${to}: ${response.statusText}`);
+        throw new Error(`Failed to send SMS: ${response.statusText}`);
+      }
       
-      logger.info(`SMS sent to ${to}: ${result.sid}`);
-      
+      logger.info(`SMS sent to ${to}: ${message}`);
       // Store notification in database
-      await this.storeNotification(null, 'sms', 'SMS Notification', message, { to, sid: result.sid });
-      
-      return result;
+     // await NotificationService.storeNotification(userId, 'sms', 'SMS Notification', message, { to, sid: response.data });
+      logger.info('SMS response: ' + response.data);
+
+      return response.data; 
+  
     } catch (error) {
       logger.error('SMS sending failed:', error);
       throw error;
     }
   }
-
-   /////// ============================================= ///////////////////
 
 
      /**
@@ -499,32 +535,6 @@ class NotificationService {
     
     return result.rows[0];
   }
-
-
-
-
-
-
-   //////////////////////////  +++++++++++++++++++  ///////////////////////
-  
-
-  
-  static async storeNotification(userId, channel, title, message, metadata = {}) {
-    const result = await pool.query(
-      `INSERT INTO notifications (user_id, type, title, message, data, channel, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'sent')
-       RETURNING *`,
-      [userId, channel, title, message, metadata, channel]
-    );
-    
-    return result.rows[0];
-  }
-  
-
-
-
-
-
 
 
 

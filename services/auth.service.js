@@ -29,8 +29,13 @@ class AuthService {
         throw new AppError(409, 'User already exists with this email or phone');
       }
       
+      let pswd = email
+      if(password){
+        pswd = password;
+      }
+      
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, 12);
+      const hashedPassword = await bcrypt.hash(pswd, 12); 
       
       // Create user
       const userResult = await client.query(
@@ -63,10 +68,10 @@ class AuthService {
       const phoneOtp = await generateAndStoreOTP(`phone:${phone}`, 600);
       
       // Send verification email
-      if(process.env.NODE_ENV === 'production') {
-      await sendEmail(email, 'Verify Your Email', 
-        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`);
-      await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`);
+      if(process.env.NODE_ENV !== 'production') {
+        await sendEmail(email, 'Verify Your Email',
+        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
+         await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
@@ -115,9 +120,14 @@ class AuthService {
       if (existingUser.rows.length > 0) {
         throw new AppError(409, 'User already exists with this email or phone');
       }
+
+       let pswd = email
+      if(password){
+        pswd = password;
+      }
       
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, 12);
+      const hashedPassword = await bcrypt.hash(pswd, 12);
       
       // Create user
       const userResult = await client.query(
@@ -156,8 +166,8 @@ class AuthService {
       // Send verification email
         if(process.env.NODE_ENV === 'production') {
       await sendEmail(email, 'Verify Your Email', 
-        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`);
-      await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`);
+        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
+      await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
@@ -454,7 +464,7 @@ class AuthService {
       // Generate and send OTP
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production') {
-      await sendSMS(formattedPhone, `Your BeaverWorks login OTP is: ${otp}. This code expires in 10 minutes.`);
+      await sendSMS(formattedPhone, `Your BeaverWorks login OTP is: ${otp}. This code expires in 10 minutes.`, user.user_id);
       }else{
          logger.info(`Test environment - OTP for ${formattedPhone}: ${otp}`);
       }
@@ -651,7 +661,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       
       const otp = await generateAndStoreOTP(`email:${identifier}`, 600);
       if(process.env.NODE_ENV === 'production'){
-      await sendEmail(identifier, 'Your Verification Code', `Your verification code is: ${otp}`);
+      await sendEmail(identifier, 'Your Verification Code', `Your verification code is: ${otp}`, userResult.rows[0].id);
      }else {
         logger.info(`Test environment - Email OTP for ${identifier}: ${otp}`);
      }
@@ -666,7 +676,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production'){
-      await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`);
+      await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`, userResult.rows[0].id);
     }else{
       logger.info(`Test environment - Phone OTP for ${formattedPhone}: ${otp}`);
     }
@@ -699,7 +709,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     const resetUrl = `${process.env.APP_FRONTEND_URL}/reset-password?token=${resetToken}`;
     if(process.env.NODE_ENV === 'production'){
     await sendEmail(email, 'Reset Your Password', 
-      `Click here to reset your password: ${resetUrl}. This link expires in 1 hour.`);
+      `Click here to reset your password: ${resetUrl}. This link expires in 1 hour.`, user.id);
     }else{
       logger.info(`Test environment - Password reset link for ${email}: ${resetUrl}`);
     }
@@ -794,18 +804,35 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
 
 
   static async sendVerificationReminder(email, phone, name) {
+
+    const userResult = await pool.query(
+      'SELECT id, is_email_verified, is_phone_verified FROM users WHERE email = $1',
+      [email]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return; // User not found, no reminder needed
+    }
+    
+    const user = userResult.rows[0];
+
+    if(user.is_email_verified && user.is_phone_verified) {
+      return; // User already verified, no reminder needed
+    }
+    
     // Send reminder email
     await sendEmail(
       email,
       'Complete Your Verification',
-      `Hi ${name || 'there'},\n\nPlease complete your account verification to access all features on BeaverWorks.\n\nThank you!`
+      `Hi ${name || 'there'},\n\nPlease complete your account verification to access all features on BeaverWorks.\n\nThank you!`,
+      user.id
     );
     
     // Send reminder SMS
     if (phone) {
       await sendSMS(
         phone,
-        `BeaverWorks: Please complete your account verification to access all features. Thank you!`
+        `BeaverWorks: Please complete your account verification to access all features. Thank you!`, user.id
       );
     }
   }

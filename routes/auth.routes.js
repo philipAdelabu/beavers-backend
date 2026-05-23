@@ -12,9 +12,10 @@ const router = express.Router();
 // Client registration
 router.post('/register/client', authLimiter, uploadFields([
 { name: 'ninPhoto', maxCount: 1 },
-{ name: 'passportPhoto', maxCount: 1 },]), [body('email').isEmail().normalizeEmail(),
+{ name: 'passportPhoto', maxCount: 1 },]), 
+ [body('email').isEmail().normalizeEmail(),
   body('phone').isMobilePhone(),
-  body('password').isLength({ min: 6 }),
+  body('password').optional().isLength({ min: 6 }),
   body('fullLegalName').notEmpty(),
   body('nin').notEmpty(),
   body('streetAddress').notEmpty(),

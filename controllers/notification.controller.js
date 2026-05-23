@@ -103,6 +103,7 @@ class NotificationController {
     }
   }
 
+  
   static async registerFCMToken(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
