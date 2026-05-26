@@ -34,7 +34,7 @@ router.post(
   JobController.acceptJob);
 
 // Confirm arrival with PIN
-router.post('/:jobId/confirm-arrival', authenticateToken, requireRole(['client']), [
+router.post('/:jobId/confirm-arrival', authenticateToken, requireRole(['client', 'artisan']), [
   body('pin').isLength({ min: 6, max: 6 }),
 ], JobController.confirmArrival);
 

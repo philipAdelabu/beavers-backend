@@ -1,5 +1,6 @@
 const { pool } = require('../config/database');
 const { redis, addArtisanLocation, getNearbyArtisans, cacheSet, cacheGet } = require('../config/redis');
+const JobService = require('./job.service');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { calculateDistance, calculateETA, calculateTravelPath } = require('../utils/geo.utils');
@@ -32,7 +33,7 @@ class LocationService {
       await cacheSet(`location:current:${artisanId}`, {
         latitude,
         longitude,
-        heading,
+        heading, 
         speed,
         timestamp: new Date().toISOString()
       }, 60);
@@ -49,7 +50,7 @@ class LocationService {
                 artisanId,
                 jobId,
                 location: { latitude, longitude, heading, speed },
-                timestamp: new Date()
+                timestamp: new Date().toISOString(),
               });
             }
           }
@@ -104,49 +105,8 @@ class LocationService {
     return location;
   }
   
-  static async getNearbyArtisans(latitude, longitude, radius = 5, category = null, limit = 20) {
-    const nearby = await getNearbyArtisans(longitude, latitude, radius);
-    
-    if (nearby.length === 0) {
-      return [];
-    }
-    
-    const artisanIds = nearby.map(([id]) => id);
-    
-    let query = `
-      SELECT ap.user_id, ap.full_legal_name, ap.skill_category, ap.tier_level, 
-             ap.star_rating, ap.completion_rate, ap.trust_score,
-             ap.current_location, ap.last_location_update
-      FROM artisan_profiles ap
-      JOIN users u ON ap.user_id = u.id
-      WHERE ap.user_id = ANY($1::uuid[])
-        AND ap.is_available = true
-        AND u.is_active = true
-        AND ap.monthly_fee_status = 'paid'
-    `;
-    
-    const params = [artisanIds];
-    
-    if (category) {
-      query += ` AND ap.skill_category = $2`;
-      params.push(category);
-    }
-    
-    query += ` ORDER BY ap.tier_level DESC, ap.star_rating DESC LIMIT $${params.length + 1}`;
-    params.push(limit);
-    
-    const result = await pool.query(query, params);
-    
-    // Add distance to each artisan
-    const artisansWithDistance = result.rows.map(artisan => {
-      const distance = nearby.find(([id]) => id === artisan.user_id)[1];
-      return {
-        ...artisan,
-        distance: parseFloat(distance),
-        eta: calculateETA(parseFloat(distance) * 1000)
-      };
-    });
-    
+  static async getNearbyArtisans(category, latitude, longitude, radius = 20) {
+    const artisansWithDistance = await JobService.findNearbyArtisans(category, { longitude, latitude }, radius)
     return artisansWithDistance;
   }
   

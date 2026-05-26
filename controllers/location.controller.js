@@ -1,8 +1,9 @@
+const { validationResult } = require('express-validator');
 const LocationService = require('../services/location.service');
 const GeofenceService = require('../services/geofence.service');
 const { sendSuccess, sendError } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
-const { validationResult } = require('express-validator');
+const ArtisanService = require('../services/artisan.service');
 
 class LocationController {
   static async updateLocation(req, res, next) {
@@ -41,21 +42,26 @@ class LocationController {
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
     }
-
+   
     try {
-      const { longitude, latitude, radius = 5, category, limit = 20 } = req.query;
+      const { longitude, latitude, category, radius} = req.query;
+     
+      const google_map_radius = radius || process.env.GOOGLE_MAP_RADIUS;
+
       const artisans = await LocationService.getNearbyArtisans(
+        category, 
         parseFloat(latitude), 
         parseFloat(longitude), 
-        parseFloat(radius), 
-        category, 
-        parseInt(limit)
+        parseFloat(google_map_radius), 
       );
+      
       sendSuccess(res, artisans, 'Nearby artisans retrieved successfully');
     } catch (error) {
+   
       next(error);
     }
   }
+
 
   static async getLocationHistory(req, res, next) {
     const errors = validationResult(req);

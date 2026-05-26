@@ -1,130 +1,89 @@
-// Remove any imports from socket/index.js to break circular dependency
 const { pool } = require('../config/database');
-const { redis, addArtisanLocation, removeArtisanLocation } = require('../config/redis');
+const { addArtisanLocation, removeArtisanLocation, cacheSet } = require('../config/redis');
 const { logger } = require('../config/logger');
 
-/**
- * Setup socket event handlers
- * @param {socketIO.Server} io - Socket.IO instance
- * @param {socketIO.Socket} socket - Socket instance
- * @param {Object} maps - Maps for tracking connections
- */
+// Track connections
+const userSockets = new Map(); // userId -> socketId
+const socketUsers = new Map(); // socketId -> userId
+
 const setupSocketHandlers = (io, socket, maps = {}) => {
-  const { 
-    connectedUsers = new Map(), 
-    socketToUser = new Map(), 
-    userRooms = new Map() 
-  } = maps;
-  
   const userId = socket.userId;
   const userType = socket.userType;
 
-  /**
-   * Join a job room
-   */
-  socket.on('job:join', async (data) => {
+  // Store user socket mapping
+  userSockets.set(userId, socket.id);
+  socketUsers.set(socket.id, userId);
+
+  // Join user's personal room
+  socket.join(`user:${userId}`);
+
+  // Handle joining job room
+  socket.on('join-job', async (data) => {
     const { jobId } = data;
     
     try {
+      // Verify user has access to this job
       const result = await pool.query(
         `SELECT client_id, artisan_id FROM jobs WHERE id = $1`,
         [jobId]
       );
       
-      if (result.rows.length === 0) {
-        socket.emit('error', { message: 'Job not found' });
-        return;
-      }
-      
-      const job = result.rows[0];
-      
-      if (job.client_id !== userId && job.artisan_id !== userId) {
+      if (result.rows.length > 0 && 
+          (result.rows[0].client_id === userId || result.rows[0].artisan_id === userId)) {
+        socket.join(`job:${jobId}`);
+        socket.emit('job-joined', { jobId, success: true });
+        logger.info(`User ${userId} joined job room: ${jobId}`);
+      } else {
         socket.emit('error', { message: 'Unauthorized to join this job' });
-        return;
       }
-      
-      const roomName = `job:${jobId}`;
-      socket.join(roomName);
-      
-      if (!userRooms.has(userId)) {
-        userRooms.set(userId, new Set());
-      }
-      userRooms.get(userId).add(roomName);
-      
-      socket.emit('job:joined', { jobId, success: true });
-      logger.info(`User ${userId} joined job room: ${jobId}`);
     } catch (error) {
       logger.error('Error joining job room:', error);
       socket.emit('error', { message: 'Failed to join job room' });
     }
   });
 
-  /**
-   * Leave a job room
-   */
-  socket.on('job:leave', (data) => {
+  // Handle leaving job room
+  socket.on('leave-job', (data) => {
     const { jobId } = data;
-    const roomName = `job:${jobId}`;
-    
-    socket.leave(roomName);
-    
-    if (userRooms.has(userId)) {
-      userRooms.get(userId).delete(roomName);
-    }
-    
-    socket.emit('job:left', { jobId, success: true });
-    logger.info(`User ${userId} left job room: ${jobId}`);
+    socket.leave(`job:${jobId}`);
+    socket.emit('job-left', { jobId, success: true });
   });
 
-  /**
-   * Update artisan location (real-time tracking)
-   */
-  socket.on('location:update', async (data) => {
-    if (userType !== 'artisan') {
-      socket.emit('error', { message: 'Only artisans can update location' });
-      return;
-    }
-    
-    const { latitude, longitude, heading, speed, accuracy, jobId } = data;
-    
+  // Handle real-time location updates (artisan only)
+  socket.on('update-location', async (data) => {
+    if (userType !== 'artisan') return;
+
+    const { latitude, longitude, heading, speed, jobId } = data;
+
     try {
-      if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-        socket.emit('error', { message: 'Invalid coordinates' });
-        return;
-      }
-      
+      // Update Redis for quick lookups
       await addArtisanLocation(userId, longitude, latitude);
-      
+
+      // Store in database
       await pool.query(
-        `INSERT INTO location_history (artisan_id, job_id, latitude, longitude, heading, speed, accuracy)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [userId, jobId || null, latitude, longitude, heading, speed, accuracy]
+        `INSERT INTO location_history (artisan_id, job_id, location)
+         VALUES ($1, $2, $3)`,
+        [userId, jobId || null, JSON.stringify({ latitude, longitude, heading, speed })]
       );
-      
+
+      // Update artisan profile
       await pool.query(
         `UPDATE artisan_profiles 
-         SET current_location = $1, 
-             latitude = $2, 
-             longitude = $3,
-             last_location_update = NOW()
-         WHERE user_id = $4`,
-        [JSON.stringify({ latitude, longitude, heading, speed }), latitude, longitude, userId]
+         SET current_location = $1, last_location_update = NOW()
+         WHERE user_id = $2`,
+        [JSON.stringify({ latitude, longitude, heading, speed }), userId]
       );
-      
-      await redis.setex(`location:current:${userId}`, 60, JSON.stringify({
-        latitude, longitude, heading, speed, timestamp: new Date()
-      }));
-      
+
+      // If there's an active job, emit location to client
       if (jobId) {
         const jobResult = await pool.query(
           `SELECT client_id FROM jobs WHERE id = $1 AND artisan_id = $2`,
           [jobId, userId]
         );
-        
+
         if (jobResult.rows.length > 0) {
-          const clientId = jobResult.rows[0].client_id;
-          // Emit directly to the client's room using io.to()
-          io.to(`user:${clientId}`).emit('location:artisan', {
+          // Call the emitLocationUpdate function
+          emitLocationUpdate(jobResult.rows[0].client_id, {
             artisanId: userId,
             jobId,
             location: { latitude, longitude, heading, speed },
@@ -132,128 +91,195 @@ const setupSocketHandlers = (io, socket, maps = {}) => {
           });
         }
       }
-      
-      socket.emit('location:updated', { success: true });
-      
+
+      // Cache current location
+      await cacheSet(`location:${userId}`, { latitude, longitude, heading, speed, timestamp: new Date() }, 60);
+
     } catch (error) {
       logger.error('Location update error:', error);
       socket.emit('error', { message: 'Failed to update location' });
     }
   });
 
-  /**
-   * Request artisan location (client)
-   */
-  socket.on('location:request', async (data) => {
-    const { jobId } = data;
-    
-    try {
-      const jobResult = await pool.query(
-        `SELECT artisan_id FROM jobs WHERE id = $1 AND client_id = $2`,
-        [jobId, userId]
-      );
-      
-      if (jobResult.rows.length === 0) {
-        socket.emit('error', { message: 'Unauthorized to request location' });
-        return;
-      }
-      
-      const artisanId = jobResult.rows[0].artisan_id;
-      const cachedLocation = await redis.get(`location:current:${artisanId}`);
-      
-      if (cachedLocation) {
-        socket.emit('location:artisan', {
-          artisanId,
-          jobId,
-          location: JSON.parse(cachedLocation),
-          source: 'cache'
-        });
-      } else {
-        const locationResult = await pool.query(
-          `SELECT current_location FROM artisan_profiles WHERE user_id = $1`,
-          [artisanId]
-        );
-        
-        if (locationResult.rows[0]?.current_location) {
-          socket.emit('location:artisan', {
-            artisanId,
-            jobId,
-            location: locationResult.rows[0].current_location,
-            source: 'database'
-          });
-        } else {
-          socket.emit('location:unavailable', { artisanId, jobId });
-        }
-      }
-    } catch (error) {
-      logger.error('Location request error:', error);
-      socket.emit('error', { message: 'Failed to get location' });
-    }
-  });
+  // Handle artisan availability
+  socket.on('set-availability', async (data) => {
+    if (userType !== 'artisan') return;
 
-  /**
-   * Set artisan availability
-   */
-  socket.on('artisan:availability', async (data) => {
-    if (userType !== 'artisan') {
-      socket.emit('error', { message: 'Only artisans can set availability' });
-      return;
-    }
-    
     const { isAvailable, location } = data;
     
     try {
       await pool.query(
-        `UPDATE artisan_profiles 
-         SET is_available = $1, 
-             last_availability_change = NOW()
-         WHERE user_id = $2`,
+        `UPDATE artisan_profiles SET is_available = $1 WHERE user_id = $2`,
         [isAvailable, userId]
       );
-      
+
       if (isAvailable && location) {
         await addArtisanLocation(userId, location.longitude, location.latitude);
-        await redis.setex(`artisan:online:${userId}`, 300, 'true');
-        io.emit('artisan:online', {
+        io.emit('artisan-online', {
           artisanId: userId,
-          location,
-          timestamp: new Date()
+          location
         });
       } else {
         await removeArtisanLocation(userId);
-        await redis.del(`artisan:online:${userId}`);
-        io.emit('artisan:offline', {
-          artisanId: userId,
-          timestamp: new Date()
-        });
+        io.emit('artisan-offline', { artisanId: userId });
       }
-      
-      socket.emit('artisan:availability:updated', { isAvailable, success: true });
-      logger.info(`Artisan ${userId} availability set to ${isAvailable}`);
+
+      socket.emit('availability-updated', { isAvailable, success: true });
     } catch (error) {
       logger.error('Set availability error:', error);
       socket.emit('error', { message: 'Failed to update availability' });
     }
   });
 
-  /**
-   * Heartbeat / ping
-   */
-  socket.on('ping', () => {
-    socket.emit('pong', { timestamp: new Date() });
+  // Handle job acceptance
+  socket.on('accept-job', async (data) => {
+    const { jobId } = data;
+    
+    try {
+      const jobResult = await pool.query(
+        `SELECT client_id FROM jobs WHERE id = $1`,
+        [jobId]
+      );
+
+      if (jobResult.rows.length > 0) {
+        emitToClient(jobResult.rows[0].client_id, 'job-accepted', {
+          jobId,
+          artisanId: userId,
+          status: 'accepted'
+        });
+      }
+    } catch (error) {
+      logger.error('Accept job error:', error);
+      socket.emit('error', { message: 'Failed to accept job' });
+    }
   });
 
-  /**
-   * Get connection status
-   */
-  socket.on('status:check', () => {
-    socket.emit('status:response', {
-      connected: true,
-      userId,
-      userType,
-      timestamp: new Date()
-    });
+  // Handle arrival confirmation
+  socket.on('confirm-arrival', async (data) => {
+    const { jobId, pin } = data;
+    
+    try {
+      const pinResult = await pool.query(
+        `SELECT * FROM arrival_pins WHERE job_id = $1 AND pin = $2 AND is_used = false`,
+        [jobId, pin]
+      );
+
+      if (pinResult.rows.length > 0) {
+        await pool.query(
+          `UPDATE arrival_pins SET is_used = true WHERE id = $1`,
+          [pinResult.rows[0].id]
+        );
+
+        emitToJob(jobId, 'arrival-confirmed', {
+          jobId,
+          timestamp: new Date()
+        });
+      } else {
+        socket.emit('invalid-pin', { jobId });
+      }
+    } catch (error) {
+      logger.error('Confirm arrival error:', error);
+      socket.emit('error', { message: 'Failed to confirm arrival' });
+    }
+  });
+
+  // Handle typing indicators
+  socket.on('client-typing', (data) => {
+    const { jobId, isTyping } = data;
+    socket.to(`job:${jobId}`).emit('client-typing', { jobId, isTyping });
+  });
+
+  socket.on('artisan-typing', (data) => {
+    const { jobId, isTyping } = data;
+    socket.to(`job:${jobId}`).emit('artisan-typing', { jobId, isTyping });
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', async () => {
+    logger.info(`User disconnected: ${socket.id}`);
+    
+    const userId = socketUsers.get(socket.id);
+    if (userId) {
+      userSockets.delete(userId);
+      socketUsers.delete(socket.id);
+      
+      // If artisan disconnects, mark as unavailable
+      if (socket.user?.user_type === 'artisan') {
+        await removeArtisanLocation(userId);
+        await pool.query(
+          `UPDATE artisan_profiles SET is_available = false WHERE user_id = $1`,
+          [userId]
+        );
+        io.emit('artisan-offline', { artisanId: userId });
+      }
+    }
   });
 };
 
-module.exports = { setupSocketHandlers };
+// ============================================
+// EXPORTED HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Emit event to specific user
+ * @param {string} userId - User ID
+ * @param {string} event - Event name
+ * @param {*} data - Event data
+ */
+const emitToUser = (userId, event, data) => {
+  const socketId = userSockets.get(userId);
+  if (socketId && global.io) {
+    global.io.to(socketId).emit(event, data);
+  }
+};
+
+/**
+ * Emit event to client (alias for emitToUser)
+ * @param {string} clientId - Client ID
+ * @param {string} event - Event name
+ * @param {*} data - Event data
+ */
+const emitToClient = (clientId, event, data) => {
+  emitToUser(clientId, event, data);
+};
+
+/**
+ * Emit event to artisan (alias for emitToUser)
+ * @param {string} artisanId - Artisan ID
+ * @param {string} event - Event name
+ * @param {*} data - Event data
+ */
+const emitToArtisan = (artisanId, event, data) => {
+  emitToUser(artisanId, event, data);
+};
+
+/**
+ * Emit event to a job room
+ * @param {string} jobId - Job ID
+ * @param {string} event - Event name
+ * @param {*} data - Event data
+ */
+const emitToJob = (jobId, event, data) => {
+  if (global.io) {
+    global.io.to(`job:${jobId}`).emit(event, data);
+  }
+};
+
+/**
+ * Emit location update to client
+ * @param {string} clientId - Client ID
+ * @param {*} data - Location data
+ */
+const emitLocationUpdate = (clientId, data) => {
+  emitToClient(clientId, 'artisan-location-update', data);
+};
+
+// Export all functions
+module.exports = {
+  setupSocketHandlers,
+  emitToUser,
+  emitToClient,
+  emitToArtisan,
+  emitToJob,
+  emitLocationUpdate
+};

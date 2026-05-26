@@ -333,7 +333,8 @@ class JobService {
       await NotificationService.sendJobAcceptedNotification(job.client_id, {
         jobId,
         artisanId,
-        artisanName: offerResult.rows[0].artisan_name
+        artisanName: offerResult.rows[0].artisan_name,
+        arrival_pin: pin,
       });
       
       logger.info(`Job ${jobId} accepted by artisan ${artisanId}`);
@@ -347,7 +348,7 @@ class JobService {
     }
   }
   
-  static async confirmArrival(jobId, clientId, pin) {
+  static async confirmArrival(jobId, userId, pin) {
     const client = await pool.connect();
     
     try {
@@ -385,7 +386,35 @@ class JobService {
          WHERE job_id = $2`,
         [baseFee, jobId]
       );
-      
+
+      const jobResult = await client.query(
+        `SELECT client_id, artisan_id FROM jobs WHERE id = $1`,
+        [jobId]
+      );
+
+      if (jobResult.rows.length === 0) {
+        throw new AppError(404, 'Job not found');
+      }
+
+      if(jobResult.rows[0].client_id === userId){ 
+         // Create escrow hold for base fee
+      await client.query(
+        `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
+         SELECT $1, $2, artisan_id, $3, 'base_fee', 'held'
+         FROM jobs WHERE id = $1`,
+        [jobId, userId, baseFee]
+      );
+      }else{
+         await client.query(
+        `INSERT INTO escrow_transactions (job_id, artisan_id, client_id,  amount, transaction_type, status)
+         SELECT $1, $2, client_id, $3, 'base_fee', 'held'
+         FROM jobs WHERE id = $1`,
+        [jobId, userId, baseFee]
+      );
+
+      }
+
+      const clientId = jobResult.rows[0].client_id;
       // Create escrow hold for base fee
       await client.query(
         `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
@@ -400,12 +429,12 @@ class JobService {
       await client.query('COMMIT');
       
       // Get artisan ID for notification
-      const jobResult = await client.query(
+      const job_result = await client.query(
         `SELECT artisan_id FROM jobs WHERE id = $1`,
         [jobId]
       );
       
-      await NotificationService.sendArrivalNotification(jobResult.rows[0].artisan_id, { jobId });
+      await NotificationService.sendArrivalNotification(job_result.rows[0].artisan_id, { jobId });
       
       logger.info(`Arrival confirmed for job ${jobId}`);
       

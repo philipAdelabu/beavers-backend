@@ -7,7 +7,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth.middlewar
 // All BOQ routes require authentication
 router.use(authenticateToken);
 
-// ==================== BOQ CRUD Operations ====================
+// ==================== BOQ CRUD Operations ==================== 
 
 // Create BOQ (Artisan only)
 router.post('/create/:jobId', requireRole(['artisan']), [

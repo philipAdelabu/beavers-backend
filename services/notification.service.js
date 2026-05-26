@@ -45,25 +45,34 @@ const termii_api_key = process.env.TERMII_SMS_LIVE_API_KEY || null;
 const termii_base_url = process.env.TERMII_BASE_URL || 'https://v3.api.termii.com';
 
 
+
+
+/**
+ * Initialize socket functions (to be called from server.js after socket initialization)
+ * @param {Object} socketFunctions - Object containing socket helper functions
+ */
+
 class NotificationService {
 
-
+ 
 
    
-  static async storeNotification(userId, channel, title, message, metadata = {}) {
-
-    const result = await pool.query(
-      `INSERT INTO notifications (user_id, type, title, message, data, channel)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [userId, channel, title, message, metadata, channel]
-    );
-    
-    return result.rows[0];
+   
+  static async storeNotification(userId, type, title, message, metadata = {}) {
+    try {
+      const result = await pool.query(
+        `INSERT INTO notifications (user_id, type, title, message, metadata)
+          VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+        [userId, type, title, message, metadata]
+      );
+      logger.info(`Stored notification for user ${userId} with id ${result.rows[0].id}`);
+      return result.rows[0].id;
+    } catch (error) {
+      logger.error('Failed to store notification:', error);
+      return null;
+    }
   }
 
-
-  
   static async sendEmail(to, subject, text, userId, html = null) {
 
       if(process.env.NODE_ENV === 'development'){
@@ -576,7 +585,8 @@ class NotificationService {
       type: 'job_accepted',
       jobId: jobDetails.jobId,
       artisanId: jobDetails.artisanId,
-      artisanName: jobDetails.artisanName
+      artisanName: jobDetails.artisanName,
+      arrival_pin: jobDetails.arrival_pin,
     });
   }
   

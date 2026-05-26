@@ -244,6 +244,7 @@ const addArtisanLocation = async (category, longitude, latitude, artisanId) => {
  
 
 const getNearbyArtisans = async (category, longitude, latitude, radius = 20) => {
+
   const skill_category = category.toUpperCase();
   try {
     const artisans = await redis.georadius(

@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 
 class BOQController {
   /**
-   * Create a new Bill of Quantities (Artisan only)
+   * Create a new Bill of Quantities (Artisan only) 
    * @route POST /api/v1/boq/create/:jobId
    */
   static async createBOQ(req, res, next) {
@@ -49,6 +49,7 @@ class BOQController {
       const boq = await BOQService.updateBOQ(boqId, artisanId, req.body);
       sendSuccess(res, boq, 'BOQ updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update BOQ', error.statusCode || 500);
       next(error);
     }
   }

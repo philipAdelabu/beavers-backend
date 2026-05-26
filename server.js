@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const { initSocket } = require('./socket');
 
+
 require('dotenv').config();
 
 const app = express();
@@ -78,6 +79,8 @@ const startServer = async () => {
     }
 
     initSocket(server);
+  
+  
 
     logger.info('getting to  port ..');
     // setupSocketHandlers(io);

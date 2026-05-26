@@ -1,11 +1,12 @@
+const PDFDocument = require('pdfkit');
 const { pool } = require('../config/database');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
-const PDFDocument = require('pdfkit');
 
-class BOQService {
+
+class BOQService { 
   /**
    * Create a new Bill of Quantities
    * @param {Object} boqData - BOQ data
