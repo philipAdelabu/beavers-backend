@@ -5,6 +5,7 @@ const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { calculateDistance, calculateETA, calculateTravelPath } = require('../utils/geo.utils');
 const { emitLocationUpdate } = require('../socket/socket.handlers');
+const NotificationService = require('./notification.service');
 
 class LocationService {
   static async updateArtisanLocation(artisanId, locationData) {
@@ -67,6 +68,8 @@ class LocationService {
   static async getArtisanCurrentLocation(artisanId, clientId = null) {
     // Check cache first
     let location = await cacheGet(`location:current:${artisanId}`);
+
+    console.log("artisan id: " + artisanId);
     
     if (!location) {
       // Get from database
@@ -199,7 +202,20 @@ class LocationService {
     return routes;
   }
   
-  static async getArtisanETA(artisanId, jobId) {
+  static async getArtisanETA(jobId) {
+
+    const job = await pool.query(`
+        select artisan_id from jobs where id = $1;
+      `, [jobId]);
+
+      if(job.rows.length === 0){
+        throw new AppError(404, 'Job not found');
+      }
+
+
+      const artisanId = job.rows[0].artisan_id;
+
+   
     // Check cache first
     const cachedETA = await cacheGet(`eta:${artisanId}:${jobId}`);
     
@@ -311,6 +327,11 @@ class LocationService {
         `Your artisan has arrived. Please provide this PIN: ${pin}`,
         { jobId, pin, type: 'arrival_pin' }
       );
+       const user_id = clientResult.rows[0].user_id;
+        await NotificationService.storeNotification(
+          user_id, 'sms', 'SMS Notification', 
+          'Message', `Your artisan has arrived. Please provide this PIN: ${pin}`, 
+          {  pin: pin });
     }
     
     logger.info(`Arrival PIN generated for job ${jobId}`);

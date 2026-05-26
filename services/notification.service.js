@@ -58,12 +58,12 @@ class NotificationService {
 
    
    
-  static async storeNotification(userId, type, title, message, metadata = {}) {
+  static async storeNotification(userId, channel, type, title, message, metadata = {}) {
     try {
       const result = await pool.query(
-        `INSERT INTO notifications (user_id, type, title, message, metadata)
-          VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-        [userId, type, title, message, metadata]
+        `INSERT INTO notifications (user_id, type, title, message, data, channel)
+          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [userId, type, title, message, metadata, channel]
       );
       logger.info(`Stored notification for user ${userId} with id ${result.rows[0].id}`);
       return result.rows[0].id;
@@ -97,7 +97,7 @@ class NotificationService {
       logger.info(`Email sent to ${to}: ${info.messageId}`);
       
       // Store notification in database
-     // await NotificationService.storeNotification(userId, 'email', subject, text, { to, messageId: info.messageId });
+      await this.storeNotification(userId, 'email', 'Email Notification', subject, text, { to, messageId: info.messageId });
       
       return info;
     } catch (error) {
@@ -118,7 +118,7 @@ class NotificationService {
 
       const data = {
               "to":to,
-              "from":"talert",
+              "from":"BeaversWorks",
               "sms": message,
               "type":"plain",
               "api_key":termii_api_key,
@@ -143,7 +143,7 @@ class NotificationService {
       
       logger.info(`SMS sent to ${to}: ${message}`);
       // Store notification in database
-     // await NotificationService.storeNotification(userId, 'sms', 'SMS Notification', message, { to, sid: response.data });
+      await this.storeNotification(userId, 'sms', 'SMS Notification', 'Message', message, { to, sid: response.data });
       logger.info('SMS response: ' + response.data);
 
       return response.data; 

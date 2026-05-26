@@ -79,6 +79,7 @@ class LocationController {
       );
       sendSuccess(res, history, 'Location history retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve location history', error.statusCode || 500);
       next(error);
     }
   }
@@ -93,6 +94,7 @@ class LocationController {
       const routes = await LocationService.calculateRouteToJob(req.user.id, req.params.jobId);
       sendSuccess(res, routes, 'Route calculated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to calculate route', error.statusCode || 500); 
       next(error);
     }
   }
@@ -104,9 +106,10 @@ class LocationController {
     }
 
     try {
-      const eta = await LocationService.getArtisanETA(req.params.artisanId, req.params.jobId);
+      const eta = await LocationService.getArtisanETA(req.params.jobId);
       sendSuccess(res, eta, 'ETA retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve ETA', error.statusCode || 500); 
       next(error);
     }
   }
@@ -121,6 +124,7 @@ class LocationController {
       const result = await LocationService.generateArrivalPIN(req.params.jobId, req.user.id);
       sendSuccess(res, result, 'Arrival PIN generated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to generate Arrival PIN', error.statusCode || 500); 
       next(error);
     }
   }

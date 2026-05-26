@@ -64,53 +64,66 @@ const generateArrivalPIN = (length = 6) => {
  * @param {Object} options - Additional options
  * @returns {Promise<Object>} Route information
  */
+
+
 const calculateTravelPath = async (origin, destination, options = {}) => {
   try {
-    const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/directions/json`,
+    const requestBody = {
+      origin: {
+        location: {
+          latLng: {
+            latitude: origin.latitude,
+            longitude: origin.longitude,
+          }
+        }
+      },
+      destination: {
+        location: {
+          latLng: {
+            latitude: destination.latitude,
+            longitude: destination.longitude,
+          }
+        }
+      },
+      travelMode: options.mode?.toUpperCase() || 'DRIVE',
+      routingPreference: 'TRAFFIC_AWARE',  // Better ETAs with traffic
+      computeAlternativeRoutes: options.alternatives || false,
+      ...(options.departureTime && { departureTime: options.departureTime }),
+      ...(options.trafficModel && { trafficModel: options.trafficModel.toUpperCase() })
+    };
+
+    const response = await axios.post(
+      'https://routes.googleapis.com/directions/v2:computeRoutes',
+      requestBody,
       {
-        params: {
-          origin: `${origin.latitude},${origin.longitude}`,
-          destination: `${destination.latitude},${destination.longitude}`,
-          key: process.env.GOOGLE_MAPS_API_KEY,
-          alternatives: options.alternatives || false,
-          mode: options.mode || 'driving',
-          traffic_model: options.trafficModel || 'best_guess',
-          departure_time: options.departureTime || 'now'
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': process.env.GOOGLE_MAPS_API_KEY,
+          'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs.steps'
         }
       }
     );
-    
-    if (response.data.status === 'OK') {
-      const routes = response.data.routes.map(route => {
-        const leg = route.legs[0];
-        return {
-          distance: leg.distance.value,
-          distanceText: leg.distance.text,
-          duration: leg.duration.value,
-          durationText: leg.duration.text,
-          durationInTraffic: leg.duration_in_traffic?.value,
-          durationInTrafficText: leg.duration_in_traffic?.text,
-          polyline: route.overview_polyline.points,
-          startAddress: leg.start_address,
-          endAddress: leg.end_address,
-          steps: leg.steps.map(step => ({
-            instruction: step.html_instructions,
-            distance: step.distance.value,
-            duration: step.duration.value,
-            startLocation: step.start_location,
-            endLocation: step.end_location,
-            maneuver: step.maneuver
-          }))
-        };
-      });
-      
-      return routes;
+
+    if (response.data && response.data.routes && response.data.routes.length > 0) {
+      const route = response.data.routes[0];
+      return {
+        routes: [{
+          distance: {
+            value: route.distanceMeters,
+            text: `${(route.distanceMeters / 1000).toFixed(1)} km`
+          },
+          duration: {
+            value: parseInt(route.duration.replace('s', '')),
+            text: route.duration
+          },
+          polyline: route.polyline?.encodedPolyline,
+          steps: route.legs?.[0]?.steps || []
+        }]
+      };
     }
-    
-    throw new Error(`Google Maps API error: ${response.data.status}`);
+    throw new Error('No routes found');
   } catch (error) {
-    logger.error('Route calculation error:', error);
+    console.error('Route calculation error:', error.response?.data || error.message);
     throw error;
   }
 };
