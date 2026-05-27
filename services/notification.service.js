@@ -97,7 +97,7 @@ class NotificationService {
       logger.info(`Email sent to ${to}: ${info.messageId}`);
       
       // Store notification in database
-      await this.storeNotification(userId, 'email', 'Email Notification', subject, text, { to, messageId: info.messageId });
+     // await this.storeNotification(userId, 'email', 'Email Notification', subject, text, { to, messageId: info.messageId });
       
       return info;
     } catch (error) {
@@ -143,7 +143,7 @@ class NotificationService {
       
       logger.info(`SMS sent to ${to}: ${message}`);
       // Store notification in database
-      await this.storeNotification(userId, 'sms', 'SMS Notification', 'Message', message, { to, sid: response.data });
+     // await this.storeNotification(userId, 'sms', 'SMS Notification', 'Message', message, { to, sid: response.data });
       logger.info('SMS response: ' + response.data);
 
       return response.data; 

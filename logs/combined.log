@@ -9522,3 +9522,4 @@
 2026-05-27 01:03:28 [INFO]: Redis connected successfully 
 2026-05-27 01:03:28 [INFO]: getting to  port .. 
 2026-05-27 01:03:28 [INFO]: Server running on port 3000 
+2026-05-27 01:08:35 [INFO]: SIGINT received. Starting graceful shutdown... 
