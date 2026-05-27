@@ -37,16 +37,16 @@ class BOQService {
         [jobId]
       );
       const version = versionResult.rows[0].next_version;
-      
+     
       // Calculate totals
       const totalMaterialsCost = items.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
-      
+
       const result = await client.query(
         `INSERT INTO bill_of_quantities 
          (job_id, artisan_id, items, total_materials_cost, total_workmanship_cost, notes, version, status)
          VALUES ($1, $2, $3, $4, $5, $6, $7, 'draft')
          RETURNING *`,
-        [jobId, artisanId, items, totalMaterialsCost, workmanshipCost || 0, notes, version]
+        [jobId, artisanId, JSON.stringify(items), totalMaterialsCost, workmanshipCost || 0, notes, version]
       );
       
       await client.query('COMMIT');
@@ -108,7 +108,7 @@ class BOQService {
              updated_at = NOW()
          WHERE id = $5
          RETURNING *`,
-        [items, totalMaterialsCost, workmanshipCost, notes, boqId]
+        [JSON.stringify(items), totalMaterialsCost, workmanshipCost, notes, boqId]
       );
       
       await client.query('COMMIT');
@@ -153,9 +153,10 @@ class BOQService {
       
       // Get client info for notification
       const jobResult = await client.query(
-        `SELECT j.client_id, cp.full_legal_name, cp.email, cp.phone
+        `SELECT j.client_id, cp.full_legal_name, u.email, u.phone
          FROM jobs j
          JOIN client_profiles cp ON j.client_id = cp.user_id
+         LEFT JOIN users u ON cp.user_id = u.id
          WHERE j.id = $1`,
         [boq.job_id]
       );

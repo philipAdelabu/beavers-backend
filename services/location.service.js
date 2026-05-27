@@ -3,7 +3,7 @@ const { redis, addArtisanLocation, getNearbyArtisans, cacheSet, cacheGet } = req
 const JobService = require('./job.service');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
-const { calculateDistance, calculateETA, calculateTravelPath } = require('../utils/geo.utils');
+const { calculateDistance, calculateETA, calculateTravelPath, generateArrivalPIN} = require('../utils/geo.utils');
 const { emitLocationUpdate } = require('../socket/socket.handlers');
 const NotificationService = require('./notification.service');
 
@@ -301,7 +301,8 @@ class LocationService {
     }
     
     // Generate 6-digit PIN
-    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+   // const pin = Math.floor(1000 + Math.random() * 9000).toString();
+   const pin = generateArrivalPIN(4);
     
     // Store PIN in database
     await pool.query(

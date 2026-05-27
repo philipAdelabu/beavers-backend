@@ -41,6 +41,13 @@ router.get('/eta/:jobId', authenticateToken, LocationController.getETA);
 router.post('/arrival-pin/:jobId', authenticateToken, requireRole(['artisan']), 
  LocationController.generateArrivalPIN); 
 
+ router.get('/arrival-pin/verify/:jobId', authenticateToken, requireRole(['client']),
+ LocationController.verifyArrivalPIN);
+
+ 
+ router.get('/distance/:artisanId', authenticateToken, requireRole(['artisan', 'client']),
+ LocationController.getDistanceTraveled);
+
 
 // Get artisan availability (for client)
 /*

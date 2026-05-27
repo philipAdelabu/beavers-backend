@@ -15,7 +15,7 @@ class BOQController {
     }
 
     try {
-      const { jobId } = req.params;
+      const { jobId } = req.params; 
       const artisanId = req.user.id;
       
       const boq = await BOQService.createBOQ({
@@ -28,6 +28,7 @@ class BOQController {
       
       sendSuccess(res, boq, 'BOQ created successfully', 201);
     } catch (error) {
+     // sendError(res, error.message || 'Failed to create BOQ', error.statusCode || 500);
       next(error);
     }
   }

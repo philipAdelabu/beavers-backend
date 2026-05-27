@@ -19,6 +19,7 @@ class LocationController {
       });
       sendSuccess(res, result, 'Location updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update location', error.statusCode || 500);  
       next(error);
     }
   }
@@ -33,6 +34,7 @@ class LocationController {
       const location = await LocationService.getArtisanCurrentLocation(req.params.artisanId, req.user.id);
       sendSuccess(res, location, 'Artisan location retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve artisan location', error.statusCode || 500);  
       next(error);
     }
   }
@@ -57,7 +59,7 @@ class LocationController {
       
       sendSuccess(res, artisans, 'Nearby artisans retrieved successfully');
     } catch (error) {
-   
+      sendError(res, error.message || 'Failed to retrieve nearby artisans', error.statusCode || 500);
       next(error);
     }
   }
@@ -139,6 +141,7 @@ class LocationController {
       const result = await LocationService.verifyArrivalPIN(req.params.jobId, req.user.id, req.body.pin);
       sendSuccess(res, result, 'PIN verified successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to verify PIN', error.statusCode || 500); 
       next(error);
     }
   }
@@ -154,6 +157,7 @@ class LocationController {
       const result = await GeofenceService.validateArrival(req.params.jobId, latitude, longitude);
       sendSuccess(res, result, 'Geofence validation completed');
     } catch (error) {
+      sendError(res, error.message || 'Failed to validate geofence', error.statusCode || 500);  
       next(error);
     }
   }
@@ -169,6 +173,7 @@ class LocationController {
       const result = await ArtisanService.updateAvailability(req.user.id, isAvailable, location);
       sendSuccess(res, result, `Availability set to ${isAvailable}`);
     } catch (error) {
+      sendError(res, error.message || 'Failed to set availability', error.statusCode || 500);
       next(error);
     }
   }
@@ -184,6 +189,7 @@ class LocationController {
       const artisans = await LocationService.getActiveArtisans(category);
       sendSuccess(res, artisans, 'Active artisans retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve active artisans', error.statusCode || 500);
       next(error);
     }
   }
@@ -199,6 +205,7 @@ class LocationController {
       const distance = await LocationService.getDistanceTraveled(req.params.artisanId, startDate, endDate);
       sendSuccess(res, { distance }, 'Distance traveled retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve distance traveled', error.statusCode || 500);
       next(error);
     }
   }
@@ -218,6 +225,7 @@ class LocationController {
       );
       sendSuccess(res, traffic, 'Traffic conditions retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve traffic conditions', error.statusCode || 500);
       next(error);
     }
   }

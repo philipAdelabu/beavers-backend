@@ -53,7 +53,7 @@ const isWithinGeofence = (artisanLocation, clientLocation, radius = 100) => {
  * @param {number} length - PIN length (default: 6)
  * @returns {string}
  */
-const generateArrivalPIN = (length = 6) => {
+const generateArrivalPIN = (length = 4) => {
   return Math.floor(Math.pow(10, length - 1) + Math.random() * 9 * Math.pow(10, length - 1)).toString();
 };
 

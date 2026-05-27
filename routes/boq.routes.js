@@ -14,17 +14,19 @@ router.post('/create/:jobId', requireRole(['artisan']), [
   param('jobId').isUUID().withMessage('Invalid job ID'),
   body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
   body('items.*.name').notEmpty().withMessage('Item name is required'),
+  body('items.*.specification').optional().isString(),
   body('items.*.quantity').isFloat({ min: 0.01 }).withMessage('Quantity must be greater than 0'),
   body('items.*.unitCost').isFloat({ min: 0 }).withMessage('Unit cost must be a positive number'),
   body('workmanshipCost').optional().isFloat({ min: 0 }),
   body('notes').optional().isString(),
-], BOQController.createBOQ);
+], BOQController.createBOQ); 
 
 // Update BOQ (Artisan only - draft only)
 router.put('/:boqId', requireRole(['artisan']), [
   param('boqId').isUUID().withMessage('Invalid BOQ ID'),
   body('items').optional().isArray(),
   body('items.*.name').optional().notEmpty(),
+  body('items.*.specification').optional().isString(),
   body('items.*.quantity').optional().isFloat({ min: 0.01 }),
   body('items.*.unitCost').optional().isFloat({ min: 0 }),
   body('workmanshipCost').optional().isFloat({ min: 0 }),

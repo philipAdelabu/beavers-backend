@@ -314,7 +314,7 @@ class JobService {
       );
       
       // Generate arrival PIN
-      const pin = generateArrivalPIN();
+      const pin = generateArrivalPIN(4);
       const pin_expires = process.env.JOB_GENERATED_PIN_ARRIVAL_EXPIRES_MINUTES || 2400;
       await client.query(
         `INSERT INTO arrival_pins (job_id, pin, expires_at)
