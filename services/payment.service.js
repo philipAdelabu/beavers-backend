@@ -55,13 +55,13 @@ class PaymentService {
       let totalAmount = 0;
      
       if (billing.billing_mode === 'quoted'){
-        totalAmount = billing.quoted_amount;
+        totalAmount = parseFloat(billing.quoted_amount);
       }else {
-      totalAmount = (billing.base_fee || 0);
-      totalAmount += (billing.diagnostics_fee || 0);
-      totalAmount += (billing.execution_fee || 0);
-      totalAmount += (billing.materials_cost || 0);
-      totalAmount += (billing.workmanship_cost || 0);
+      totalAmount = parseFloat((billing.base_fee || 0));
+      totalAmount += parseFloat((billing.diagnostics_fee || 0));
+      totalAmount += parseFloat((billing.execution_fee || 0));
+      totalAmount += parseFloat((billing.materials_cost || 0));
+      totalAmount += parseFloat((billing.workmanship_cost || 0));
       }
       
       if (totalAmount <= 0) {
@@ -110,7 +110,8 @@ class PaymentService {
       
       // Store payment intent in database
       const metadata = response.data.data;
-       logger.info(metadata.reference);
+      logger.info(`Paystack initialization response for job ${jobId}:`, response.data);
+  
        const client_secret = `${jobId}_${clientId}`;
       await client.query(
         `INSERT INTO payment_intents (job_id, client_id, payment_intent_id, 
@@ -124,8 +125,11 @@ class PaymentService {
       return {
         authorizationUrl: metadata.authorization_url,
         reference: metadata.reference,
+        payment_intent_id: metadata.reference,
+        access_code: metadata.access_code,
         amount: totalAmount,
         currency: 'NGN',
+        metadata,
       };
     } catch (error) {
       await client.query('ROLLBACK');
@@ -134,7 +138,47 @@ class PaymentService {
       client.release();
     }
   }
-  
+
+  static async getPaymentIntent(jobId, clientId) {
+    const client = await pool.connect();
+    
+    try {
+      const result = await client.query(
+        `SELECT job_id, client_id, payment_intent_id, client_secret, amount, currency, status, metadata, status, failure_reason, paid_at, failed_at, created_at, updated_at  FROM payment_intents WHERE job_id = $1 AND client_id = $2`,
+        [jobId, clientId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Payment intent not found');
+      }
+      
+      return result.rows;
+    } catch (error) {
+      throw new AppError(500, error.message || 'Failed to retrieve payment intent');
+    } finally {
+      client.release();
+    }
+  }
+
+  static async getPaymentStatus(paymentIntentId) { 
+    const client = await pool.connect();
+      try {
+      const result = await client.query(
+        `SELECT job_id, status, amount, currency, metadata  FROM payment_intents WHERE payment_intent_id = $1`,
+        [paymentIntentId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Payment intent not found');
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      throw new AppError(500, error.message || 'Failed to retrieve payment status');
+    } finally {
+      client.release();
+    }
+  }
   /**
    * Verify payment after callback
    * @param {string} reference - Paystack transaction reference
@@ -147,7 +191,7 @@ class PaymentService {
     try {
       // Check if already processed
       const existingPayment = await client.query(
-        `SELECT * FROM payment_intents WHERE paystack_reference = $1 AND client_id = $2`,
+        `SELECT * FROM payment_intents WHERE payment_intent_id = $1 AND client_id = $2`,
         [reference, clientId]
       );
       
@@ -176,16 +220,16 @@ class PaymentService {
       
       if (transaction.status === 'success') {
         await client.query('BEGIN');
-        
+        const metadata = payment.metadata;
+          metadata.transaction = transaction;
         // Update payment intent status
         await client.query(
           `UPDATE payment_intents 
            SET status = 'succeeded', 
                paid_at = NOW(),
-               paystack_transaction_id = $1,
-               payment_method_type = $2
-           WHERE paystack_reference = $3`,
-          [transaction.id, transaction.channel, reference]
+               metadata = $1 
+           WHERE payment_intent_id = $2`,
+          [metadata, reference]
         );
         
         // Move funds to escrow
@@ -219,7 +263,7 @@ class PaymentService {
           [payment.job_id]
         );
         
-        await client.query('COMMIT');
+         await client.query('COMMIT');
         
         // Send notifications
         await this.sendPaymentSuccessNotifications(payment.job_id, clientId, transaction.amount / 100);
@@ -238,7 +282,7 @@ class PaymentService {
            SET status = 'failed', 
                failure_reason = $1,
                failed_at = NOW()
-           WHERE paystack_reference = $2`,
+           WHERE payment_intent_id = $2`,
           [transaction.gateway_response || 'Payment failed', reference]
         );
         
@@ -280,11 +324,13 @@ class PaymentService {
     try {
       const jobResult = await client.query(
         `SELECT j.*, 
-                cp.email as client_email, cp.full_legal_name as client_name, cp.phone as client_phone,
-                ap.email as artisan_email, ap.full_legal_name as artisan_name, ap.phone as artisan_phone
+                uc.email as client_email, cp.full_legal_name as client_name, uc.phone as client_phone,
+                ua.email as artisan_email, ap.full_legal_name as artisan_name, ua.phone as artisan_phone
          FROM jobs j
          JOIN client_profiles cp ON j.client_id = cp.user_id
          JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+         JOIN users uc ON uc.id = cp.user_id 
+         JOIN users ua ON ua.id = ap.user_id
          WHERE j.id = $1`,
         [jobId]
       );
@@ -429,7 +475,8 @@ class PaymentService {
     
     if (userType === 'client') {
       query = `
-        SELECT pi.*, j.category, j.service_type, j.job_status
+        SELECT pi.amount, pi.status, pi.created_at, pi.payment_intent_id, pi.client_id,
+        pi.currency, j.category, j.service_type, j.job_status, j.artisan_id
         FROM payment_intents pi
         JOIN jobs j ON pi.job_id = j.id
         WHERE j.client_id = $1
@@ -439,7 +486,8 @@ class PaymentService {
       params = [userId, limit, offset];
     } else if (userType === 'artisan') {
       query = `
-        SELECT ap.*, j.category, j.service_type, j.job_status
+        SELECT ap.*,
+         j.category, j.service_type, j.job_status
         FROM artisan_payouts ap
         JOIN jobs j ON ap.job_id = j.id
         WHERE j.artisan_id = $1

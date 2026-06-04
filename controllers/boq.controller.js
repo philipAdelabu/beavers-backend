@@ -205,7 +205,7 @@ class BOQController {
       next(error);
     }
   }
-
+ 
   /**
    * Get BOQ history for a job
    * @route GET /api/v1/boq/job/:jobId/history

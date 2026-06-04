@@ -72,8 +72,8 @@ class NotificationService {
       return null;
     }
   }
-
-  static async sendEmail(to, subject, text, userId, html = null) {
+ 
+  static async sendEmail(to, subject, text, userId = null, html = null) {
 
       if(process.env.NODE_ENV === 'development'){
            logger.info(`Email sent to ${to}: ${subject}`); 
@@ -106,7 +106,7 @@ class NotificationService {
     }
   }
   
-  static async sendSMS(to, message, userId) {
+  static async sendSMS(to, message, userId = null) {
  
     try {
 
@@ -118,7 +118,7 @@ class NotificationService {
 
       const data = {
               "to":to,
-              "from":"BeaversWorks",
+              "from":"Beavers",
               "sms": message,
               "type":"plain",
               "api_key":termii_api_key,

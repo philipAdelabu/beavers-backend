@@ -29,6 +29,39 @@ class PaymentController {
     }
   }
   
+  static async getPaymentIntent(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const { jobId } = req.params;
+      const clientId = req.user.id;
+      const result = await PaymentService.getPaymentIntent(jobId, clientId);
+      sendSuccess(res, result, 'Payment intent retrieved successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve payment intent', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+static async getPaymentStatus(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const { paymentIntentId } = req.params;
+      const result = await PaymentService.getPaymentStatus(paymentIntentId);
+      sendSuccess(res, result, 'Payment status retrieved successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve payment status', error.statusCode || 500);
+      next(error);
+    }
+  }
+
   /**
    * Verify payment after callback
    * @route GET /api/v1/payments/verify
@@ -40,12 +73,13 @@ class PaymentController {
     }
 
     try {
-      const { reference } = req.query;
+      const { paymentIntentId } = req.params;
       const clientId = req.user.id;
       
-      const result = await PaymentService.verifyPayment(reference, clientId);
+      const result = await PaymentService.verifyPayment(paymentIntentId, clientId);
       sendSuccess(res, result, 'Payment verified successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to verify payment', error.statusCode || 500);
       next(error);
     }
   }
@@ -69,6 +103,7 @@ class PaymentController {
       );
       sendPaginated(res, result.transactions, page, limit, result.total, 'Transaction history retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve transaction history', error.statusCode || 500);
       next(error);
     }
   }
@@ -82,6 +117,7 @@ class PaymentController {
       const summary = await PaymentService.getPaymentSummary(req.user.id, req.user.user_type);
       sendSuccess(res, summary, 'Payment summary retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve payment summary', error.statusCode || 500);
       next(error);
     }
   }
@@ -102,6 +138,7 @@ class PaymentController {
       const refund = await PaymentService.createRefund(jobId, req.user.id, amount, reason);
       sendSuccess(res, refund, 'Refund initiated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to initiate refund', error.statusCode || 500);
       next(error);
     }
   }
@@ -121,6 +158,7 @@ class PaymentController {
       const result = await PaymentService.releaseFundsToArtisan(jobId, req.user.id);
       sendSuccess(res, result, 'Escrow funds released successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to release escrow funds', error.statusCode || 500);
       next(error);
     }
   }
@@ -134,6 +172,7 @@ class PaymentController {
       const balance = await EscrowService.getBalance(req.query.jobId);
       sendSuccess(res, balance, 'Escrow balance retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve escrow balance', error.statusCode || 500);
       next(error);
     }
   }
@@ -153,6 +192,7 @@ class PaymentController {
       // Implement transaction details retrieval
       sendSuccess(res, { transactionId }, 'Transaction details retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve transaction details', error.statusCode || 500);
       next(error);
     }
   }
@@ -172,6 +212,7 @@ class PaymentController {
       // Implement receipt generation
       sendSuccess(res, { paymentId }, 'Receipt downloaded successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to download receipt', error.statusCode || 500);
       next(error);
     }
   }
@@ -187,6 +228,7 @@ class PaymentController {
       const result = await PaymentService.confirmPayment(req.params.paymentIntentId, req.user.id);
       sendSuccess(res, result, 'Payment status retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to verify payment', error.statusCode || 500);
       next(error);
     }
   }
@@ -196,6 +238,7 @@ class PaymentController {
       const methods = await PaymentService.getPaymentMethods(req.user.id);
       sendSuccess(res, methods, 'Payment methods retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve payment methods', error.statusCode || 500);
       next(error);
     }
   }
@@ -210,6 +253,7 @@ class PaymentController {
       const method = await PaymentService.addPaymentMethod(req.user.id, req.body.paymentMethodId, req.body.setAsDefault);
       sendSuccess(res, method, 'Payment method added successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Failed to add payment method', error.statusCode || 500);
       next(error);
     }
   }
@@ -224,6 +268,7 @@ class PaymentController {
       await PaymentService.deletePaymentMethod(req.params.methodId, req.user.id);
       sendSuccess(res, null, 'Payment method deleted successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to delete payment method', error.statusCode || 500);
       next(error);
     }
   }
@@ -238,6 +283,7 @@ class PaymentController {
       const method = await PaymentService.setDefaultPaymentMethod(req.params.methodId, req.user.id);
       sendSuccess(res, method, 'Default payment method updated');
     } catch (error) {
+      sendError(res, error.message || 'Failed to set default payment method', error.statusCode || 500);
       next(error);
     }
   }
@@ -254,6 +300,7 @@ class PaymentController {
       const result = await PaymentService.getTransactionHistory(req.user.id, req.user.user_type, { page, limit });
       sendPaginated(res, result.transactions, page, limit, result.total, 'Payment history retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve payment history', error.statusCode || 500);
       next(error);
     }
   }
@@ -266,6 +313,7 @@ class PaymentController {
       await PaymentService.processWebhook(req.body);
       sendSuccess(res, null, 'Webhook processed successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to process webhook', error.statusCode || 500);
       next(error);
     }
   }

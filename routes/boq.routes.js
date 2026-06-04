@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { body, param, query, validationResult } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const BOQController = require('../controllers/boq.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 
@@ -50,8 +50,8 @@ router.post('/:boqId/client-reject', requireRole(['client']), [
   param('boqId').isUUID().withMessage('Invalid BOQ ID'),
   body('reason').notEmpty().withMessage('Rejection reason is required')
 ], BOQController.clientReject);
-
-// Admin approve BOQ
+ 
+// Admin approve BOQHE
 router.post('/:boqId/admin-approve', requireRole(['admin']), [
   param('boqId').isUUID().withMessage('Invalid BOQ ID')
 ], BOQController.adminApprove);

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { body, param, query, validationResult } = require('express-validator');
+const { body, param, query } = require('express-validator');
 const PaymentController = require('../controllers/payment.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 const { paymentLimiter } = require('../middleware/rateLimit.middleware');
@@ -13,8 +13,16 @@ router.post('/initialize/:jobId', paymentLimiter, [
   param('jobId').isUUID().withMessage('Invalid job ID')
 ], PaymentController.initializePayment);
 
-router.get('/verify', [
-  query('reference').notEmpty().withMessage('Reference is required')
+router.get('/payment_intent/:jobId', [
+  param('jobId').isUUID().withMessage('Invalid job ID'),
+], PaymentController.getPaymentIntent);
+
+router.get('/status/:paymentIntentId', [
+  param('paymentIntentId').notEmpty().withMessage('Invalid payment intent ID'),
+], PaymentController.getPaymentStatus);
+
+router.get('/verify/:paymentIntentId', [
+  param('paymentIntentId').notEmpty().withMessage('Payment Intent Id is required')
 ], PaymentController.verifyPayment);
 
 // Transaction history

@@ -455,12 +455,14 @@ class BOQService {
         `SELECT b.*, j.client_id, j.artisan_id,
                 cp.full_legal_name as client_name,
                 ap.full_legal_name as artisan_name,
-                cp.email as client_email,
-                ap.email as artisan_email
+                uc.email as client_email,
+                ua.email as artisan_email
          FROM bill_of_quantities b
          JOIN jobs j ON b.job_id = j.id
          LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
          LEFT JOIN artisan_profiles ap ON b.artisan_id = ap.user_id
+         LEFT JOIN users uc ON uc.id = cp.user_id
+         LEFT JOIN users ua ON ua.id = ap.user_id 
          WHERE b.id = $1`,
         [boqId]
       );
@@ -858,11 +860,11 @@ class BOQService {
       const startX = 50;
       let y = doc.y;
       doc.text('S/N', startX, y);
-      doc.text('Item', startX + 50, y);
-      doc.text('Specifications', startX + 200, y);
-      doc.text('Qty', startX + 350, y);
-      doc.text('Unit Price (₦)', startX + 400, y);
-      doc.text('Total (₦)', startX + 480, y);
+      doc.text('Item', startX + 30, y);
+      doc.text('Specifications', startX + 130, y);
+      doc.text('Qty', startX + 250, y);
+      doc.text('Unit Cost (=N=)', startX + 300, y);
+      doc.text('Total (=N=)', startX + 400, y);
       doc.moveDown();
       
       // Table rows
@@ -870,28 +872,29 @@ class BOQService {
       for (const item of boq.items) {
         y = doc.y;
         doc.text(serialNumber.toString(), startX, y);
-        doc.text(item.name.substring(0, 30), startX + 50, y);
-        doc.text((item.specifications || '-').substring(0, 30), startX + 200, y);
-        doc.text(item.quantity.toString(), startX + 350, y);
-        doc.text(item.unitCost.toLocaleString(), startX + 400, y);
-        doc.text((item.quantity * item.unitCost).toLocaleString(), startX + 480, y);
+        doc.text(item.name.substring(0, 30), startX + 30, y);
+        doc.text((item.specifications || '-').substring(0, 30), startX + 130, y);
+        doc.text(item.quantity.toString(), startX + 250, y);
+        doc.text(item.unitCost.toLocaleString(), startX + 300, y);
+        doc.text((item.quantity * item.unitCost).toLocaleString(), startX + 400, y);
         doc.moveDown();
         serialNumber++;
       }
       
       doc.moveDown();
-      doc.text('-' .repeat(80));
+    
+      doc.text('-' .repeat(80), startX, y + 80);
       
       // Totals
       const totalMaterials = boq.total_materials_cost;
       const totalWorkmanship = boq.total_workmanship_cost;
-      const grandTotal = totalMaterials + totalWorkmanship;
+      const grandTotal = parseFloat(totalMaterials) + parseFloat(totalWorkmanship);
       
       doc.fontSize(10);
-      doc.text(`Total Materials Cost: ₦${totalMaterials.toLocaleString()}`, { align: 'right' });
-      doc.text(`Workmanship Cost: ₦${totalWorkmanship.toLocaleString()}`, { align: 'right' });
+      doc.text(`Total Materials Cost: =N=${totalMaterials.toLocaleString()}`, { align: 'left' });
+      doc.text(`Workmanship Cost: =N=${totalWorkmanship.toLocaleString()}`, { align: 'left' });
       doc.fontSize(12);
-      doc.text(`GRAND TOTAL: ₦${grandTotal.toLocaleString()}`, { align: 'right', bold: true });
+      doc.text(`GRAND TOTAL: =N=${grandTotal.toLocaleString()}`, { align: 'left', bold: true });
       
       doc.moveDown();
       
