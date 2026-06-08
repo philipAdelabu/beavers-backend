@@ -1,10 +1,16 @@
-const { pool } = require('../config/database');
-const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
+const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
-const NotificationService = require('./notification.service');
+const { generateTokens, verifyRefreshToken } = require('../utils/jwt.utils');
+const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
+const { pool } = require('../config/database');
+
 
 class AdminService {
+  // ==================== Dashboard Statistics ====================
+  
   static async getDashboardStats() {
     const cacheKey = 'admin:dashboard:stats';
     let stats = await cacheGet(cacheKey);
@@ -18,7 +24,9 @@ class AdminService {
         pool.query(`SELECT COUNT(*) FROM jobs WHERE job_status = 'completed' AND created_at > NOW() - INTERVAL '30 days'`),
         pool.query(`SELECT COUNT(*) FROM disputes WHERE status = 'pending'`),
         pool.query(`SELECT COALESCE(SUM(amount), 0) FROM escrow_transactions WHERE status = 'held'`),
-        pool.query(`SELECT COALESCE(SUM(amount), 0) FROM payment_intents WHERE status = 'succeeded' AND paid_at > NOW() - INTERVAL '30 days'`)
+        pool.query(`SELECT COALESCE(SUM(amount), 0) FROM payment_intents WHERE status = 'succeeded' AND paid_at > NOW() - INTERVAL '30 days'`),
+        pool.query(`SELECT COUNT(*) FROM bill_of_quantities WHERE status = 'pending_admin_approval'`),
+        pool.query(`SELECT COUNT(*) FROM withdrawal_requests WHERE status = 'pending'`)
       ]);
       
       stats = {
@@ -29,119 +37,67 @@ class AdminService {
         completedJobsThisMonth: parseInt(results[4].rows[0].count),
         pendingDisputes: parseInt(results[5].rows[0].count),
         escrowBalance: parseFloat(results[6].rows[0].sum),
-        revenueThisMonth: parseFloat(results[7].rows[0].sum)
+        revenueThisMonth: parseFloat(results[7].rows[0].sum),
+        pendingBoQs: parseInt(results[8].rows[0].count),
+        pendingWithdrawals: parseInt(results[9].rows[0].count)
       };
       
-      await cacheSet(cacheKey, stats, 300); // Cache for 5 minutes
+      await cacheSet(cacheKey, stats, 300);
     }
     
     return stats;
   }
   
-  static async getPendingVerifications(type = null, page = 1, limit = 20) {
-    const offset = (page - 1) * limit;
+  static async getDashboardMetrics(period = 'month') {
+    const interval = period === 'week' ? '7 days' : period === 'month' ? '30 days' : '365 days';
     
-    let query = `
-      SELECT u.id, u.email, u.phone, u.user_type, u.created_at,
-             CASE 
-               WHEN u.user_type = 'client' THEN cp.full_legal_name
-               WHEN u.user_type = 'artisan' THEN ap.full_legal_name
-             END as full_name,
-             CASE 
-               WHEN u.user_type = 'client' THEN cp.verification_documents
-               WHEN u.user_type = 'artisan' THEN ap.documents
-             END as documents
-      FROM users u
-      LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
-      LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
-      WHERE u.verification_status = 'pending'
-    `;
-    
-    const params = [];
-    
-    if (type) {
-      query += ` AND u.user_type = $1`;
-      params.push(type);
-    }
-    
-    query += ` ORDER BY u.created_at ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-    params.push(limit, offset);
-    
-    const result = await pool.query(query, params);
-    
-    const countQuery = `
-      SELECT COUNT(*) FROM users WHERE verification_status = 'pending'
-      ${type ? 'AND user_type = $1' : ''}
-    `;
-    const countParams = type ? [type] : [];
-    const countResult = await pool.query(countQuery, countParams);
+    const results = await Promise.all([
+      pool.query(`
+        SELECT DATE_TRUNC('day', created_at) as date, COUNT(*) as count
+        FROM users WHERE created_at > NOW() - INTERVAL '${interval}'
+        GROUP BY DATE_TRUNC('day', created_at) ORDER BY date ASC
+      `),
+      pool.query(`
+        SELECT DATE_TRUNC('day', created_at) as date, COUNT(*) as count
+        FROM jobs WHERE created_at > NOW() - INTERVAL '${interval}'
+        GROUP BY DATE_TRUNC('day', created_at) ORDER BY date ASC
+      `),
+      pool.query(`
+        SELECT DATE_TRUNC('day', paid_at) as date, SUM(amount) as revenue
+        FROM payment_intents WHERE status = 'succeeded' AND paid_at > NOW() - INTERVAL '${interval}'
+        GROUP BY DATE_TRUNC('day', paid_at) ORDER BY date ASC
+      `)
+    ]);
     
     return {
-      users: result.rows,
-      total: parseInt(countResult.rows[0].count),
-      page,
-      limit,
-      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+      userGrowth: results[0].rows,
+      jobTrends: results[1].rows,
+      revenueTrends: results[2].rows
     };
   }
   
-  static async verifyUser(userId, status, notes = null, tier = null) {
-    const client = await pool.connect();
+  static async getRealtimeStats() {
+    const results = await Promise.all([
+      pool.query(`SELECT COUNT(*) FROM users WHERE last_login > NOW() - INTERVAL '5 minutes'`),
+      pool.query(`SELECT COUNT(*) FROM artisan_profiles WHERE is_available = true`),
+      pool.query(`SELECT COUNT(*) FROM jobs WHERE job_status IN ('accepted', 'arrived', 'diagnostics', 'execution')`),
+      pool.query(`SELECT COUNT(*) FROM disputes WHERE status = 'pending' AND created_at > NOW() - INTERVAL '24 hours'`),
+      pool.query(`SELECT COUNT(*) FROM withdrawal_requests WHERE status = 'pending'`),
+      pool.query(`SELECT COUNT(*) FROM bill_of_quantities WHERE status = 'pending_admin_approval'`)
+    ]);
     
-    try {
-      await client.query('BEGIN');
-      
-      // Update user verification status
-      await client.query(
-        `UPDATE users 
-         SET is_verified = $1, verification_status = $2, 
-             verification_notes = $3, verified_at = NOW()
-         WHERE id = $4`,
-        [status === 'approved', status, notes, userId]
-      );
-      
-      // If artisan and approved, set tier
-      if (status === 'approved' && tier) {
-        await client.query(
-          `UPDATE artisan_profiles SET tier_level = $1 WHERE user_id = $2`,
-          [tier, userId]
-        );
-      }
-      
-      // Log verification
-      await client.query(
-        `INSERT INTO verification_logs (user_id, status, notes, verified_by)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, status, notes, 'admin']
-      );
-      
-      await client.query('COMMIT');
-      
-      // Send notification to user
-      const userResult = await client.query(
-        `SELECT email, user_type FROM users WHERE id = $1`,
-        [userId]
-      );
-      
-      if (userResult.rows[0]) {
-        const subject = status === 'approved' ? 'Account Verified' : 'Verification Failed';
-        const message = status === 'approved' 
-          ? 'Your account has been verified successfully. You can now use all features.'
-          : `Your account verification failed. Reason: ${notes || 'Please contact support.'}`;
-        
-        await NotificationService.sendEmail(userResult.rows[0].email, subject, message);
-      }
-      
-      logger.info(`User ${userId} verification ${status} by admin`);
-      
-      return { userId, status, notes };
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+    return {
+      activeUsers: parseInt(results[0].rows[0].count),
+      activeArtisans: parseInt(results[1].rows[0].count),
+      activeJobs: parseInt(results[2].rows[0].count),
+      newDisputes24h: parseInt(results[3].rows[0].count),
+      pendingWithdrawals: parseInt(results[4].rows[0].count),
+      pendingBoQs: parseInt(results[5].rows[0].count),
+      timestamp: new Date().toISOString()
+    };
   }
+  
+  // ==================== User Management ====================
   
   static async getAllUsers(filters = {}) {
     const { type, status, search, page = 1, limit = 20 } = filters;
@@ -153,10 +109,16 @@ class AdminService {
              CASE 
                WHEN u.user_type = 'client' THEN cp.full_legal_name
                WHEN u.user_type = 'artisan' THEN ap.full_legal_name
-             END as full_name
+               WHEN u.user_type = 'admin' THEN adm.full_name
+             END as full_name,
+             CASE 
+               WHEN u.user_type = 'client' THEN cp.verification_documents
+               WHEN u.user_type = 'artisan' THEN ap.documents
+             END as documents
       FROM users u
       LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
       LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+      LEFT JOIN admin_profiles adm ON u.id = adm.user_id AND u.user_type = 'admin'
       WHERE 1=1
     `;
     
@@ -194,10 +156,9 @@ class AdminService {
       LEFT JOIN artisan_profiles ap ON u.id = ap.user_id
       WHERE 1=1
       ${type ? `AND u.user_type = '${type}'` : ''}
-      ${status === 'active' ? 'AND u.is_active = true' : status === 'inactive' ? 'AND u.is_active = false' : ''}
+      ${status === 'active' ? 'AND u.is_active = true' : status === 'inactive' ? 'AND u.is_active = false' : status === 'pending' ? "AND u.verification_status = 'pending'" : ''}
       ${search ? `AND (u.email ILIKE '%${search}%' OR u.phone ILIKE '%${search}%' OR cp.full_legal_name ILIKE '%${search}%' OR ap.full_legal_name ILIKE '%${search}%')` : ''}
     `;
-    
     const countResult = await pool.query(countQuery);
     
     return {
@@ -209,6 +170,1157 @@ class AdminService {
     };
   }
   
+  static async getUserDetails(userId) {
+    const result = await pool.query(`
+      SELECT u.*,
+             cp.full_legal_name as client_name, cp.street_address, cp.service_address,
+             cp.verification_documents as client_documents,
+             ap.full_legal_name as artisan_name, ap.skill_category, ap.tier_level,
+             ap.star_rating, ap.completion_rate, ap.documents as artisan_documents,
+             adm.full_name as admin_name, adm.department,
+             (SELECT COUNT(*) FROM jobs WHERE client_id = u.id) as total_jobs_as_client,
+             (SELECT COUNT(*) FROM jobs WHERE artisan_id = u.id) as total_jobs_as_artisan,
+             (SELECT COUNT(*) FROM disputes WHERE client_id = u.id OR artisan_id = u.id) as total_disputes,
+             (SELECT COALESCE(SUM(amount), 0) FROM payment_intents WHERE client_id = u.id AND status = 'succeeded') as total_spent,
+             (SELECT COALESCE(SUM(workmanship_cost), 0) FROM job_billing jb JOIN jobs j ON jb.job_id = j.id WHERE j.artisan_id = u.id) as total_earned
+      FROM users u
+      LEFT JOIN client_profiles cp ON u.id = cp.user_id
+      LEFT JOIN artisan_profiles ap ON u.id = ap.user_id
+      LEFT JOIN admin_profiles adm ON u.id = adm.user_id
+      WHERE u.id = $1
+    `, [userId]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'User not found');
+    }
+    
+    return result.rows[0];
+  }
+
+  static async getAllAdmins(){
+      
+  }
+  
+  static async updateUserStatus(userId, isActive, reason = null) {
+    const result = await pool.query(
+      `UPDATE users SET is_active = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
+      [isActive, userId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'User not found');
+    }
+    
+    await this.logAdminActivity(userId, isActive ? 'user_activated' : 'user_suspended', 
+      { userId, reason, status: isActive ? 'active' : 'suspended' });
+    
+    return result.rows[0];
+  }
+  
+  // ==================== Verification Management ====================
+  
+  static async getPendingVerifications(type = null, page = 1, limit = 20) {
+    const offset = (page - 1) * limit;
+    
+    let query = `
+      SELECT u.id, u.email, u.phone, u.user_type, u.created_at,
+             CASE 
+               WHEN u.user_type = 'client' THEN cp.full_legal_name
+               WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+             END as full_name,
+             CASE 
+               WHEN u.user_type = 'client' THEN cp.verification_documents
+               WHEN u.user_type = 'artisan' THEN ap.documents
+             END as documents,
+             CASE 
+               WHEN u.user_type = 'client' THEN cp.nin
+               WHEN u.user_type = 'artisan' THEN ap.nin
+             END as nin,
+             CASE 
+               WHEN u.user_type = 'client' THEN cp.street_address
+               WHEN u.user_type = 'artisan' THEN ap.residential_address
+             END as address
+      FROM users u
+      LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+      LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+      WHERE u.verification_status = 'pending'
+    `;
+    
+    const params = [];
+    
+    if (type) {
+      query += ` AND u.user_type = $1`;
+      params.push(type);
+    }
+    
+    query += ` ORDER BY u.created_at ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    const countQuery = `
+      SELECT COUNT(*) FROM users WHERE verification_status = 'pending'
+      ${type ? `AND user_type = '${type}'` : ''}
+    `;
+    const countResult = await pool.query(countQuery);
+    
+    return {
+      users: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+    };
+  }
+  
+  static async verifyUser(userId, status, notes = null, tier = null) {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const userResult = await client.query(
+        `SELECT user_type FROM users WHERE id = $1`,
+        [userId]
+      );
+      
+      if (userResult.rows.length === 0) {
+        throw new AppError(404, 'User not found');
+      }
+      
+      const userType = userResult.rows[0].user_type;
+      
+      await client.query(
+        `UPDATE users 
+         SET is_verified = $1, verification_status = $2, 
+             verification_notes = $3, verified_at = NOW()
+         WHERE id = $4`,
+        [status === 'approved', status, notes, userId]
+      );
+      
+      if (userType === 'artisan' && status === 'approved' && tier) {
+        await client.query(
+          `UPDATE artisan_profiles SET tier_level = $1 WHERE user_id = $2`,
+          [tier, userId]
+        );
+      }
+      
+      await client.query(
+        `INSERT INTO verification_logs (user_id, status, notes, verified_by)
+         VALUES ($1, $2, $3, $4)`,
+        [userId, status, notes, 'admin']
+      );
+      
+      await client.query('COMMIT');
+      
+      await this.logAdminActivity(userId, 'verification_processed', 
+        { userId, status, notes, tier });
+      
+      return { userId, status, notes, tier };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  // ==================== Artisan Management ====================
+  
+  static async updateArtisanTier(artisanId, tier, reason) {
+    const result = await pool.query(
+      `UPDATE artisan_profiles 
+       SET tier_level = $1, tier_updated_at = NOW(), tier_update_reason = $2
+       WHERE user_id = $3
+       RETURNING *`,
+      [tier, reason, artisanId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Artisan not found');
+    }
+    
+    await this.logAdminActivity(artisanId, 'tier_updated', 
+      { artisanId, newTier: tier, reason });
+    
+    return result.rows[0];
+  }
+  
+  static async getArtisanPerformance(artisanId) {
+    const result = await pool.query(`
+      SELECT ap.*,
+             (SELECT COUNT(*) FROM jobs WHERE artisan_id = $1 AND job_status = 'completed') as completed_jobs,
+             (SELECT AVG(rating) FROM ratings WHERE reviewee_id = $1) as avg_rating,
+             (SELECT COUNT(*) FROM ratings WHERE reviewee_id = $1) as total_ratings,
+             (SELECT COALESCE(SUM(jb.workmanship_cost), 0) FROM job_billing jb JOIN jobs j ON jb.job_id = j.id WHERE j.artisan_id = $1) as total_earnings,
+             (SELECT COUNT(*) FROM disputes WHERE job_id IN (SELECT id FROM jobs WHERE artisan_id = $1)) as dispute_count
+      FROM artisan_profiles ap
+      WHERE ap.user_id = $1
+    `, [artisanId]);
+    
+    return result.rows[0];
+  }
+  
+  // ==================== Job Management ====================
+  
+  static async getAllJobs(filters = {}) {
+    const { status, category, page = 1, limit = 20, startDate, endDate } = filters;
+    const offset = (page - 1) * limit;
+    
+    let query = `
+      SELECT j.*, 
+             cp.full_legal_name as client_name,
+             ap.full_legal_name as artisan_name,
+             jb.total_amount,
+             jb.billing_status,
+             boq.status as boq_status
+      FROM jobs j
+      LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+      LEFT JOIN job_billing jb ON j.id = jb.job_id
+      LEFT JOIN bill_of_quantities boq ON j.id = boq.job_id AND boq.version = (
+        SELECT MAX(version) FROM bill_of_quantities WHERE job_id = j.id
+      )
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramIndex = 1;
+    
+    if (status) {
+      query += ` AND j.job_status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+    
+    if (category) {
+      query += ` AND j.category = $${paramIndex}`;
+      params.push(category);
+      paramIndex++;
+    }
+    
+    if (startDate) {
+      query += ` AND j.created_at >= $${paramIndex}`;
+      params.push(startDate);
+      paramIndex++;
+    }
+    
+    if (endDate) {
+      query += ` AND j.created_at <= $${paramIndex}`;
+      params.push(endDate);
+      paramIndex++;
+    }
+    
+    query += ` ORDER BY j.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    const countQuery = `
+      SELECT COUNT(*) FROM jobs
+      WHERE 1=1
+      ${status ? `AND job_status = '${status}'` : ''}
+      ${category ? `AND category = '${category}'` : ''}
+    `;
+    const countResult = await pool.query(countQuery);
+    
+    return {
+      jobs: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+    };
+  }
+  
+  static async getJobDetails(jobId) {
+    const result = await pool.query(`
+      SELECT j.*, 
+             cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
+             ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+             jb.*,
+             boq.items as boq_items, boq.status as boq_status,
+             (SELECT json_agg(row_to_json(tl)) FROM job_timeline tl WHERE tl.job_id = j.id ORDER BY tl.created_at ASC) as timeline
+      FROM jobs j
+      LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+      LEFT JOIN job_billing jb ON j.id = jb.job_id
+      LEFT JOIN bill_of_quantities boq ON j.id = boq.job_id AND boq.version = (
+        SELECT MAX(version) FROM bill_of_quantities WHERE job_id = j.id
+      )
+      WHERE j.id = $1
+    `, [jobId]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Job not found');
+    }
+    
+    return result.rows[0];
+  }
+  
+  static async forceCancelJob(jobId, reason, refundAmount = null) {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const result = await client.query(
+        `UPDATE jobs 
+         SET job_status = 'cancelled', 
+             cancelled_at = NOW(),
+             cancellation_reason = $1,
+             cancelled_by_admin = true
+         WHERE id = $2
+         RETURNING *`,
+        [reason, jobId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Job not found');
+      }
+      
+      if (refundAmount && refundAmount > 0) {
+        await client.query(
+          `INSERT INTO refunds (job_id, amount, reason, status)
+           VALUES ($1, $2, $3, 'processing')`,
+          [jobId, refundAmount, `Admin forced cancellation: ${reason}`]
+        );
+      }
+      
+      await client.query('COMMIT');
+      
+      await this.logAdminActivity(jobId, 'job_force_cancelled', 
+        { jobId, reason, refundAmount });
+      
+      return result.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  // ==================== Dispute Management ====================
+  
+  static async getAllDisputes(filters = {}) {
+    const { status, page = 1, limit = 20 } = filters;
+    const offset = (page - 1) * limit;
+    
+    let query = `
+      SELECT d.*, 
+             j.category, j.service_type,
+             cp.full_legal_name as client_name,
+             ap.full_legal_name as artisan_name,
+             (SELECT COUNT(*) FROM dispute_messages WHERE dispute_id = d.id) as message_count
+      FROM disputes d
+      JOIN jobs j ON d.job_id = j.id
+      JOIN client_profiles cp ON d.client_id = cp.user_id
+      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+      WHERE 1=1
+    `;
+    const params = [];
+    let paramIndex = 1;
+    
+    if (status) {
+      query += ` AND d.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+    
+    query += ` ORDER BY d.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    const countQuery = `
+      SELECT COUNT(*) FROM disputes
+      WHERE 1=1
+      ${status ? `AND status = '${status}'` : ''}
+    `;
+    const countResult = await pool.query(countQuery);
+    
+    const stats = await pool.query(`
+      SELECT status, COUNT(*) as count FROM disputes GROUP BY status
+    `);
+    
+    return {
+      disputes: result.rows,
+      statistics: stats.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+    };
+  }
+  
+  static async getDisputeDetails(disputeId) {
+    const result = await pool.query(`
+      SELECT d.*, 
+             j.category, j.service_type, j.description as job_description,
+             cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
+             ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+             (SELECT json_agg(row_to_json(dm) ORDER BY dm.created_at ASC) FROM dispute_messages dm WHERE dm.dispute_id = d.id) as messages
+      FROM disputes d
+      JOIN jobs j ON d.job_id = j.id
+      JOIN client_profiles cp ON d.client_id = cp.user_id
+      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+      WHERE d.id = $1
+    `, [disputeId]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Dispute not found');
+    }
+    
+    return result.rows[0];
+  }
+  
+  static async resolveDispute(disputeId, resolution) {
+    const { decision, message, amount } = resolution;
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const disputeResult = await client.query(
+        `SELECT * FROM disputes WHERE id = $1`,
+        [disputeId]
+      );
+      
+      if (disputeResult.rows.length === 0) {
+        throw new AppError(404, 'Dispute not found');
+      }
+      
+      const dispute = disputeResult.rows[0];
+      
+      await client.query(
+        `UPDATE disputes 
+         SET status = 'resolved', 
+             resolution = $1,
+             resolved_at = NOW()
+         WHERE id = $2`,
+        [JSON.stringify(resolution), disputeId]
+      );
+      
+      if (decision === 'refund_client' && amount) {
+        await client.query(
+          `INSERT INTO refunds (job_id, amount, reason, status)
+           VALUES ($1, $2, 'dispute_resolution', 'processing')`,
+          [dispute.job_id, amount]
+        );
+        
+        await client.query(
+          `UPDATE escrow_transactions 
+           SET status = 'refunded', refunded_at = NOW(), refund_reason = 'dispute_resolved'
+           WHERE job_id = $1 AND status = 'frozen'`,
+          [dispute.job_id]
+        );
+      } else if (decision === 'pay_artisan') {
+        await client.query(
+          `UPDATE escrow_transactions 
+           SET status = 'released', release_date = NOW(), release_reason = 'dispute_resolved'
+           WHERE job_id = $1 AND status = 'frozen'`,
+          [dispute.job_id]
+        );
+      }
+      
+      await client.query('COMMIT');
+      
+      await this.logAdminActivity(disputeId, 'dispute_resolved', 
+        { disputeId, decision, message, amount });
+      
+      return { disputeId, resolution };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  // ==================== Category Management ====================
+  
+  static async getCategories() {
+    const result = await pool.query(`
+      SELECT c.*, 
+             (SELECT COUNT(*) FROM subcategories WHERE category_id = c.id AND is_active = true) as subcategory_count,
+             (SELECT COUNT(*) FROM artisan_profiles WHERE skill_category = c.name) as artisan_count
+      FROM categories c
+      ORDER BY c.display_order ASC, c.name ASC
+    `);
+    
+    return result.rows;
+  }
+  
+  static async createCategory(categoryData) {
+    const { name, description, requiredCertifications, billingRules, icon, displayOrder } = categoryData;
+    
+    const result = await pool.query(
+      `INSERT INTO categories (name, description, required_certifications, billing_rules, icon, display_order, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, true)
+       RETURNING *`,
+      [name, description, requiredCertifications, billingRules, icon, displayOrder || 0]
+    );
+    
+    await cacheDel('admin:categories');
+    await cacheDel('categories:all');
+    await cacheDel('categories:active');
+    
+    await this.logAdminActivity(result.rows[0].id, 'category_created', categoryData);
+    
+    return result.rows[0];
+  }
+  
+  static async updateCategory(categoryId, updates) {
+    const allowedFields = ['name', 'description', 'required_certifications', 'billing_rules', 'icon', 'is_active', 'display_order'];
+    const setClause = [];
+    const values = [];
+    let paramIndex = 1;
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowedFields.includes(key)) {
+        setClause.push(`${key} = $${paramIndex}`);
+        values.push(value);
+        paramIndex++;
+      }
+    }
+    
+    if (setClause.length === 0) return null;
+    
+    values.push(categoryId);
+    const result = await pool.query(
+      `UPDATE categories 
+       SET ${setClause.join(', ')}, updated_at = NOW()
+       WHERE id = $${paramIndex}
+       RETURNING *`,
+      values
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Category not found');
+    }
+    
+    await cacheDel('admin:categories');
+    await cacheDel('categories:all');
+    await cacheDel('categories:active');
+    
+    await this.logAdminActivity(categoryId, 'category_updated', updates);
+    
+    return result.rows[0];
+  }
+  
+  static async deleteCategory(categoryId) {
+    const result = await pool.query(
+      `UPDATE categories SET is_active = false WHERE id = $1 RETURNING *`,
+      [categoryId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Category not found');
+    }
+    
+    await cacheDel('admin:categories');
+    await cacheDel('categories:all');
+    await cacheDel('categories:active');
+    
+    await this.logAdminActivity(categoryId, 'category_deleted', { categoryId });
+    
+    return result.rows[0];
+  }
+  
+  // ==================== Subcategory Management ====================
+  
+  static async getSubcategories(categoryId = null) {
+    let query = `
+      SELECT s.*, c.name as category_name
+      FROM subcategories s
+      JOIN categories c ON s.category_id = c.id
+    `;
+    const params = [];
+    
+    if (categoryId) {
+      query += ` WHERE s.category_id = $1`;
+      params.push(categoryId);
+    }
+    
+    query += ` ORDER BY c.name ASC, s.display_order ASC, s.name ASC`;
+    
+    const result = await pool.query(query, params);
+    return result.rows;
+  }
+  
+  static async createSubcategory(subcategoryData) {
+    const { categoryId, name, description, icon, requiredCertifications, displayOrder } = subcategoryData;
+    
+    const result = await pool.query(
+      `INSERT INTO subcategories (category_id, name, description, icon, required_certifications, display_order, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, true)
+       RETURNING *`,
+      [categoryId, name, description, icon, requiredCertifications, displayOrder || 0]
+    );
+    
+    await cacheDel(`subcategories:category:${categoryId}`);
+    await cacheDel('subcategories:all');
+    
+    await this.logAdminActivity(result.rows[0].id, 'subcategory_created', subcategoryData);
+    
+    return result.rows[0];
+  }
+  
+  static async updateSubcategory(subcategoryId, updates) {
+    const allowedFields = ['name', 'description', 'icon', 'required_certifications', 'is_active', 'display_order'];
+    const setClause = [];
+    const values = [];
+    let paramIndex = 1;
+    
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowedFields.includes(key)) {
+        setClause.push(`${key} = $${paramIndex}`);
+        values.push(value);
+        paramIndex++;
+      }
+    }
+    
+    if (setClause.length === 0) return null;
+    
+    values.push(subcategoryId);
+    const result = await pool.query(
+      `UPDATE subcategories 
+       SET ${setClause.join(', ')}, updated_at = NOW()
+       WHERE id = $${paramIndex}
+       RETURNING *`,
+      values
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Subcategory not found');
+    }
+    
+    const subcategory = result.rows[0];
+    await cacheDel(`subcategories:category:${subcategory.category_id}`);
+    await cacheDel('subcategories:all');
+    
+    await this.logAdminActivity(subcategoryId, 'subcategory_updated', updates);
+    
+    return result.rows[0];
+  }
+  
+  static async deleteSubcategory(subcategoryId) {
+    const result = await pool.query(
+      `UPDATE subcategories SET is_active = false WHERE id = $1 RETURNING *`,
+      [subcategoryId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Subcategory not found');
+    }
+    
+    const subcategory = result.rows[0];
+    await cacheDel(`subcategories:category:${subcategory.category_id}`);
+    await cacheDel('subcategories:all');
+    
+    await this.logAdminActivity(subcategoryId, 'subcategory_deleted', { subcategoryId });
+    
+    return result.rows[0];
+  }
+  
+  // ==================== Admin User Management ====================
+  
+  static async createAdmin(adminData) {
+    const { email, phone, password, fullName, roleId, department } = adminData;
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const userId = uuidv4();
+      
+      await client.query(
+        `INSERT INTO users (id, email, phone, password_hash, user_type, is_verified, verification_status, is_active)
+         VALUES ($1, $2, $3, $4, 'admin', true, 'verified', true)`,
+        [userId, email, phone, hashedPassword]
+      );
+      
+      await client.query(
+        `INSERT INTO admin_profiles (user_id, role_id, full_name, department)
+         VALUES ($1, $2, $3, $4)`,
+        [userId, roleId, fullName, department]
+      );
+      
+      await client.query('COMMIT');
+      
+      await this.logAdminActivity(userId, 'admin_created', adminData);
+      
+      return { userId, email, fullName };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+  
+  static async getAdminRoles() {
+    const result = await pool.query(
+      `SELECT * FROM admin_roles WHERE is_active = true ORDER BY name ASC`
+    );
+    return result.rows;
+  }
+  
+  static async updateAdminRole(adminId, roleId) {
+    const result = await pool.query(
+      `UPDATE admin_profiles SET role_id = $1, updated_at = NOW() WHERE user_id = $2 RETURNING *`,
+      [roleId, adminId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Admin not found');
+    }
+    
+    await this.logAdminActivity(adminId, 'admin_role_updated', { adminId, roleId });
+    
+    return result.rows[0];
+  }
+
+
+
+
+    static async login(email, password, ipAddress, userAgent) {
+      const client = await pool.connect();
+      
+      try {
+      
+        
+        let query;
+        let params;
+        
+         await client.query('BEGIN');
+          query = `
+            SELECT u.email, u.phone, u.user_type, u.is_active, u.password_hash, u.id,
+                   r.name as role_name, r.description as role_description, r.permissions as role_permissions,
+                   p.department, p.last_active, p.full_name
+            FROM users u
+            LEFT JOIN admin_profiles p ON u.id = p.user_id
+            LEFT JOIN admin_roles r ON r.id = p.role_id
+            WHERE u.email = $1
+          `;
+          params = [email];
+      
+        
+        const userResult = await client.query(query, params);
+        
+        if (userResult.rows.length === 0) {
+          throw new AppError(401, 'Invalid credentials');
+        }
+       
+
+        const user = userResult.rows[0];
+
+         
+        logger.info("User id : ", user.id);
+        
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        if (!isValidPassword) {
+          // Log failed attempt
+          await this.logFailedAttempt(email, ipAddress);
+          throw new AppError(401, 'Invalid credentials');
+        }
+        
+        // Check if account is active
+        if (!user.is_active) {
+          throw new AppError(403, 'Account is deactivated. Please contact support.');
+        }
+    
+        
+        // Generate tokens
+        const { accessToken, refreshToken } = generateTokens(user.id, user.email, user.user_type);
+        
+        // Store refresh token in Redis
+        await cacheSet(`refresh_token:${user.id}`, refreshToken, 2592000); // 30 days
+        
+        // Update last login
+        await client.query(
+          `UPDATE users SET last_login = NOW(), is_logged_in = true, last_login_ip = $1 WHERE id = $2`,
+          [ipAddress, user.id]
+        );
+        
+          await client.query(
+          `UPDATE admin_profiles SET last_active = NOW() WHERE user_id = $1`,
+          [user.id]
+        );
+        // Log successful login
+        await client.query(
+          `INSERT INTO login_history (user_id, ip_address, user_agent, success, login_time)
+           VALUES ($1, $2, $3, true, NOW())`,
+          [user.id, ipAddress, userAgent]
+        );
+        
+        await client.query('COMMIT');
+
+        logger.info(`User logged in: ${user.email} / ${user.user_type}`);
+        delete user.password_hash;
+
+       user.is_logged_in = true;
+        return {
+          accessToken,
+          refreshToken,
+          user,
+        };
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+
+
+      static async refreshToken(refreshToken) {
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+      const storedToken = await cacheGet(`refresh_token:${decoded.userId}`);
+      
+      if (storedToken !== refreshToken) {
+        throw new AppError(401, 'Invalid refresh token');
+      }
+      
+      const userResult = await pool.query(
+        'SELECT id, email, user_type FROM users WHERE id = $1 AND is_active = true',
+        [decoded.userId]
+      );
+      
+      if (userResult.rows.length === 0) {
+        throw new AppError(401, 'User not found or inactive');
+      }
+      
+      const user = userResult.rows[0];
+      const { accessToken } = generateTokens(user.id, user.email, user.user_type);
+      
+      return { accessToken };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
+  static async logout(userId, accessToken) {
+  
+    try {
+      // Blacklist the access token
+      const decoded = jwt.decode(accessToken);
+      if (decoded && decoded.exp) {
+        const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+        if (expiresIn > 0) {
+          await cacheSet(`blacklist:${accessToken}`, 'true', expiresIn);
+          logger.info(`Access token blacklisted for user: ${userId}`);
+        }
+      }
+      
+      // Delete refresh token from Redis
+      await cacheDel(`refresh_token:${userId}`);
+      
+      // Update last logout time in database (optional)
+      await pool.query(
+        `UPDATE users SET last_logout = NOW(), is_logged_in = false WHERE id = $1`,
+        [userId]
+      );
+      
+           await pool.query(
+          `UPDATE admin_profiles SET last_active = NOW() WHERE user_id = $1`,
+          [userId]
+        );
+      // Log logout activity
+      await pool.query(
+        `INSERT INTO user_activity_logs (user_id, action, created_at)
+         VALUES ($1, 'logout', NOW())`,
+        [userId]
+      );
+      
+      logger.info(`User logged out: ${userId}`);
+      
+      return { 
+        success: true, 
+        message: 'Logged out successfully' 
+      };
+    } catch (error) {
+      logger.error('Logout error:', error);
+      throw error;
+    }
+  }
+  
+  
+  
+  // ==================== System Configuration ====================
+  
+  static async getSystemConfigurations() {
+    const result = await pool.query(`SELECT * FROM system_configurations ORDER BY key ASC`);
+    return result.rows;
+  }
+  
+  static async updateSystemConfiguration(key, value, adminId) {
+    const result = await pool.query(
+      `INSERT INTO system_configurations (key, value, updated_by, updated_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (key) 
+       DO UPDATE SET value = EXCLUDED.value, updated_by = EXCLUDED.updated_by, updated_at = NOW()
+       RETURNING *`,
+      [key, value, adminId]
+    );
+    
+    await cacheDel(`system:config:${key}`);
+    
+    await this.logAdminActivity(null, 'system_config_updated', { key, value });
+    
+    return result.rows[0];
+  }
+  
+  // ==================== Activity Logging ====================
+  
+  static async getActivityLogs(filters = {}) {
+    const { adminId, action, page = 1, limit = 50, startDate, endDate } = filters;
+    const offset = (page - 1) * limit;
+    
+    let query = `
+      SELECT al.*, u.email as admin_email, ap.full_name as admin_name
+      FROM admin_activity_logs al
+      JOIN users u ON al.admin_id = u.id
+      LEFT JOIN admin_profiles ap ON u.id = ap.user_id
+      WHERE 1=1
+    `;
+    const params = [];
+    let paramIndex = 1;
+    
+    if (adminId) {
+      query += ` AND al.admin_id = $${paramIndex}`;
+      params.push(adminId);
+      paramIndex++;
+    }
+    
+    if (action) {
+      query += ` AND al.action = $${paramIndex}`;
+      params.push(action);
+      paramIndex++;
+    }
+    
+    if (startDate) {
+      query += ` AND al.created_at >= $${paramIndex}`;
+      params.push(startDate);
+      paramIndex++;
+    }
+    
+    if (endDate) {
+      query += ` AND al.created_at <= $${paramIndex}`;
+      params.push(endDate);
+      paramIndex++;
+    }
+    
+    query += ` ORDER BY al.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    const countQuery = `
+      SELECT COUNT(*) FROM admin_activity_logs
+      WHERE 1=1
+      ${adminId ? `AND admin_id = '${adminId}'` : ''}
+      ${action ? `AND action = '${action}'` : ''}
+    `;
+    const countResult = await pool.query(countQuery);
+    
+    return {
+      logs: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+    };
+  }
+  
+  static async logAdminActivity(adminId, action, details = {}, ipAddress = null, userAgent = null) {
+    await pool.query(
+      `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress, userAgent]
+    );
+  }
+  
+  // ==================== Reports ====================
+  
+  static async generateReport(reportType, filters = {}) {
+    const { startDate, endDate, format = 'json' } = filters;
+    
+    let data;
+    let filename = `report_${reportType}_${Date.now()}`;
+    
+    switch (reportType) {
+      case 'financial':
+        data = await this.generateFinancialReport(startDate, endDate);
+        break;
+      case 'users':
+        data = await this.generateUsersReport(startDate, endDate);
+        break;
+      case 'jobs':
+        data = await this.generateJobsReport(startDate, endDate);
+        break;
+      case 'artisans':
+        data = await this.generateArtisansReport(startDate, endDate);
+        break;
+      default:
+        throw new AppError(400, 'Invalid report type');
+    }
+    
+    return { data, filename, format };
+  }
+  
+  static async generateFinancialReport(startDate, endDate) {
+    const result = await pool.query(`
+      SELECT 
+        DATE_TRUNC('day', created_at) as date,
+        COUNT(*) as transactions,
+        SUM(amount) as total_amount,
+        AVG(amount) as average_amount
+      FROM payment_intents
+      WHERE status = 'succeeded'
+        AND created_at BETWEEN $1 AND $2
+      GROUP BY DATE_TRUNC('day', created_at)
+      ORDER BY date DESC
+    `, [startDate, endDate]);
+    
+    const summary = await pool.query(`
+      SELECT 
+        COUNT(*) as total_transactions,
+        SUM(amount) as total_revenue,
+        AVG(amount) as average_transaction,
+        SUM(CASE WHEN transaction_type = 'platform_fee' THEN amount ELSE 0 END) as platform_fees,
+        SUM(CASE WHEN transaction_type = 'workmanship' THEN amount ELSE 0 END) as artisan_payouts
+      FROM escrow_transactions
+      WHERE status = 'released'
+        AND release_date BETWEEN $1 AND $2
+    `, [startDate, endDate]);
+    
+    return {
+      summary: summary.rows[0],
+      daily: result.rows,
+      period: { startDate, endDate }
+    };
+  }
+  
+  static async generateUsersReport(startDate, endDate) {
+    const result = await pool.query(`
+      SELECT 
+        DATE_TRUNC('day', created_at) as date,
+        user_type,
+        COUNT(*) as new_users
+      FROM users
+      WHERE created_at BETWEEN $1 AND $2
+      GROUP BY DATE_TRUNC('day', created_at), user_type
+      ORDER BY date DESC
+    `, [startDate, endDate]);
+    
+    const totals = await pool.query(`
+      SELECT 
+        user_type,
+        COUNT(*) as total
+      FROM users
+      GROUP BY user_type
+    `);
+    
+    return {
+      totals: totals.rows,
+      daily: result.rows,
+      period: { startDate, endDate }
+    };
+  }
+  
+  static async generateJobsReport(startDate, endDate) {
+    const result = await pool.query(`
+      SELECT 
+        DATE_TRUNC('day', created_at) as date,
+        category,
+        COUNT(*) as jobs_created,
+        COUNT(CASE WHEN job_status = 'completed' THEN 1 END) as jobs_completed
+      FROM jobs
+      WHERE created_at BETWEEN $1 AND $2
+      GROUP BY DATE_TRUNC('day', created_at), category
+      ORDER BY date DESC
+    `, [startDate, endDate]);
+    
+    const summary = await pool.query(`
+      SELECT 
+        category,
+        COUNT(*) as total_jobs,
+        AVG(jb.total_amount) as average_value
+      FROM jobs j
+      LEFT JOIN job_billing jb ON j.id = jb.job_id
+      WHERE j.created_at BETWEEN $1 AND $2
+      GROUP BY category
+    `, [startDate, endDate]);
+    
+    return {
+      summary: summary.rows,
+      daily: result.rows,
+      period: { startDate, endDate }
+    };
+  }
+  
+  static async generateArtisansReport(startDate, endDate) {
+    const result = await pool.query(`
+      SELECT 
+        ap.user_id,
+        ap.full_legal_name,
+        ap.skill_category,
+        ap.tier_level,
+        ap.star_rating,
+        COUNT(j.id) as jobs_completed,
+        COALESCE(SUM(jb.workmanship_cost), 0) as total_earnings,
+        AVG(jb.workmanship_cost) as average_earning
+      FROM artisan_profiles ap
+      LEFT JOIN jobs j ON ap.user_id = j.artisan_id AND j.job_status = 'completed'
+        AND j.completed_at BETWEEN $1 AND $2
+      LEFT JOIN job_billing jb ON j.id = jb.job_id
+      GROUP BY ap.user_id, ap.full_legal_name, ap.skill_category, ap.tier_level, ap.star_rating
+      ORDER BY jobs_completed DESC
+      LIMIT 100
+    `, [startDate, endDate]);
+    
+    return {
+      topArtisans: result.rows,
+      period: { startDate, endDate }
+    };
+  }
+  
+  // ==================== Bulk Notifications ====================
+  
+  static async sendBulkNotification(notificationData) {
+    const { userType, title, message, data = {} } = notificationData;
+    
+    let query = `
+      INSERT INTO notifications (user_id, type, title, message, data, channel)
+      SELECT id, 'admin_bulk', $1, $2, $3, 'push'
+      FROM users
+      WHERE is_active = true
+    `;
+    const params = [title, message, data];
+    
+    if (userType && userType !== 'all') {
+      query += ` AND user_type = $4`;
+      params.push(userType);
+    }
+    
+    const result = await pool.query(query, params);
+    
+    await this.logAdminActivity(null, 'bulk_notification_sent', 
+      { userType, title, recipientCount: result.rowCount });
+    
+    return { sentCount: result.rowCount };
+  }
+
+
+   /* All begins here */
+
+
   static async suspendUser(userId, reason, duration = null) {
     const result = await pool.query(
       `UPDATE users 
@@ -276,124 +1388,8 @@ class AdminService {
     
     return result.rows[0];
   }
-  
-  static async getAllJobs(filters = {}) {
-    const { status, category, page = 1, limit = 20, startDate, endDate } = filters;
-    const offset = (page - 1) * limit;
-    
-    let query = `
-      SELECT j.*, 
-             cp.full_legal_name as client_name,
-             ap.full_legal_name as artisan_name,
-             jb.total_amount,
-             jb.billing_status
-      FROM jobs j
-      LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
-      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
-      LEFT JOIN job_billing jb ON j.id = jb.job_id
-      WHERE 1=1
-    `;
-    
-    const params = [];
-    let paramIndex = 1;
-    
-    if (status) {
-      query += ` AND j.job_status = $${paramIndex}`;
-      params.push(status);
-      paramIndex++;
-    }
-    
-    if (category) {
-      query += ` AND j.category = $${paramIndex}`;
-      params.push(category);
-      paramIndex++;
-    }
-    
-    if (startDate) {
-      query += ` AND j.created_at >= $${paramIndex}`;
-      params.push(startDate);
-      paramIndex++;
-    }
-    
-    if (endDate) {
-      query += ` AND j.created_at <= $${paramIndex}`;
-      params.push(endDate);
-      paramIndex++;
-    }
-    
-    query += ` ORDER BY j.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limit, offset);
-    
-    const result = await pool.query(query, params);
-    
-    const countQuery = `
-      SELECT COUNT(*) FROM jobs
-      WHERE 1=1
-      ${status ? `AND job_status = '${status}'` : ''}
-      ${category ? `AND category = '${category}'` : ''}
-    `;
-    const countResult = await pool.query(countQuery);
-    
-    return {
-      jobs: result.rows,
-      total: parseInt(countResult.rows[0].count),
-      page,
-      limit,
-      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
-    };
-  }
-  
-  static async getCategories() {
-    const result = await pool.query(
-      `SELECT * FROM categories WHERE is_active = true ORDER BY name ASC`,
-      []
-    );
-    return result.rows;
-  }
-  
-  static async createCategory(categoryData) {
-    const { name, description, requiredCertifications, billingRules, icon } = categoryData;
-    
-    const result = await pool.query(
-      `INSERT INTO categories (name, description, required_certifications, billing_rules, icon)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [name, description, requiredCertifications, billingRules, icon]
-    );
-    
-    await cacheDel('admin:categories');
-    
-    logger.info(`Category created: ${name}`);
-    
-    return result.rows[0];
-  }
-  
-  static async updateCategory(categoryId, updateData) {
-    const { name, description, isActive, requiredCertifications, billingRules, icon } = updateData;
-    
-    const result = await pool.query(
-      `UPDATE categories 
-       SET name = COALESCE($1, name),
-           description = COALESCE($2, description),
-           is_active = COALESCE($3, is_active),
-           required_certifications = COALESCE($4, required_certifications),
-           billing_rules = COALESCE($5, billing_rules),
-           icon = COALESCE($6, icon),
-           updated_at = NOW()
-       WHERE id = $7
-       RETURNING *`,
-      [name, description, isActive, requiredCertifications, billingRules, icon, categoryId]
-    );
-    
-    if (result.rows.length === 0) {
-      throw new AppError(404, 'Category not found');
-    }
-    
-    await cacheDel('admin:categories');
-    
-    return result.rows[0];
-  }
-  
+
+
   static async getSystemSettings() {
     const result = await pool.query(
       `SELECT * FROM system_settings ORDER BY category, key`,
@@ -537,122 +1533,7 @@ class AdminService {
     // Check Stripe/Paystack connectivity
     return { status: 'healthy' };
   }
-  
-  static async generateReport(reportType, filters = {}) {
-    const { startDate, endDate, format = 'json' } = filters;
-    
-    let data;
-    let filename = `report_${reportType}_${Date.now()}`;
-    
-    switch (reportType) {
-      case 'financial':
-        data = await this.generateFinancialReport(startDate, endDate);
-        break;
-      case 'users':
-        data = await this.generateUsersReport(startDate, endDate);
-        break;
-      case 'jobs':
-        data = await this.generateJobsReport(startDate, endDate);
-        break;
-      case 'performance':
-        data = await this.generatePerformanceReport(startDate, endDate);
-        break;
-      default:
-        throw new AppError(400, 'Invalid report type');
-    }
-    
-    return { data, filename, format };
-  }
-  
-  static async generateFinancialReport(startDate, endDate) {
-    const result = await pool.query(`
-      SELECT 
-        DATE_TRUNC('day', created_at) as date,
-        COUNT(*) as transactions,
-        SUM(amount) as total_amount,
-        AVG(amount) as average_amount
-      FROM payment_intents
-      WHERE status = 'succeeded'
-        AND created_at BETWEEN $1 AND $2
-      GROUP BY DATE_TRUNC('day', created_at)
-      ORDER BY date DESC
-    `, [startDate, endDate]);
-    
-    const summary = await pool.query(`
-      SELECT 
-        COUNT(*) as total_transactions,
-        SUM(amount) as total_revenue,
-        AVG(amount) as average_transaction,
-        SUM(CASE WHEN transaction_type = 'platform_fee' THEN amount ELSE 0 END) as platform_fees
-      FROM escrow_transactions
-      WHERE status = 'released'
-        AND release_date BETWEEN $1 AND $2
-    `, [startDate, endDate]);
-    
-    return {
-      summary: summary.rows[0],
-      daily: result.rows,
-      period: { startDate, endDate }
-    };
-  }
-  
-  static async generateUsersReport(startDate, endDate) {
-    const result = await pool.query(`
-      SELECT 
-        DATE_TRUNC('day', created_at) as date,
-        user_type,
-        COUNT(*) as new_users
-      FROM users
-      WHERE created_at BETWEEN $1 AND $2
-      GROUP BY DATE_TRUNC('day', created_at), user_type
-      ORDER BY date DESC
-    `, [startDate, endDate]);
-    
-    const totals = await pool.query(`
-      SELECT 
-        user_type,
-        COUNT(*) as total
-      FROM users
-      GROUP BY user_type
-    `);
-    
-    return {
-      totals: totals.rows,
-      daily: result.rows,
-      period: { startDate, endDate }
-    };
-  }
-  
-  static async generateJobsReport(startDate, endDate) {
-    const result = await pool.query(`
-      SELECT 
-        DATE_TRUNC('day', created_at) as date,
-        category,
-        COUNT(*) as jobs_created,
-        COUNT(CASE WHEN job_status = 'completed' THEN 1 END) as jobs_completed
-      FROM jobs
-      WHERE created_at BETWEEN $1 AND $2
-      GROUP BY DATE_TRUNC('day', created_at), category
-      ORDER BY date DESC
-    `, [startDate, endDate]);
-    
-    const summary = await pool.query(`
-      SELECT 
-        category,
-        COUNT(*) as total_jobs,
-        AVG(jb.total_amount) as average_value
-      FROM jobs j
-      LEFT JOIN job_billing jb ON j.id = jb.job_id
-      WHERE j.created_at BETWEEN $1 AND $2
-      GROUP BY category
-    `, [startDate, endDate]);
-    
-    return {
-      summary: summary.rows,
-      daily: result.rows,
-      period: { startDate, endDate }
-    };
-  }
+
   
   static async generatePerformanceReport(startDate, endDate) {
     const topArtisans = await pool.query(`
@@ -693,6 +1574,10 @@ class AdminService {
       period: { startDate, endDate }
     };
   }
+
+
+  /*  The end of the class for admin service */
+
 }
 
 module.exports = AdminService;

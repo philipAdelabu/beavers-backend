@@ -116,5 +116,4 @@ const startServer = async () => {
 };
 
 startServer();
-logger.info('... end of ther server call..');
 module.exports = { app };

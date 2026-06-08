@@ -80,6 +80,18 @@ const requireRole = (roles) => {
   };
 };
 
+const requirePermissions = (roles) => {
+   return (req, res, next) => {
+    if(req.user.user_type === 'admin' && req.user.role_name === 'super_admin'){
+       next();
+    }
+     if(!roles.includes(req.user.role_name)){
+       return res.status(403).json({ error: 'Insufficient permissions'});
+     }
+     next();
+   }
+}
+
 const requireVerification = async (req, res, next) => {
   if (!req.user.is_verified) {
     return res.status(403).json({ error: 'Account not verified. Please complete verification.' });
@@ -150,5 +162,6 @@ module.exports = {
   requireVerification,
   requireActiveSubscription,
   requireOnboardingComplete,
-  optionalAuth
+  optionalAuth,
+  requirePermissions,
 };
