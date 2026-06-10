@@ -23,12 +23,11 @@ router.post('/auth/reset-password', [
   body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
 ], AdminController.resetPassword);
 
-
-
 // All admin routes require authentication and admin role
 router.use(authenticateToken);
 router.use(requireRole(['admin']));
 router.use(adminLimiter);
+
 
 // ==================== Admin User Management ====================
 
@@ -95,23 +94,37 @@ router.put('/users/:userId/status', [
 ], AdminController.updateUserStatus);
 
 
+// Suspend user
+router.post('/users/:userId/suspend', [
+  param('userId').isUUID(),
+  body('reason').notEmpty(),
+  body('duration').optional().isString(),
+], AdminController.suspendUser);
+
+// Activate user
+router.post('/users/:userId/activate', [
+  param('userId').isUUID(),
+], AdminController.activateUser);
+
 
 // ==================== Verification Management ====================
 
 router.get('/verifications/pending', [
   query('type').optional().isIn(['client', 'artisan']),
   query('page').optional().isInt({ min: 1 }),
-  query('limit').optional().isInt({ min: 1, max: 50 })
+  query('limit').optional().isInt({ min: 1, max: 50 }),
 ], AdminController.getPendingVerifications);
 
 router.post('/verifications/:userId/verify', [
   param('userId').isUUID(),
   body('status').isIn(['approved', 'rejected']),
   body('notes').optional().isString(),
-  body('tier').optional().isInt({ min: 1, max: 3 })
+  body('tier').optional().isInt({ min: 1, max: 3 }),
 ], AdminController.verifyUser);
 
 // ==================== Artisan Management ====================
+
+// Update artisan tier
 router.put('/artisans/:artisanId/tier', [
   param('artisanId').isUUID(),
   body('tier').isInt({ min: 1, max: 3 }),
@@ -211,10 +224,16 @@ router.delete('/subcategories/:subcategoryId', [
 // ==================== System Configuration ====================
 
 router.get('/configurations', AdminController.getSystemConfigurations);
+
 router.put('/configurations', [
   body('key').notEmpty(),
   body('value').isObject()
 ], AdminController.updateSystemConfiguration);
+
+
+// get configure fees 
+router.get('/config/fees', AdminController.getFeeConfiguration);
+
 
 // ==================== Activity Logs ====================
 
@@ -243,6 +262,136 @@ router.post('/notifications/bulk', [
   body('message').notEmpty(),
   body('data').optional().isObject()
 ], AdminController.sendBulkNotification);
+
+ // ==================== Payment Management ====================
+
+ router.get('/payments', authenticateToken, requireRole(['admin']), [
+   query('status').optional().isString(),
+   query('page').optional().isInt({ min: 1 }),
+   query('limit').optional().isInt({ min: 1, max: 100 }),
+ ], AdminController.getAllPayments);
+
+  // Get payment analytics
+  router.get('/payments/analytics', authenticateToken, requireRole(['admin']), [
+      query('period').optional().isIn(['day', 'week', 'month', 'year']),
+  ], AdminController.getPaymentAnalytics);
+
+ 
+router.get('/payments', [
+  query('status').optional().isIn(['pending', 'succeeded', 'failed', 'refunded']),
+  query('clientId').optional().isUUID(),
+  query('artisanId').optional().isUUID(),
+  query('jobId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], AdminController.getAllPayments);
+
+router.get('/payments/:paymentId', [
+  param('paymentId').isUUID()
+], AdminController.getPaymentDetails);
+
+router.post('/refunds/:refundId/process', [
+  param('refundId').isUUID(),
+  body('notes').optional().isString()
+], AdminController.processRefund);
+
+router.get('/refunds', [
+  query('status').optional().isIn(['pending', 'processing', 'completed', 'failed']),
+  query('jobId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], AdminController.getAllRefunds);
+
+// ==================== BOQ Management ====================
+router.get('/boqs', [
+  query('status').optional().isIn(['draft', 
+    'pending_client_approval', 
+    'pending_admin_approval', 
+    'approved', 'rejected_by_client', 
+    'rejected_by_admin']),
+  query('jobId').optional().isUUID(),
+  query('artisanId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], AdminController.getAllBOQs);
+
+router.get('/boqs/:boqId', [
+  param('boqId').isUUID()
+], AdminController.getBOQDetails);
+
+router.post('/boqs/:boqId/approve', [
+  param('boqId').isUUID(),
+  body('notes').optional().isString()
+], AdminController.adminApproveBOQ);
+
+router.post('/boqs/:boqId/reject', [
+  param('boqId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.adminRejectBOQ);
+
+// ==================== Settlement Management ====================
+router.get('/settlements', [
+  query('status').optional().isIn(['pending', 'processing', 'completed', 'failed']),
+  query('artisanId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], AdminController.getAllSettlements);
+
+router.post('/settlements/:payoutId/process', [
+  param('payoutId').isUUID(),
+  body('transferReference').optional().isString()
+], AdminController.processSettlement);
+
+router.post('/settlements/:payoutId/complete', [
+  param('payoutId').isUUID(),
+  body('transactionId').optional().isString()
+], AdminController.completeSettlement);
+
+router.post('/settlements/:payoutId/fail', [
+  param('payoutId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.failSettlement);
+
+// ==================== Withdrawal Management ====================
+router.get('/withdrawals', [
+  query('status').optional().isIn(['pending', 'processing', 'completed', 'failed']),
+  query('artisanId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], AdminController.getAllWithdrawals);
+
+router.post('/withdrawals/:withdrawalId/process', [
+  param('withdrawalId').isUUID(),
+  body('action').isIn(['approve', 'reject']),
+  body('notes').optional().isString()
+], AdminController.processWithdrawal);
+
+// ==================== Escrow Management ====================
+router.get('/escrow/transactions', [
+  query('status').optional().isIn(['held', 'frozen', 'released', 'refunded']),
+  query('jobId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601()
+], AdminController.getAllEscrowTransactions);
+
+router.post('/escrow/transactions/:transactionId/release', [
+  param('transactionId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.releaseFrozenEscrow);
+
+router.get('/escrow/summary', AdminController.getEscrowSummary);
 
 
 module.exports = router;

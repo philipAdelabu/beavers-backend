@@ -279,9 +279,9 @@ class AuthService {
           [user.id]
         );
         
-       /* if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
+       if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
           throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
-        } */
+        } 
 
       }
       
@@ -385,9 +385,9 @@ class AuthService {
           [user.id]
         );
         
-       /* if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
+       if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
           throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
-        } */
+        } 
       }
       
       // Generate tokens
@@ -620,7 +620,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     }
     
     await pool.query(
-      `UPDATE users SET is_email_verified = true, is_verified = (is_phone_verified OR true)
+      `UPDATE users SET is_email_verified = true 
        WHERE email = $1`,
       [email]
     );
@@ -638,7 +638,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     }
     
     await pool.query(
-      `UPDATE users SET is_phone_verified = true, is_verified = (is_email_verified OR true) WHERE phone = $1`,
+      `UPDATE users SET is_phone_verified = true  WHERE phone = $1`,
       [phone]
     );
     
@@ -799,9 +799,6 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     const blocked = await cacheGet(`login_block:${email}`);
     return !!blocked;
   }
-
-
-
 
   static async sendVerificationReminder(email, phone, name) {
 

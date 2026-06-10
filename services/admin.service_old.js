@@ -259,7 +259,7 @@ class AdminService {
        RETURNING *`,
       [userId]
     );
-    
+     
     if (result.rows.length === 0) {
       throw new AppError(404, 'User not found');
     }

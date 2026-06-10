@@ -6,6 +6,7 @@ const { AppError } = require('../middleware/error.middleware');
 const { generateTokens, verifyRefreshToken } = require('../utils/jwt.utils');
 const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { pool } = require('../config/database');
+const NotificationService = require('./notification.service');
 
 
 class AdminService {
@@ -173,15 +174,15 @@ class AdminService {
   static async getUserDetails(userId) {
     const result = await pool.query(`
       SELECT u.*,
-             cp.full_legal_name as client_name, cp.street_address, cp.service_address,
+             cp.full_legal_name as client_name, cp.street_address, cp.service_address, cp.id as client_id,
              cp.verification_documents as client_documents,
-             ap.full_legal_name as artisan_name, ap.skill_category, ap.tier_level,
+             ap.full_legal_name as artisan_name, ap.skill_category, ap.tier_level, ap.id as artisan_id,
              ap.star_rating, ap.completion_rate, ap.documents as artisan_documents,
              adm.full_name as admin_name, adm.department,
-             (SELECT COUNT(*) FROM jobs WHERE client_id = u.id) as total_jobs_as_client,
-             (SELECT COUNT(*) FROM jobs WHERE artisan_id = u.id) as total_jobs_as_artisan,
-             (SELECT COUNT(*) FROM disputes WHERE client_id = u.id OR artisan_id = u.id) as total_disputes,
-             (SELECT COALESCE(SUM(amount), 0) FROM payment_intents WHERE client_id = u.id AND status = 'succeeded') as total_spent,
+             (SELECT COUNT(*) FROM jobs WHERE jobs.client_id = u.id) as total_jobs_as_client,
+             (SELECT COUNT(*) FROM jobs WHERE jobs.artisan_id = u.id) as total_jobs_as_artisan,
+             (SELECT COUNT(*) FROM disputes d JOIN jobs j on d.job_id = j.id WHERE d.client_id = u.id OR  j.artisan_id = u.id) as total_disputes,
+             (SELECT COALESCE(SUM(amount), 0) FROM payment_intents WHERE payment_intents.client_id = u.id AND status = 'succeeded') as total_spent,
              (SELECT COALESCE(SUM(workmanship_cost), 0) FROM job_billing jb JOIN jobs j ON jb.job_id = j.id WHERE j.artisan_id = u.id) as total_earned
       FROM users u
       LEFT JOIN client_profiles cp ON u.id = cp.user_id
@@ -193,8 +194,9 @@ class AdminService {
     if (result.rows.length === 0) {
       throw new AppError(404, 'User not found');
     }
-    
-    return result.rows[0];
+    const user = result.rows[0];
+    delete user.password_hash;
+    return user;
   }
 
   static async getAllAdmins(){
@@ -977,6 +979,33 @@ class AdminService {
     }
 
 
+      static async logFailedAttempt(email, ipAddress) {
+    await pool.query(
+      `INSERT INTO failed_logins (email, ip_address, attempted_at)
+       VALUES ($1, $2, NOW())`,
+      [email, ipAddress]
+    );
+    
+    // Check for brute force attempts
+    const recentAttempts = await pool.query(
+      `SELECT COUNT(*) FROM failed_logins 
+       WHERE email = $1 AND attempted_at > NOW() - INTERVAL '15 minutes'`,
+      [email]
+    );
+    
+    if (parseInt(recentAttempts.rows[0].count) >= 5) {
+      // Temporarily block login attempts
+      await cacheSet(`login_block:${email}`, 'true', 900); // 15 minutes
+      logger.warn(`Multiple failed login attempts for: ${email}`);
+    }
+  }
+  
+  static async isLoginBlocked(email) {
+    const blocked = await cacheGet(`login_block:${email}`);
+    return !!blocked;
+  }
+
+
       static async refreshToken(refreshToken) {
     try {
       const decoded = verifyRefreshToken(refreshToken);
@@ -1054,9 +1083,19 @@ class AdminService {
   
   // ==================== System Configuration ====================
   
-  static async getSystemConfigurations() {
-    const result = await pool.query(`SELECT * FROM system_configurations ORDER BY key ASC`);
-    return result.rows;
+  static async getSystemConfigurations(key = null) {
+   
+    if(key){
+       const result = await pool.query(`
+          SELECT * FROM system_configurations WHERE key = $1
+        `, [key]);
+        if(result.rows.length === 0)
+           return null;
+         return result.rows[0];
+    }
+
+      const result = await pool.query(`SELECT * FROM system_configurations ORDER BY key ASC`);
+      return result.rows;
   }
   
   static async updateSystemConfiguration(key, value, adminId) {
@@ -1071,10 +1110,12 @@ class AdminService {
     
     await cacheDel(`system:config:${key}`);
     
-    await this.logAdminActivity(null, 'system_config_updated', { key, value });
+    await this.logAdminActivity(adminId, 'system_config_updated', { key, value });
     
     return result.rows[0];
   }
+
+ 
   
   // ==================== Activity Logging ====================
   
@@ -1321,50 +1362,69 @@ class AdminService {
    /* All begins here */
 
 
-  static async suspendUser(userId, reason, duration = null) {
-    const result = await pool.query(
+  static async suspendUser(adminId, userId, reason, duration = null) {
+    const client =  await pool.connect();
+    try{
+
+     await client.query('BEGIN')
+
+    const result = await client.query(
       `UPDATE users 
        SET is_active = false, 
-           suspension_reason = $1,
-           suspended_at = NOW(),
-           suspension_duration = $2
-       WHERE id = $3
+           is_verified = false,
+           verification_status = 'suspended',
+           verification_notes = $1
+       WHERE id = $2
        RETURNING *`,
-      [reason, duration, userId]
+      [reason, userId]
     );
     
     if (result.rows.length === 0) {
       throw new AppError(404, 'User not found');
     }
     
+    const userResult = await client.query(`SELECT * FROM users WHERE id = $1`, [userId]);
+
     // If artisan, set as unavailable
-    await pool.query(
+    const user = userResult.rows[0];
+
+    if(user.user_type === 'artisan'){
+    await client.query(
       `UPDATE artisan_profiles SET is_available = false WHERE user_id = $1`,
       [userId]
     );
+   }
     
-    // Send notification
-    const userResult = await pool.query(`SELECT email FROM users WHERE id = $1`, [userId]);
-    if (userResult.rows[0]) {
+    if (process.env.NODE_ENV === 'production') {
       await NotificationService.sendEmail(
-        userResult.rows[0].email,
+        user.email,
         'Account Suspended',
         `Your account has been suspended. Reason: ${reason}${duration ? ` Duration: ${duration}` : ''}`
       );
     }
     
     logger.info(`User ${userId} suspended: ${reason}`);
-    
-    return result.rows[0];
+
+     await this.logAdminActivity(adminId, 'suspended_user',  { Reason: reason});
+
+    await client.query('COMMIT');
+    delete user.password_hash;
+    return user;
+  }catch(error){
+    await client.query('ROLLBACK');
+    throw error;
+  }finally{
+    client.release();
+  }
   }
   
   static async activateUser(userId) {
     const result = await pool.query(
       `UPDATE users 
        SET is_active = true, 
-           suspension_reason = NULL,
-           suspended_at = NULL,
-           suspension_duration = NULL
+           is_verified = true,
+           verification_status = 'approved',
+           verification_notes = 'Suspension lifted'
        WHERE id = $1
        RETURNING *`,
       [userId]
@@ -1576,7 +1636,986 @@ class AdminService {
   }
 
 
-  /*  The end of the class for admin service */
+  // ==================== Payment Management ====================
+
+/**
+ * Get all payment transactions with filters
+ */
+static async getAllPayments(filters = {}) {
+  const { status, clientId, artisanId, jobId, page = 1, limit = 20, startDate, endDate } = filters;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT pi.*, 
+           j.category, j.service_type,
+           cp.full_legal_name as client_name,
+           ap.full_legal_name as artisan_name,
+           jb.billing_status as job_billing_status
+    FROM payment_intents pi
+    JOIN jobs j ON pi.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+    LEFT JOIN job_billing jb ON j.id = jb.job_id
+    WHERE 1=1
+  `;
+  const params = [];
+  let paramIndex = 1;
+  
+  if (status) {
+    query += ` AND pi.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (clientId) {
+    query += ` AND j.client_id = $${paramIndex}`;
+    params.push(clientId);
+    paramIndex++;
+  }
+  
+  if (artisanId) {
+    query += ` AND j.artisan_id = $${paramIndex}`;
+    params.push(artisanId);
+    paramIndex++;
+  }
+  
+  if (jobId) {
+    query += ` AND pi.job_id = $${paramIndex}`;
+    params.push(jobId);
+    paramIndex++;
+  }
+  
+  if (startDate) {
+    query += ` AND pi.created_at >= $${paramIndex}`;
+    params.push(startDate);
+    paramIndex++;
+  }
+  
+  if (endDate) {
+    query += ` AND pi.created_at <= $${paramIndex}`;
+    params.push(endDate);
+    paramIndex++;
+  }
+  
+  query += ` ORDER BY pi.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  const countQuery = `
+    SELECT COUNT(*) FROM payment_intents pi
+    JOIN jobs j ON pi.job_id = j.id
+    WHERE 1=1
+    ${status ? `AND pi.status = '${status}'` : ''}
+    ${clientId ? `AND j.client_id = '${clientId}'` : ''}
+    ${artisanId ? `AND j.artisan_id = '${artisanId}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  // Get payment statistics
+  const stats = await pool.query(`
+    SELECT 
+      COUNT(*) as total_transactions,
+      SUM(amount) as total_amount,
+      SUM(CASE WHEN status = 'succeeded' THEN amount ELSE 0 END) as successful_amount,
+      SUM(CASE WHEN status = 'failed' THEN amount ELSE 0 END) as failed_amount,
+      SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) as refunded_amount,
+      COUNT(CASE WHEN status = 'succeeded' THEN 1 END) as successful_count,
+      COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
+      COUNT(CASE WHEN status = 'refunded' THEN 1 END) as refunded_count
+    FROM payment_intents
+    WHERE created_at > NOW() - INTERVAL '30 days'
+  `);
+  
+  return {
+    payments: result.rows,
+    statistics: stats.rows[0],
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Get payment details by ID
+ */
+static async getPaymentDetails(paymentId) {
+  const result = await pool.query(`
+    SELECT pi.*, 
+           j.category, j.service_type, j.description as job_description,
+           cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
+           ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+           jb.base_fee, jb.diagnostics_fee, jb.execution_fee, jb.materials_cost, jb.workmanship_cost,
+           (SELECT json_agg(row_to_json(r)) FROM refunds r WHERE r.payment_intent_id = pi.payment_intent_id) as refunds
+    FROM payment_intents pi
+    JOIN jobs j ON pi.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+    LEFT JOIN job_billing jb ON j.id = jb.job_id
+    WHERE pi.id = $1
+  `, [paymentId]);
+  
+  if (result.rows.length === 0) {
+    throw new AppError(404, 'Payment not found');
+  }
+  
+  return result.rows[0];
+}
+
+/**
+ * Process manual refund
+ */
+static async processRefund(refundId, adminId, notes = null) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const refundResult = await client.query(
+      `SELECT * FROM refunds WHERE id = $1 AND status = 'pending'`,
+      [refundId]
+    );
+    
+    if (refundResult.rows.length === 0) {
+      throw new AppError(404, 'Refund not found or already processed');
+    }
+    
+    const refund = refundResult.rows[0];
+    
+    // Update refund status
+    await client.query(
+      `UPDATE refunds 
+       SET status = 'completed', 
+           processed_by = $1,
+           processed_at = NOW(),
+           notes = $2,
+           completed_at = NOW()
+       WHERE id = $3`,
+      [adminId, notes, refundId]
+    );
+    
+    // Update payment intent status
+    await client.query(
+      `UPDATE payment_intents 
+       SET status = 'refunded', refunded_at = NOW()
+       WHERE payment_intent_id = $1`,
+      [refund.payment_intent_id]
+    );
+    
+    // Update escrow transactions
+    await client.query(
+      `UPDATE escrow_transactions 
+       SET status = 'refunded', refunded_at = NOW(), refund_reason = $1
+       WHERE job_id = $2 AND status IN ('held', 'frozen')`,
+      [notes, refund.job_id]
+    );
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(refundId, 'refund_processed', 
+      { refundId, amount: refund.amount, notes });
+    
+    return { refundId, status: 'completed', amount: refund.amount };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Get all refunds
+ */
+static async getAllRefunds(filters = {}) {
+  const { status, jobId, page = 1, limit = 20, startDate, endDate } = filters;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT r.*, 
+           j.category, j.service_type,
+           cp.full_legal_name as client_name,
+           ap.full_legal_name as artisan_name,
+           pi.payment_intent_id
+    FROM refunds r
+    JOIN jobs j ON r.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+    LEFT JOIN payment_intents pi ON r.payment_intent_id = pi.payment_intent_id
+    WHERE 1=1
+  `;
+  const params = [];
+  let paramIndex = 1;
+  
+  if (status) {
+    query += ` AND r.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (jobId) {
+    query += ` AND r.job_id = $${paramIndex}`;
+    params.push(jobId);
+    paramIndex++;
+  }
+  
+  if (startDate) {
+    query += ` AND r.created_at >= $${paramIndex}`;
+    params.push(startDate);
+    paramIndex++;
+  }
+  
+  if (endDate) {
+    query += ` AND r.created_at <= $${paramIndex}`;
+    params.push(endDate);
+    paramIndex++;
+  }
+  
+  query += ` ORDER BY r.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  const countQuery = `
+    SELECT COUNT(*) FROM refunds
+    WHERE 1=1
+    ${status ? `AND status = '${status}'` : ''}
+    ${jobId ? `AND job_id = '${jobId}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  const stats = await pool.query(`
+    SELECT 
+      COUNT(*) as total_refunds,
+      SUM(amount) as total_amount,
+      AVG(amount) as average_amount,
+      COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+      COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+      COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count
+    FROM refunds
+    WHERE created_at > NOW() - INTERVAL '30 days'
+  `);
+  
+  return {
+    refunds: result.rows,
+    statistics: stats.rows[0],
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+// ==================== Bill of Quantities (BOQ) Management ====================
+
+/**
+ * Get all BOQs with filters
+ */
+static async getAllBOQs(filters = {}) {
+  const { status, jobId, artisanId, page = 1, limit = 20, startDate, endDate } = filters;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT b.*, 
+           j.category, j.service_type,
+           cp.full_legal_name as client_name,
+           ap.full_legal_name as artisan_name,
+           jb.billing_status
+    FROM bill_of_quantities b
+    JOIN jobs j ON b.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap ON b.artisan_id = ap.user_id
+    LEFT JOIN job_billing jb ON j.id = jb.job_id
+    WHERE 1=1
+  `;
+  const params = [];
+  let paramIndex = 1;
+  
+  if (status) {
+    query += ` AND b.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (jobId) {
+    query += ` AND b.job_id = $${paramIndex}`;
+    params.push(jobId);
+    paramIndex++;
+  }
+  
+  if (artisanId) {
+    query += ` AND b.artisan_id = $${paramIndex}`;
+    params.push(artisanId);
+    paramIndex++;
+  }
+  
+  if (startDate) {
+    query += ` AND b.created_at >= $${paramIndex}`;
+    params.push(startDate);
+    paramIndex++;
+  }
+  
+  if (endDate) {
+    query += ` AND b.created_at <= $${paramIndex}`;
+    params.push(endDate);
+    paramIndex++;
+  }
+  
+  query += ` ORDER BY b.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  const countQuery = `
+    SELECT COUNT(*) FROM bill_of_quantities
+    WHERE 1=1
+    ${status ? `AND status = '${status}'` : ''}
+    ${jobId ? `AND job_id = '${jobId}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  const stats = await pool.query(`
+    SELECT 
+      COUNT(*) as total_boqs,
+      COUNT(CASE WHEN status = 'pending_admin_approval' THEN 1 END) as pending_approval,
+      COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved,
+      COUNT(CASE WHEN status = 'rejected_by_admin' THEN 1 END) as rejected,
+      AVG(total_materials_cost + total_workmanship_cost) as average_value,
+      SUM(total_materials_cost + total_workmanship_cost) as total_value
+    FROM bill_of_quantities
+    WHERE created_at > NOW() - INTERVAL '30 days'
+  `);
+  
+  return {
+    boqs: result.rows,
+    statistics: stats.rows[0],
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Get BOQ details by ID
+ */
+static async getBOQDetails(boqId) {
+  const result = await pool.query(`
+    SELECT b.*, 
+           j.category, j.service_type, j.description as job_description,
+           cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
+           ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+           jb.base_fee, jb.diagnostics_fee, jb.execution_fee,
+           (SELECT json_agg(row_to_json(sr)) FROM substitution_requests sr WHERE sr.boq_id = b.id) as substitution_requests
+    FROM bill_of_quantities b
+    JOIN jobs j ON b.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap ON b.artisan_id = ap.user_id
+    LEFT JOIN job_billing jb ON j.id = jb.job_id
+    WHERE b.id = $1
+  `, [boqId]);
+  
+  if (result.rows.length === 0) {
+    throw new AppError(404, 'BOQ not found');
+  }
+  
+  return result.rows[0];
+}
+
+/**
+ * Admin approve BOQ (override)
+ */
+static async adminApproveBOQ(boqId, adminId, notes = null) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const boqResult = await client.query(
+      `SELECT * FROM bill_of_quantities WHERE id = $1`,
+      [boqId]
+    );
+    
+    if (boqResult.rows.length === 0) {
+      throw new AppError(404, 'BOQ not found');
+    }
+    
+    const boq = boqResult.rows[0];
+    
+    await client.query(
+      `UPDATE bill_of_quantities 
+       SET status = 'approved', 
+           admin_approved = true,
+           admin_approved_at = NOW(),
+           admin_id = $1,
+           admin_notes = $2
+       WHERE id = $3`,
+      [adminId, notes, boqId]
+    );
+    
+    // Update job billing with BOQ costs
+    await client.query(
+      `UPDATE job_billing 
+       SET materials_cost = $1,
+           workmanship_cost = $2
+       WHERE job_id = $3`,
+      [boq.total_materials_cost, boq.total_workmanship_cost, boq.job_id]
+    );
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(boqId, 'boq_approved', 
+      { boqId, jobId: boq.job_id, notes });
+    
+    return boq;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Admin reject BOQ
+ */
+static async adminRejectBOQ(boqId, adminId, reason) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const result = await client.query(
+      `UPDATE bill_of_quantities 
+       SET status = 'rejected_by_admin',
+           admin_approved = false,
+           rejection_reason = $1,
+           rejected_at = NOW(),
+           admin_id = $2
+       WHERE id = $3
+       RETURNING *`,
+      [reason, adminId, boqId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'BOQ not found');
+    }
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(boqId, 'boq_rejected', 
+      { boqId, reason });
+    
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// ==================== Settlement Management ====================
+
+/**
+ * Get all settlements (artisan payouts)
+ */
+static async getAllSettlements(filters = {}) {
+  const { status, artisanId, page = 1, limit = 20, startDate, endDate } = filters;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT ap.*, 
+           j.category, j.service_type,
+           cp.full_legal_name as client_name,
+           ap_art.full_legal_name as artisan_name,
+           pi.payment_intent_id
+    FROM artisan_payouts ap
+    JOIN jobs j ON ap.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap_art ON ap.artisan_id = ap_art.user_id
+    LEFT JOIN payment_intents pi ON j.id = pi.job_id
+    WHERE 1=1
+  `;
+  const params = [];
+  let paramIndex = 1;
+  
+  if (status) {
+    query += ` AND ap.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (artisanId) {
+    query += ` AND ap.artisan_id = $${paramIndex}`;
+    params.push(artisanId);
+    paramIndex++;
+  }
+  
+  if (startDate) {
+    query += ` AND ap.created_at >= $${paramIndex}`;
+    params.push(startDate);
+    paramIndex++;
+  }
+  
+  if (endDate) {
+    query += ` AND ap.created_at <= $${paramIndex}`;
+    params.push(endDate);
+    paramIndex++;
+  }
+  
+  query += ` ORDER BY ap.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  const countQuery = `
+    SELECT COUNT(*) FROM artisan_payouts
+    WHERE 1=1
+    ${status ? `AND status = '${status}'` : ''}
+    ${artisanId ? `AND artisan_id = '${artisanId}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  const stats = await pool.query(`
+    SELECT 
+      COUNT(*) as total_payouts,
+      SUM(amount) as total_amount,
+      AVG(amount) as average_amount,
+      COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+      COUNT(CASE WHEN status = 'processing' THEN 1 END) as processing_count,
+      COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+      COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count
+    FROM artisan_payouts
+    WHERE created_at > NOW() - INTERVAL '30 days'
+  `);
+  
+  return {
+    settlements: result.rows,
+    statistics: stats.rows[0],
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Process settlement payout
+ */
+static async processSettlement(payoutId, adminId, transferReference = null) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const payoutResult = await client.query(
+      `SELECT * FROM artisan_payouts WHERE id = $1 AND status = 'pending'`,
+      [payoutId]
+    );
+    
+    if (payoutResult.rows.length === 0) {
+      throw new AppError(404, 'Settlement not found or already processed');
+    }
+    
+    const payout = payoutResult.rows[0];
+    
+    await client.query(
+      `UPDATE artisan_payouts 
+       SET status = 'processing',
+           processed_by = $1,
+           processed_at = NOW(),
+           transfer_reference = $2
+       WHERE id = $3`,
+      [adminId, transferReference, payoutId]
+    );
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(payoutId, 'settlement_processed', 
+      { payoutId, amount: payout.amount, transferReference });
+    
+    return { payoutId, status: 'processing', amount: payout.amount };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Confirm settlement completion
+ */
+static async completeSettlement(payoutId, adminId, transactionId = null) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const result = await client.query(
+      `UPDATE artisan_payouts 
+       SET status = 'completed',
+           completed_at = NOW(),
+           transaction_id = COALESCE($1, transaction_id)
+       WHERE id = $2 AND status = 'processing'
+       RETURNING *`,
+      [transactionId, payoutId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Settlement not found or not in processing state');
+    }
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(payoutId, 'settlement_completed', 
+      { payoutId, transactionId });
+    
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Fail settlement
+ */
+static async failSettlement(payoutId, adminId, reason) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const result = await client.query(
+      `UPDATE artisan_payouts 
+       SET status = 'failed',
+           failure_reason = $1,
+           failed_at = NOW()
+       WHERE id = $2 AND status IN ('pending', 'processing')
+       RETURNING *`,
+      [reason, payoutId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Settlement not found');
+    }
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(payoutId, 'settlement_failed', 
+      { payoutId, reason });
+    
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// ==================== Withdrawal Management ====================
+
+/**
+ * Get all withdrawal requests
+ */
+static async getAllWithdrawals(filters = {}) {
+  const { status, artisanId, page = 1, limit = 20, startDate, endDate } = filters;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT w.*, 
+           ap.full_legal_name as artisan_name,
+           ap.email as artisan_email,
+           ap.phone as artisan_phone,
+           u.email as user_email
+    FROM withdrawals w
+    JOIN artisan_profiles ap ON w.artisan_id = ap.user_id
+    JOIN users u ON w.artisan_id = u.id
+    WHERE 1=1
+  `;
+  const params = [];
+  let paramIndex = 1;
+  
+  if (status) {
+    query += ` AND w.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (artisanId) {
+    query += ` AND w.artisan_id = $${paramIndex}`;
+    params.push(artisanId);
+    paramIndex++;
+  }
+  
+  if (startDate) {
+    query += ` AND w.created_at >= $${paramIndex}`;
+    params.push(startDate);
+    paramIndex++;
+  }
+  
+  if (endDate) {
+    query += ` AND w.created_at <= $${paramIndex}`;
+    params.push(endDate);
+    paramIndex++;
+  }
+  
+  query += ` ORDER BY w.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  const countQuery = `
+    SELECT COUNT(*) FROM withdrawals
+    WHERE 1=1
+    ${status ? `AND status = '${status}'` : ''}
+    ${artisanId ? `AND artisan_id = '${artisanId}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  const stats = await pool.query(`
+    SELECT 
+      COUNT(*) as total_withdrawals,
+      SUM(amount) as total_amount,
+      AVG(amount) as average_amount,
+      COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+      COUNT(CASE WHEN status = 'processing' THEN 1 END) as processing_count,
+      COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+      COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count
+    FROM withdrawals
+    WHERE created_at > NOW() - INTERVAL '30 days'
+  `);
+  
+  return {
+    withdrawals: result.rows,
+    statistics: stats.rows[0],
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Process withdrawal request
+ */
+static async processWithdrawal(withdrawalId, adminId, action, notes = null) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const withdrawalResult = await client.query(
+      `SELECT * FROM withdrawals WHERE id = $1 AND status = 'pending'`,
+      [withdrawalId]
+    );
+    
+    if (withdrawalResult.rows.length === 0) {
+      throw new AppError(404, 'Withdrawal not found or already processed');
+    }
+    
+    const withdrawal = withdrawalResult.rows[0];
+    let newStatus;
+    
+    if (action === 'approve') {
+      newStatus = 'processing';
+    } else if (action === 'reject') {
+      newStatus = 'failed';
+    } else {
+      throw new AppError(400, 'Invalid action. Use "approve" or "reject"');
+    }
+    
+    await client.query(
+      `UPDATE withdrawals 
+       SET status = $1,
+           processed_by = $2,
+           processed_at = NOW(),
+           admin_notes = $3
+       WHERE id = $4`,
+      [newStatus, adminId, notes, withdrawalId]
+    );
+    
+    // If approved, create payout record
+    if (action === 'approve') {
+      await client.query(
+        `INSERT INTO artisan_payouts (artisan_id, amount, status, transfer_reference)
+         VALUES ($1, $2, 'pending', $3)`,
+        [withdrawal.artisan_id, withdrawal.amount, withdrawal.reference]
+      );
+    }
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(withdrawalId, `withdrawal_${action}d`, 
+      { withdrawalId, amount: withdrawal.amount, notes });
+    
+    return { withdrawalId, status: newStatus, amount: withdrawal.amount };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// ==================== Escrow Management ====================
+
+/**
+ * Get all escrow transactions
+ */
+static async getAllEscrowTransactions(filters = {}) {
+  const { status, jobId, page = 1, limit = 20, startDate, endDate } = filters;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT et.*, 
+           j.category, j.service_type,
+           cp.full_legal_name as client_name,
+           ap.full_legal_name as artisan_name
+    FROM escrow_transactions et
+    JOIN jobs j ON et.job_id = j.id
+    LEFT JOIN client_profiles cp ON et.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap ON et.artisan_id = ap.user_id
+    WHERE 1=1
+  `;
+  const params = [];
+  let paramIndex = 1;
+  
+  if (status) {
+    query += ` AND et.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+  
+  if (jobId) {
+    query += ` AND et.job_id = $${paramIndex}`;
+    params.push(jobId);
+    paramIndex++;
+  }
+  
+  if (startDate) {
+    query += ` AND et.created_at >= $${paramIndex}`;
+    params.push(startDate);
+    paramIndex++;
+  }
+  
+  if (endDate) {
+    query += ` AND et.created_at <= $${paramIndex}`;
+    params.push(endDate);
+    paramIndex++;
+  }
+  
+  query += ` ORDER BY et.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+  params.push(limit, offset);
+  
+  const result = await pool.query(query, params);
+  
+  const countQuery = `
+    SELECT COUNT(*) FROM escrow_transactions
+    WHERE 1=1
+    ${status ? `AND status = '${status}'` : ''}
+    ${jobId ? `AND job_id = '${jobId}'` : ''}
+  `;
+  const countResult = await pool.query(countQuery);
+  
+  const stats = await pool.query(`
+    SELECT 
+      SUM(CASE WHEN status = 'held' THEN amount ELSE 0 END) as total_held,
+      SUM(CASE WHEN status = 'frozen' THEN amount ELSE 0 END) as total_frozen,
+      SUM(CASE WHEN status = 'released' THEN amount ELSE 0 END) as total_released,
+      SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) as total_refunded,
+      COUNT(*) as total_transactions
+    FROM escrow_transactions
+  `);
+  
+  return {
+    transactions: result.rows,
+    statistics: stats.rows[0],
+    total: parseInt(countResult.rows[0].count),
+    page,
+    limit,
+    totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+  };
+}
+
+/**
+ * Release frozen escrow funds
+ */
+static async releaseFrozenEscrow(transactionId, adminId, reason) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    
+    const result = await client.query(
+      `UPDATE escrow_transactions 
+       SET status = 'released', 
+           release_date = NOW(),
+           released_by_admin = $1,
+           release_reason = $2
+       WHERE id = $3 AND status = 'frozen'
+       RETURNING *`,
+      [adminId, reason, transactionId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Transaction not found or not frozen');
+    }
+    
+    await client.query('COMMIT');
+    
+    await this.logAdminActivity(transactionId, 'escrow_released', 
+      { transactionId, amount: result.rows[0].amount, reason });
+    
+    return result.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Get escrow summary
+ */
+static async getEscrowSummary() {
+  const result = await pool.query(`
+    SELECT 
+      SUM(CASE WHEN status = 'held' THEN amount ELSE 0 END) as total_held,
+      SUM(CASE WHEN status = 'frozen' THEN amount ELSE 0 END) as total_frozen,
+      SUM(CASE WHEN status = 'released' THEN amount ELSE 0 END) as total_released,
+      SUM(CASE WHEN status = 'refunded' THEN amount ELSE 0 END) as total_refunded,
+      COUNT(CASE WHEN status = 'held' THEN 1 END) as held_count,
+      COUNT(CASE WHEN status = 'frozen' THEN 1 END) as frozen_count,
+      COUNT(CASE WHEN status = 'released' THEN 1 END) as released_count,
+      COUNT(DISTINCT job_id) as unique_jobs
+    FROM escrow_transactions
+  `);
+  
+  const byJobType = await pool.query(`
+    SELECT 
+      j.category,
+      SUM(et.amount) as total_amount,
+      COUNT(*) as transaction_count
+    FROM escrow_transactions et
+    JOIN jobs j ON et.job_id = j.id
+    WHERE et.status IN ('held', 'frozen')
+    GROUP BY j.category
+    ORDER BY total_amount DESC
+  `);
+  
+  return {
+    summary: result.rows[0],
+    byCategory: byJobType.rows
+  };
+}
 
 }
 

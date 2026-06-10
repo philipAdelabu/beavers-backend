@@ -59,7 +59,7 @@ router.get('/dashboard/metrics', authenticateToken, requireRole(['admin']), [
   } catch (error) {
     next(error);
   }
-});
+}); 
 
 // Get real-time stats
 router.get('/dashboard/realtime', authenticateToken, requireRole(['admin']), async (req, res, next) => {

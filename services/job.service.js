@@ -117,6 +117,7 @@ class JobService {
         WHERE ap.user_id = ANY($1::uuid[])
           AND ap.is_available = true
           AND u.is_active = true
+          AND ap.monthly_fee_status = 'paid'
           AND LOWER(ap.skill_category) = $2
         ORDER BY ap.tier_level DESC, ap.star_rating DESC, ap.completion_rate DESC`,
         [artisanIds, category.toLowerCase()],

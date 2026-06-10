@@ -3,6 +3,7 @@ const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
 const { validationResult } = require('express-validator');
 const AuthService = require('../services/auth.service');
+const Payment = require('../services/payment.service');
 
 class AdminController {
 
@@ -605,9 +606,9 @@ class AdminController {
           if (!errors.isEmpty()) {
             return sendError(res, 'Validation error', 400, errors.array());
           }
-      
+          const adminId = req.user.id;
           try {
-            const result = await AdminService.suspendUser(req.params.userId, req.body.reason, req.body.duration);
+            const result = await AdminService.suspendUser(adminId, req.params.userId, req.body.reason);
             sendSuccess(res, result, 'User suspended successfully');
           } catch (error) {
             next(error);
@@ -643,14 +644,14 @@ class AdminController {
             }
           }
         
-          static async getFeeConfiguration(req, res, next) {
+      static async getFeeConfiguration(req, res, next) {
             try {
-              const config = await AdminService.getFeeConfiguration();
+              const config = await AdminService.getSystemConfigurations('platform_fees');
               sendSuccess(res, config, 'Fee configuration retrieved successfully');
             } catch (error) {
               next(error);
             }
-          }
+         } 
       
         static async getSystemHealth(req, res, next) {
           try {
@@ -660,6 +661,289 @@ class AdminController {
             next(error);
           }
         }
+
+
+    static async getPaymentAnalytics(req, res, next){
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return sendError(res, 'Validation error', 400, errors.array());
+        }
+
+        try {
+          const { period = 'month' } = req.query;
+          const analytics = await Payment.getAnalytics(period);
+          sendSuccess(res, analytics, 'Payment analytics retrieved');
+        } catch (error) {
+          next(error);
+        }
+      }
+
+      // ==================== Payment Management ====================
+
+static async getAllPayments(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { status, clientId, artisanId, jobId, page = 1, limit = 20, startDate, endDate } = req.query;
+    const result = await AdminService.getAllPayments({ 
+      status, clientId, artisanId, jobId, page, limit, startDate, endDate 
+    });
+    sendPaginated(res, result.payments, page, limit, result.total, 'Payments retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async getPaymentDetails(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const payment = await AdminService.getPaymentDetails(req.params.paymentId);
+    sendSuccess(res, payment, 'Payment details retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async processRefund(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { refundId } = req.params;
+    const { notes } = req.body;
+    const result = await AdminService.processRefund(refundId, req.user.id, notes);
+    sendSuccess(res, result, 'Refund processed');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async getAllRefunds(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { status, jobId, page = 1, limit = 20, startDate, endDate } = req.query;
+    const result = await AdminService.getAllRefunds({ status, jobId, page, limit, startDate, endDate });
+    sendPaginated(res, result.refunds, page, limit, result.total, 'Refunds retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==================== BOQ Management ====================
+
+static async getAllBOQs(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { status, jobId, artisanId, page = 1, limit = 20, startDate, endDate } = req.query;
+    const result = await AdminService.getAllBOQs({ status, jobId, artisanId, page, limit, startDate, endDate });
+    sendPaginated(res, result.boqs, page, limit, result.total, 'BOQs retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async getBOQDetails(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const boq = await AdminService.getBOQDetails(req.params.boqId);
+    sendSuccess(res, boq, 'BOQ details retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async adminApproveBOQ(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { boqId } = req.params;
+    const { notes } = req.body;
+    const result = await AdminService.adminApproveBOQ(boqId, req.user.id, notes);
+    sendSuccess(res, result, 'BOQ approved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async adminRejectBOQ(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { boqId } = req.params;
+    const { reason } = req.body;
+    const result = await AdminService.adminRejectBOQ(boqId, req.user.id, reason);
+    sendSuccess(res, result, 'BOQ rejected');
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==================== Settlement Management ====================
+
+static async getAllSettlements(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { status, artisanId, page = 1, limit = 20, startDate, endDate } = req.query;
+    const result = await AdminService.getAllSettlements({ status, artisanId, page, limit, startDate, endDate });
+    sendPaginated(res, result.settlements, page, limit, result.total, 'Settlements retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async processSettlement(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { payoutId } = req.params;
+    const { transferReference } = req.body;
+    const result = await AdminService.processSettlement(payoutId, req.user.id, transferReference);
+    sendSuccess(res, result, 'Settlement processed');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async completeSettlement(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { payoutId } = req.params;
+    const { transactionId } = req.body;
+    const result = await AdminService.completeSettlement(payoutId, req.user.id, transactionId);
+    sendSuccess(res, result, 'Settlement completed');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async failSettlement(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { payoutId } = req.params;
+    const { reason } = req.body;
+    const result = await AdminService.failSettlement(payoutId, req.user.id, reason);
+    sendSuccess(res, result, 'Settlement failed');
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==================== Withdrawal Management ====================
+
+static async getAllWithdrawals(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { status, artisanId, page = 1, limit = 20, startDate, endDate } = req.query;
+    const result = await AdminService.getAllWithdrawals({ status, artisanId, page, limit, startDate, endDate });
+    sendPaginated(res, result.withdrawals, page, limit, result.total, 'Withdrawals retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async processWithdrawal(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { withdrawalId } = req.params;
+    const { action, notes } = req.body;
+    const result = await AdminService.processWithdrawal(withdrawalId, req.user.id, action, notes);
+    sendSuccess(res, result, `Withdrawal ${action}d`);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ==================== Escrow Management ====================
+
+static async getAllEscrowTransactions(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { status, jobId, page = 1, limit = 20, startDate, endDate } = req.query;
+    const result = await AdminService.getAllEscrowTransactions({ status, jobId, page, limit, startDate, endDate });
+    sendPaginated(res, result.transactions, page, limit, result.total, 'Escrow transactions retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async releaseFrozenEscrow(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { transactionId } = req.params;
+    const { reason } = req.body;
+    const result = await AdminService.releaseFrozenEscrow(transactionId, req.user.id, reason);
+    sendSuccess(res, result, 'Frozen escrow released');
+  } catch (error) {
+    next(error);
+  }
+}
+
+static async getEscrowSummary(req, res, next) {
+  try {
+    const summary = await AdminService.getEscrowSummary();
+    sendSuccess(res, summary, 'Escrow summary retrieved');
+  } catch (error) {
+    next(error);
+  }
+}
 
 }
 
