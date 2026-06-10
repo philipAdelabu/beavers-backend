@@ -6,7 +6,7 @@ const { authenticateToken, requireRole, requirePermissions } = require('../middl
 const { adminLimiter } = require('../middleware/rateLimit.middleware');
 
 
-router.post('/auth/login', [
+router.post('/auth/login', [ 
   body('email').isEmail(),
   body('password').isLength({ min: 8 }),
 ], AdminController.login);
@@ -176,6 +176,7 @@ router.post('/disputes/:disputeId/resolve', [
 // ==================== Category Management ====================
 
 router.get('/categories', AdminController.getCategories);
+
 router.post('/categories', [
   body('name').notEmpty(),
   body('description').optional().isString(),
@@ -194,6 +195,7 @@ router.put('/categories/:categoryId', [
 router.delete('/categories/:categoryId', [
   param('categoryId').isInt()
 ], AdminController.deleteCategory);
+
 
 // ==================== Subcategory Management ====================
 router.get('/subcategories', [

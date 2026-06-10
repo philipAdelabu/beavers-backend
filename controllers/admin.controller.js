@@ -8,7 +8,7 @@ const Payment = require('../services/payment.service');
 class AdminController {
 
 
-    // ==================== Admin User Management ====================
+    // ==================== Admin User Management ==================== 
   
   static async getAdminRoles(req, res, next) {
     try {
@@ -171,6 +171,7 @@ class AdminController {
       const metrics = await AdminService.getDashboardMetrics(period);
       sendSuccess(res, metrics, 'Dashboard metrics retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve dashboard metrics', error.statusCode || 500);
       next(error);
     }
   }
@@ -180,6 +181,7 @@ class AdminController {
       const stats = await AdminService.getRealtimeStats();
       sendSuccess(res, stats, 'Real-time statistics retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve realtime stats', error.statusCode || 500);
       next(error);
     }
   }
@@ -255,9 +257,10 @@ class AdminController {
     
     try {
       const { status, notes, tier } = req.body;
-      const result = await AdminService.verifyUser(req.params.userId, status, notes, tier);
+      const result = await AdminService.verifyUser(req.user.id, req.params.userId, status, notes, tier);
       sendSuccess(res, result, `User verification ${status}`);
     } catch (error) {
+      sendError(res, error.message || 'Failed to verify user', error.statusCode || 500);
       next(error);
     }
   }
@@ -272,9 +275,10 @@ class AdminController {
     
     try {
       const { tier, reason } = req.body;
-      const result = await AdminService.updateArtisanTier(req.params.artisanId, tier, reason);
+      const result = await AdminService.updateArtisanTier(req.user.id, req.params.artisanId, tier, reason);
       sendSuccess(res, result, 'Artisan tier updated');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update the artisan tier', error.statusCode || 500);
       next(error);
     }
   }
@@ -283,12 +287,12 @@ class AdminController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
-    }
-    
+     }
     try {
       const performance = await AdminService.getArtisanPerformance(req.params.artisanId);
       sendSuccess(res, performance, 'Artisan performance retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to artisan performance', error.statusCode || 500);
       next(error);
     }
   }
@@ -306,6 +310,7 @@ class AdminController {
       const result = await AdminService.getAllJobs({ status, category, page, limit, startDate, endDate });
       sendPaginated(res, result.jobs, page, limit, result.total, 'Jobs retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to get all jobs', error.statusCode || 500);
       next(error);
     }
   }
@@ -329,12 +334,12 @@ class AdminController {
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
     }
-    
     try {
       const { reason, refundAmount } = req.body;
-      const job = await AdminService.forceCancelJob(req.params.jobId, reason, refundAmount);
+      const job = await AdminService.forceCancelJob(req.user.id, req.params.jobId, reason, refundAmount);
       sendSuccess(res, job, 'Job force cancelled');
     } catch (error) {
+      sendError(res, error.message || 'Failed to force-cancel job', error.statusCode || 500);
       next(error);
     }
   }

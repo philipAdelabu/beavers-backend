@@ -13,7 +13,7 @@ class AdminService {
   // ==================== Dashboard Statistics ====================
   
   static async getDashboardStats() {
-    const cacheKey = 'admin:dashboard:stats';
+    const cacheKey = 'admin:dashboard:stats'; 
     let stats = await cacheGet(cacheKey);
     
     if (!stats) {
@@ -275,7 +275,7 @@ class AdminService {
     };
   }
   
-  static async verifyUser(userId, status, notes = null, tier = null) {
+  static async verifyUser(adminId, userId, status, notes = null, tier = null) {
     const client = await pool.connect();
     
     try {
@@ -295,7 +295,7 @@ class AdminService {
       await client.query(
         `UPDATE users 
          SET is_verified = $1, verification_status = $2, 
-             verification_notes = $3, verified_at = NOW()
+             verification_notes = $3
          WHERE id = $4`,
         [status === 'approved', status, notes, userId]
       );
@@ -307,16 +307,11 @@ class AdminService {
         );
       }
       
-      await client.query(
-        `INSERT INTO verification_logs (user_id, status, notes, verified_by)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, status, notes, 'admin']
-      );
-      
+
       await client.query('COMMIT');
       
-      await this.logAdminActivity(userId, 'verification_processed', 
-        { userId, status, notes, tier });
+      await this.logAdminActivity(adminId, 'verification_processed', 
+        { userId: userId, status: status, notes: notes, tier:tier });
       
       return { userId, status, notes, tier };
     } catch (error) {
@@ -329,7 +324,7 @@ class AdminService {
   
   // ==================== Artisan Management ====================
   
-  static async updateArtisanTier(artisanId, tier, reason) {
+  static async updateArtisanTier(adminId, artisanId, tier, reason) {
     const result = await pool.query(
       `UPDATE artisan_profiles 
        SET tier_level = $1, tier_updated_at = NOW(), tier_update_reason = $2
@@ -342,7 +337,7 @@ class AdminService {
       throw new AppError(404, 'Artisan not found');
     }
     
-    await this.logAdminActivity(artisanId, 'tier_updated', 
+    await this.logAdminActivity(adminId, 'tier_updated', 
       { artisanId, newTier: tier, reason });
     
     return result.rows[0];
@@ -438,11 +433,11 @@ class AdminService {
   static async getJobDetails(jobId) {
     const result = await pool.query(`
       SELECT j.*, 
-             cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
-             ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+             cp.full_legal_name as client_name, cu.email as client_email, cu.phone as client_phone,
+             ap.full_legal_name as artisan_name, au.email as artisan_email, au.phone as artisan_phone,
              jb.*,
              boq.items as boq_items, boq.status as boq_status,
-             (SELECT json_agg(row_to_json(tl)) FROM job_timeline tl WHERE tl.job_id = j.id ORDER BY tl.created_at ASC) as timeline
+             (SELECT json_agg(row_to_json(tl) ORDER BY tl.created_at ASC) FROM job_timeline tl WHERE tl.job_id = j.id ) as timeline
       FROM jobs j
       LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
       LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
@@ -450,6 +445,8 @@ class AdminService {
       LEFT JOIN bill_of_quantities boq ON j.id = boq.job_id AND boq.version = (
         SELECT MAX(version) FROM bill_of_quantities WHERE job_id = j.id
       )
+        LEFT JOIN users cu ON cu.id = cp.user_id 
+        LEFT JOIN users au ON au.id = ap.user_id
       WHERE j.id = $1
     `, [jobId]);
     
@@ -460,7 +457,7 @@ class AdminService {
     return result.rows[0];
   }
   
-  static async forceCancelJob(jobId, reason, refundAmount = null) {
+  static async forceCancelJob(adminId, jobId, reason, refundAmount = null) {
     const client = await pool.connect();
     
     try {
@@ -471,7 +468,7 @@ class AdminService {
          SET job_status = 'cancelled', 
              cancelled_at = NOW(),
              cancellation_reason = $1,
-             cancelled_by_admin = true
+             cancelled_by = 'admin'
          WHERE id = $2
          RETURNING *`,
         [reason, jobId]
@@ -491,7 +488,7 @@ class AdminService {
       
       await client.query('COMMIT');
       
-      await this.logAdminActivity(jobId, 'job_force_cancelled', 
+      await this.logAdminActivity(adminId, 'job_force_cancelled', 
         { jobId, reason, refundAmount });
       
       return result.rows[0];
@@ -1445,8 +1442,9 @@ class AdminService {
     }
     
     logger.info(`User ${userId} activated`);
-    
-    return result.rows[0];
+    const user = result.rows[0];
+    delete user.password_hash;
+    return user;
   }
 
 
