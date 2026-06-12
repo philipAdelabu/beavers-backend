@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { generateTokens, verifyRefreshToken } = require('../utils/jwt.utils');
-const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
+const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { pool } = require('../config/database');
 const NotificationService = require('./notification.service');
 
@@ -2545,7 +2545,7 @@ static async getAllEscrowTransactions(filters = {}) {
 /**
  * Release frozen escrow funds
  */
-static async releaseFrozenEscrow(transactionId, adminId, reason) {
+static async releaseFrozenEscrow(transactionId, reason, adminId) {
   const client = await pool.connect();
   
   try {
@@ -2555,7 +2555,7 @@ static async releaseFrozenEscrow(transactionId, adminId, reason) {
       `UPDATE escrow_transactions 
        SET status = 'released', 
            release_date = NOW(),
-           released_by_admin = $1,
+           released_by = $1,
            release_reason = $2
        WHERE id = $3 AND status = 'frozen'
        RETURNING *`,
@@ -2568,7 +2568,7 @@ static async releaseFrozenEscrow(transactionId, adminId, reason) {
     
     await client.query('COMMIT');
     
-    await this.logAdminActivity(transactionId, 'escrow_released', 
+    await this.logAdminActivity(adminId, 'escrow_released', 
       { transactionId, amount: result.rows[0].amount, reason });
     
     return result.rows[0];

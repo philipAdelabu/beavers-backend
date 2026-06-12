@@ -9,8 +9,11 @@ const { calculateDistance } = require('../utils/geo.utils');
 const JobController = require('../controllers/job.controller');
 const router = express.Router();
 
+
+router.use(authenticateToken);
+
 // Create job request 
-router.post('/create', authenticateToken, requireRole(['client']), [
+router.post('/create', requireRole(['client']), [
   body('category').notEmpty(),
   body('description').notEmpty(),
   body('location').notEmpty(),
@@ -21,7 +24,6 @@ router.post('/create', authenticateToken, requireRole(['client']), [
 // Repost an expired job
 router.post(
   '/:jobId/repost',
-  authenticateToken,
   requireRole(['client']),
   JobController.repostJob,
 );
@@ -29,12 +31,11 @@ router.post(
 // Accept job offer (artisan)
 router.post(
   '/:jobId/accept',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.acceptJob);
 
 // Confirm arrival with PIN
-router.post('/:jobId/confirm-arrival', authenticateToken, requireRole(['client', 'artisan']), [
+router.post('/:jobId/confirm-arrival', requireRole(['client', 'artisan']), [
   body('pin').isLength({ min: 4, max: 4 }).notEmpty(),
 ], JobController.confirmArrival);
 
@@ -42,7 +43,6 @@ router.post('/:jobId/confirm-arrival', authenticateToken, requireRole(['client',
 // Start diagnostics timer
 router.post(
   '/:jobId/start-diagnostics',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.startDiagnostics,
 );
@@ -50,20 +50,18 @@ router.post(
 // Start diagnostics timer
 router.put(
   '/:jobId/diagnostics-progress',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.startDiagnostics,
 ); 
 
 // Stop diagnostics and choose execution mode
-router.post('/:jobId/stop-diagnostics', authenticateToken, requireRole(['artisan']), [
+router.post('/:jobId/stop-diagnostics', requireRole(['artisan']), [
   body('executionMode').isIn(['time_based', 'quoted']),
 ], JobController.stopDiagnostics);
 
 // Start Execution of the job
 router.post(
   '/:jobId/start-execution',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.startExecution,
 );
@@ -71,7 +69,6 @@ router.post(
 // Pause Job Execution
 router.post(
   '/:jobId/pause-execution',
-  authenticateToken,
   requireRole(['artisan']),
   [
     body('reason').notEmpty(),
@@ -83,7 +80,6 @@ router.post(
 // Resume Execution of the job
 router.post(
   '/:jobId/resume-execution',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.resumeExecution,
 );
@@ -91,7 +87,6 @@ router.post(
 // Stop Execution of the job
 router.post(
   '/:jobId/stop-execution',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.stopExecution,
 );
@@ -99,7 +94,6 @@ router.post(
 // Submit Quote
 router.post(
   '/:jobId/submit-quote',
-  authenticateToken,
   requireRole(['artisan']),
   [
     body('quoteAmount').isNumeric().notEmpty(),
@@ -113,7 +107,6 @@ router.post(
 // client approve the quote
 router.post(
   '/:jobId/approve-quote',
-  authenticateToken,
   requireRole(['client']),
   JobController.approveQuote,
 );
@@ -121,16 +114,13 @@ router.post(
 // Client reject the quote
 router.post(
   '/:jobId/reject-quote',
-  authenticateToken,
   requireRole(['client']),
   JobController.rejectQuote,
 );
 
 
 // Job Completed
-router.post(
-  '/:jobId/complete',
-  authenticateToken,
+router.post( '/:jobId/complete',
   requireRole(['artisan']),
   [
     body('completionNotes').notEmpty(),
@@ -138,13 +128,22 @@ router.post(
   JobController.completeJob,
 );
 
+// Job Completed
+router.post( '/:jobId/confirm/complete',
+  requireRole(['client']),
+  [
+    body('completionNotes').optional(),
+  ],
+  JobController.completeJob,
+);
+
 
 // Get job details
-router.get('/:jobId', authenticateToken, JobController.getJobDetails);
+router.get('/:jobId', JobController.getJobDetails);
 
 // Client Rate the Job 
 
-router.post('/:jobId/rate', authenticateToken, requireRole(['client']), [
+router.post('/:jobId/rate', requireRole(['client']), [
    body('rating').optional().notEmpty().isInt(),
    body('review').optional().notEmpty(),
    body('categories').optional().notEmpty(),
@@ -154,7 +153,6 @@ router.post('/:jobId/rate', authenticateToken, requireRole(['client']), [
 // Get client jobs
 router.get(
   '/client/jobs',
-  authenticateToken,
   requireRole(['client']),
   JobController.getClientJobs,
 );
@@ -162,19 +160,18 @@ router.get(
 // Get artisan jobs
 router.get(
   '/artisan/jobs',
-  authenticateToken,
   requireRole(['artisan']),
   JobController.getArtisanJobs,
 );
 
 // Get job timeline
-router.get('/:jobId/timeline', authenticateToken, JobController.getJobTimeline);
+router.get('/:jobId/timeline', JobController.getJobTimeline);
 
 // Add these routes to your existing job routes
 // This gives the artisan to  browse for available job.
 
 // Artisan job browsing routes
-router.get('/available/jobs', authenticateToken, requireRole(['artisan']), [
+router.get('/available/jobs', requireRole(['artisan']), [
   param('category').optional().isString(),
   param('minBudget').optional().isFloat({ min: 0 }),
   param('maxBudget').optional().isFloat({ min: 0 }),
@@ -187,38 +184,38 @@ router.get('/available/jobs', authenticateToken, requireRole(['artisan']), [
   param('limit').optional().isInt({ min: 1, max: 100 })
 ], JobController.getAvailableJobs); 
 
-router.get('/available/:jobId', authenticateToken, requireRole(['artisan']), [
+router.get('/available/:jobId', requireRole(['artisan']), [
   param('jobId').isUUID()
 ], JobController.getAvailableJobDetails);
 
 // Saved jobs routes
-router.post('/save/:jobId', authenticateToken, requireRole(['artisan']), [
+router.post('/save/:jobId', requireRole(['artisan']), [
   param('jobId').isUUID(),
   body('notes').optional().isString()
 ], JobController.saveJob);
 
-router.delete('/save/:jobId', authenticateToken, requireRole(['artisan']), [
+router.delete('/save/:jobId', requireRole(['artisan']), [
   param('jobId').isUUID()
 ], JobController.unsaveJob);
 
-router.get('/saved', authenticateToken, requireRole(['artisan']), [
+router.get('/saved', requireRole(['artisan']), [
   body('page').optional().isInt({ min: 1 }),
   body('limit').optional().isInt({ min: 1, max: 100 })
 ], JobController.getSavedJobs);
 
 // Job alert routes
-router.post('/alert', authenticateToken, requireRole(['artisan']), [
+router.post('/alert', requireRole(['artisan']), [
   body('categories').optional().isArray(),
   body('minBudget').optional().isFloat({ min: 0 }),
   body('maxDistance').optional().isInt({ min: 1, max: 100 })
 ], JobController.createJobAlert);
 
-router.get('/alert', authenticateToken, requireRole(['artisan']), JobController.getJobAlert);
+router.get('/alert', requireRole(['artisan']), JobController.getJobAlert);
 
-router.delete('/alert', authenticateToken, requireRole(['artisan']), JobController.deleteJobAlert);
+router.delete('/alert', requireRole(['artisan']), JobController.deleteJobAlert);
 
 // Recommended jobs
-router.get('/recommended', authenticateToken, requireRole(['artisan']), [
+router.get('/recommended', requireRole(['artisan']), [
   body('limit').optional().isInt({ min: 1, max: 50 })
 ], JobController.getRecommendedJobs);
 

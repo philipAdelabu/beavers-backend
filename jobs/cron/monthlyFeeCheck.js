@@ -49,4 +49,27 @@ const checkMonthlyFees = async () => {
 // Run every day at midnight
 cron.schedule('0 0 * * *', checkMonthlyFees);
 
+
+/* 
+   const cron = require('node-cron');
+const FeeService = require('../../services/fee.service');
+const { logger } = require('../../config/logger');
+
+// Run daily at 2 AM
+cron.schedule('0 2 * * *', async () => {
+  logger.info('Running monthly fee auto-renewal check');
+  
+  try {
+    const results = await FeeService.processAutoRenewals();
+    
+    logger.info(`Auto-renewal completed: ${results.filter(r => r.success).length} successful, ${results.filter(r => !r.success).length} failed`);
+  } catch (error) {
+    logger.error('Auto-renewal cron job failed:', error);
+  }
+});
+
+module.exports = { checkMonthlyFees };
+
+*/
+
 module.exports = { checkMonthlyFees };

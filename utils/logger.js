@@ -141,6 +141,7 @@ const logQuery = (query, params, duration) => {
   }
 };
 
+
 module.exports = {
   logger,
   logInfo,

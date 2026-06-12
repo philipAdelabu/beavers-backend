@@ -4,6 +4,7 @@ const { AppError } = require('../middleware/error.middleware');
 const { validationResult } = require('express-validator');
 const AuthService = require('../services/auth.service');
 const Payment = require('../services/payment.service');
+const EscrowService = require('../services/escrow.service');
 
 class AdminController {
 
@@ -921,11 +922,12 @@ static async getAllEscrowTransactions(req, res, next) {
     const result = await AdminService.getAllEscrowTransactions({ status, jobId, page, limit, startDate, endDate });
     sendPaginated(res, result.transactions, page, limit, result.total, 'Escrow transactions retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to get all escrow transactions', error.statusCode || 500);
     next(error);
   }
 }
 
-static async releaseFrozenEscrow(req, res, next) {
+static async releaseFundEscrow(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return sendError(res, 'Validation error', 400, errors.array());
@@ -934,9 +936,84 @@ static async releaseFrozenEscrow(req, res, next) {
   try {
     const { transactionId } = req.params;
     const { reason } = req.body;
-    const result = await AdminService.releaseFrozenEscrow(transactionId, req.user.id, reason);
+    const result = await EscrowService.releaseFunds(transactionId, reason, req.user.id);
+    sendSuccess(res, result, 'Fund Escrow released');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to release escrow funds', error.statusCode || 500);
+    next(error);
+  }
+}
+
+ static async releaseFrozenEscrow(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { transactionId } = req.params;
+    const { reason } = req.body;
+    const result = await AdminService.releaseFrozenEscrow(transactionId, reason, req.user.id);
     sendSuccess(res, result, 'Frozen escrow released');
   } catch (error) {
+    sendError(res, error.message || 'Failed to release frozen escrow transactions', error.statusCode || 500);
+    next(error);
+  }
+}
+
+
+static async freezeFunds(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { transactionId } = req.params;
+    const { reason } = req.body;
+    const result = await EscrowService.freezeFunds(transactionId, reason, req.user.id);
+    sendSuccess(res, result, 'Freeze  Funds');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to freeze escrow funds', error.statusCode || 500);
+    next(error);
+  }
+}
+
+static async freezeJobFunds(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+
+    const { jobId } = req.params;
+    const { reason } = req.body;
+
+    const result = await EscrowService.freezeJobFunds(jobId, reason, req.user.id);
+    sendSuccess(res, result, 'Freeze Job Funds');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to freeze job funds', error.statusCode || 500);
+    next(error);
+  }
+}
+
+
+
+ static async releaseJobFunds(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { jobId } = req.params;
+    const { reason } = req.body;
+
+    const result = await EscrowService.releaseJobFunds(jobId, reason, req.user.id);
+    sendSuccess(res, result, 'Freeze Escrow Funds');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to release job funds', error.statusCode || 500);
     next(error);
   }
 }
@@ -946,9 +1023,50 @@ static async getEscrowSummary(req, res, next) {
     const summary = await AdminService.getEscrowSummary();
     sendSuccess(res, summary, 'Escrow summary retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to get the escrow summary', error.statusCode || 500);
     next(error);
   }
-}
+} 
+
+static async getJobEscrowBalance(req, res, next) {
+    const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+     const { jobId } = req.params;
+    const summary = await EscrowService.getBalance(jobId)
+    sendSuccess(res, summary, 'Escrow summary retrieved');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to get the escrow balance', error.statusCode || 500);
+    next(error);
+  }
+}  
+
+static async getPendingDisbursements(req, res, next) {
+  try {
+    const summary = await EscrowService.getPendingDisbursements();
+    sendSuccess(res, summary, 'Escrow summary retrieved');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to get the pending disbursement', error.statusCode || 500);
+    next(error);
+  }
+} 
+
+ static async getTransactionHistory(req, res, next) {
+        const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+   }
+  try {
+    const summary = await EscrowService.getTransactionHistory(req.params);
+    sendSuccess(res, summary, 'Escrow summary retrieved');
+   } catch (error) {
+    sendError(res, error.message || 'Failed to get the escrow transactoins history', error.statusCode || 500);
+    next(error);
+   }
+ } 
 
 }
 

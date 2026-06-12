@@ -225,6 +225,21 @@ class JobController {
 
     try {
       const result = await JobService.completeJob(req.params.jobId, req.user.id, req.body.completionNotes);
+      sendSuccess(res, result, 'Job completed. Awaiting confirmation');
+    } catch (error) {
+      sendError(res, error.message || 'Fail to complete Job', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+   static async confirmCompleteJob(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const result = await JobService.confirmCompleteJob(req.params.jobId, req.user.id, req.body.completionNotes);
       sendSuccess(res, result, 'Job completed successfully');
     } catch (error) {
       sendError(res, error.message || 'Fail to complete Job', error.statusCode || 500);

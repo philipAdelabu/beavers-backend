@@ -149,6 +149,31 @@ class AuthService {
           uploadedFiles.passportPhoto || null, !(onboardingFee === 0),
         ],
       );
+      
+       // Check if onboarding fee is required and paid
+          if (onboardingFee === 0) {
+            // Onboarding fee required but not paid yet
+            // Artisan needs to pay onboarding fee before becoming active
+            await client.query(
+              `UPDATE artisan_profiles 
+              SET is_available = false, 
+                  onboarding_fee_paid = false
+              WHERE user_id = $1`,
+              [user.id]
+            );
+            
+             if(process.env.NODE_ENV === 'production') {
+            // Send notification about onboarding fee
+              await sendEmail(
+              email, 'Complete Your Registration - Pay Onboarding Fee',
+              `Dear ${fullLegalName},\n\nPlease pay the onboarding fee of ₦${onboardingFee.toLocaleString()} to activate your account and start receiving job offers.\n\nThank you for choosing BeaverWorks!`,
+              user.id
+             );
+            }
+          }
+
+
+
       const userProfile = userProfileResult.rows[0];
 
        //Create the Wallte for the user

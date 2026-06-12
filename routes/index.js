@@ -15,12 +15,15 @@ const reviewRoutes = require('./review.routes');
 const supportRoutes = require('./support.routes');
 const analyticsRoutes = require('./analytics.routes');
 const webhookRoutes = require('./webhook.routes');
+// Add fee routes
+const feeRoutes = require('./fee.routes');
 
 
 router.use('/auth', authRoutes);
 router.use('/clients', clientRoutes);
 router.use('/artisans', artisanRoutes);
 router.use('/jobs', jobRoutes);
+router.user('/fees', feeRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/location', locationRoutes);
 router.use('/boq', boqRoutes);

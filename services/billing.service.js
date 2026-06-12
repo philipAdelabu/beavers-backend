@@ -4,8 +4,22 @@ const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 
 class BillingService {
-  static async calculateJobCost(jobId) {
-    const result = await pool.query(
+
+  static async calculateJobCost(jobId, get_billing = null) {
+
+   let result = null;
+
+   if(get_billing){
+      result = await pool.query(
+      `SELECT jb.*, j.billing_mode, j.service_type
+       FROM job_billing jb
+       JOIN jobs j ON jb.job_id = j.id
+       WHERE jb.job_id = $1 AND jb.billing_status = 'awaiting_payment' `,
+      [jobId]
+    );
+   }
+
+     result = await pool.query(
       `SELECT jb.*, j.billing_mode, j.service_type
        FROM job_billing jb
        JOIN jobs j ON jb.job_id = j.id
@@ -19,18 +33,18 @@ class BillingService {
     
     const billing = result.rows[0];
     
-    const baseFee = billing.base_fee || 0;
-    const diagnosticsFee = billing.diagnostics_fee || 0;
-    const executionFee = billing.execution_fee || 0;
-    const materialsCost = billing.materials_cost || 0;
-    const workmanshipCost = billing.workmanship_cost || 0;
+    const baseFee = parseFloat(billing.base_fee || 0).toFixed(2);
+    const diagnosticsFee = parseFloat(billing.diagnostics_fee || 0).toFixed(2);
+    const executionFee = parseFloat(billing.execution_fee || 0).toFixed(2);
+    const materialsCost = parseFloat(billing.materials_cost || 0).toFixed(2);
+    const workmanshipCost = parseFloat(billing.workmanship_cost || 0).toFixed(2);
     
     const subtotal = baseFee + diagnosticsFee + executionFee + materialsCost + workmanshipCost;
     
     // Apply platform commission
-    const platformFee = Math.ceil(subtotal * (process.env.PLATFORM_COMMISSION_PERCENT || 10) / 100);
+    const platformFee = Math.ceil((subtotal * (process.env.PLATFORM_COMMISSION_PERCENT || 10)) / 100);
     
-    const total = subtotal + platformFee;
+    const total = subtotal + parseFloat(platformFee).toFixed(2);
     
     return {
       breakdown: {
@@ -40,10 +54,14 @@ class BillingService {
         materialsCost,
         workmanshipCost,
         subtotal,
-        platformFee
+        platformFee,
       },
       total
     };
+  }
+
+  static async getJobBilling(jobId) {
+     return this.calculateJobCost(jobId, 'awaiting_payment');
   }
   
   static async generateInvoice(jobId) {

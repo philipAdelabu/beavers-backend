@@ -388,12 +388,51 @@ router.get('/escrow/transactions', [
   query('endDate').optional().isISO8601()
 ], AdminController.getAllEscrowTransactions);
 
-router.post('/escrow/transactions/:transactionId/release', [
+router.post('/escrow/transactions/:transactionId/release_frozen', [
   param('transactionId').isUUID(),
   body('reason').notEmpty()
 ], AdminController.releaseFrozenEscrow);
 
-router.get('/escrow/summary', AdminController.getEscrowSummary);
+router.post('/escrow/transactions/:transactionId/freeze', [
+  param('transactionId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.freezeFunds);
 
+router.post('/escrow/transactions/jobs/:jobId/freeze', [
+  param('jobId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.freezeJobFunds);
+
+router.post('/escrow/transactions/:transactionId/release_funds', [
+  param('transactionId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.releaseFundEscrow);
+
+router.post('/escrow/transactions/:jobId/release', [
+  param('jobId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.releaseJobFunds);
+
+
+router.get('/escrow/transactions/:jobId/balance', [
+  param('jobId').isUUID(),
+], AdminController.getJobEscrowBalance);
+
+router.get('/escrow/summary', AdminController.getEscrowSummary);
+router.get('/escrow/pending/disbursements', AdminController.getPendingDisbursements);
+
+// { jobId, clientId, artisanId, status, transactionType, page = 1, limit = 20 } = filters;
+
+router.get('/escrow/transactions/history', [
+  query('status').optional().isIn(['held', 'frozen', 'released', 'refunded']),
+  query('transactionType').optional().isIn(['base_fee',
+    'diagnostics_fee', 'platform_fee', 'materials',
+    'workmanship ', 'full_payment', 'execution_fee']),
+  query('jobId').optional().isUUID(),
+  query('clientId').optional().isUUID(),
+  query('artisanId').optional().isUUID(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+], AdminController.getPendingDisbursements);
 
 module.exports = router;

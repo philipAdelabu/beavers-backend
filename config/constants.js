@@ -2,6 +2,10 @@
 // Application Constants
 // ============================================
 
+const { pool } = require('./database');
+
+
+
 // User Types
 const USER_TYPES = {
   CLIENT: 'client',

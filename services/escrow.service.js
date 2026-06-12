@@ -5,6 +5,19 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 
 class EscrowService {
+
+
+
+    
+  static async logAdminActivity(adminId, action, details = {}, ipAddress = null, userAgent = null) {
+    await pool.query(
+      `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress, userAgent]
+    );
+  }
+
+
   static async createHold(escrowData) {
     const { jobId, clientId, artisanId, amount, transactionType, disputeBufferDays = 3 } = escrowData;
     
@@ -66,7 +79,10 @@ class EscrowService {
       }
       
       logger.info(`Escrow funds released: ${transactionId} - ₦${transaction.amount}`);
+       await this.logAdminActivity(releasedBy, 'escrow_released', 
+      { transactionId: transaction.id, amount: transaction.amount, reason: 'Escrow Funds Released' });
       
+
       return transaction;
     } catch (error) {
       await client.query('ROLLBACK');
@@ -76,7 +92,7 @@ class EscrowService {
     }
   }
   
-  static async releaseJobFunds(jobId) {
+  static async releaseJobFunds(jobId, reason='job_completed', releasedBy = null) {
     const client = await pool.connect();
     
     try {
@@ -85,19 +101,20 @@ class EscrowService {
       const transactions = await client.query(
         `SELECT * FROM escrow_transactions 
          WHERE job_id = $1 AND status = 'held'
-         AND dispute_buffer_until < NOW()`,
+         `, // AND (dispute_buffer_until = null OR dispute_buffer_until < NOW()) // removed from this line.
         [jobId]
       );
       
       const released = [];
       for (const transaction of transactions.rows) {
-        const releasedTransaction = await this.releaseFunds(transaction.id, 'job_completed', 'system');
+        const releasedTransaction = await this.releaseFunds(transaction.id, reason, releasedBy);
         released.push(releasedTransaction);
       }
       
       await client.query('COMMIT');
       
       logger.info(`Released ${released.length} escrow transactions for job ${jobId}`);
+
       
       return released;
     } catch (error) {

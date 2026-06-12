@@ -34,7 +34,7 @@ class JobService {
         `INSERT INTO job_billing (job_id, billing_status)
          VALUES ($1, 'pending')`,
         [job.id]
-      );
+      ); 
       
     
       const Google_map_radius = process.env.GOOGLE_MAP_RADIUS || 20;
@@ -190,19 +190,21 @@ class JobService {
    
       await client.query('BEGIN');
 
-      await client.query(`
-            DELETE FROM job_offers WHERE job_id = $1 and status = 'pending'
-        `, [jobId]);
-      
-    
     const res = await client.query(
        `SELECT *
-        FROM jobs where id = $1 `, 
+        FROM jobs where id = $1 AND job_status = 'pending'`, 
        [jobId]
     );
+
     if(res.rows.length !== 1){
       return 'The job is undefined';
     }
+
+       await client.query(`
+            DELETE FROM job_offers WHERE job_id = $1 and status = 'pending'
+        `, [jobId]);
+
+
     const job = res.rows[0];
 
     const location = job.location;
@@ -381,12 +383,14 @@ class JobService {
       
       // Create base fee billing
       const baseFee = process.env.JOB_BASE_FEE || 2500; // Configurable
+
+      
       await client.query(
         `UPDATE job_billing 
          SET base_fee = $1, billing_status = 'base_charged'
          WHERE job_id = $2`,
         [baseFee, jobId]
-      );
+      ); 
 
       const jobResult = await client.query(
         `SELECT client_id, artisan_id FROM jobs WHERE id = $1`,
@@ -397,45 +401,17 @@ class JobService {
         throw new AppError(404, 'Job not found');
       }
 
-      if(jobResult.rows[0].client_id === userId){ 
-         // Create escrow hold for base fee
-      await client.query(
-        `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
-         SELECT $1, $2, artisan_id, $3, 'base_fee', 'held'
-         FROM jobs WHERE id = $1`,
-        [jobId, userId, baseFee]
-      );
-      }else{
-         await client.query(
-        `INSERT INTO escrow_transactions (job_id, artisan_id, client_id,  amount, transaction_type, status)
-         SELECT $1, $2, client_id, $3, 'base_fee', 'held'
-         FROM jobs WHERE id = $1`,
-        [jobId, userId, baseFee]
-      );
-
-      }
-
-      const clientId = jobResult.rows[0].client_id;
-      // Create escrow hold for base fee
-      await client.query(
-        `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
-         SELECT $1, $2, artisan_id, $3, 'base_fee', 'held'
-         FROM jobs WHERE id = $1`,
-        [jobId, clientId, baseFee]
-      );
-
+      const artisanId = jobResult.rows[0].artisan_id;
+      const clientId = jobResult.rows[0].client_id; 
+  
+   
       const descript = 'Artisan arrived at location';
       //this.addTimelineEntry(jobId, 'arrived', descript);
       
       await client.query('COMMIT');
       
-      // Get artisan ID for notification
-      const job_result = await client.query(
-        `SELECT artisan_id FROM jobs WHERE id = $1`,
-        [jobId]
-      );
-      
-      await NotificationService.sendArrivalNotification(job_result.rows[0].artisan_id, { jobId });
+ 
+      await NotificationService.sendArrivalNotification(artisanId, { jobId });
       
       logger.info(`Arrival confirmed for job ${jobId}`);
       
@@ -507,18 +483,12 @@ class JobService {
       // Update billing with diagnostics fee
       await client.query(
         `UPDATE job_billing 
-         SET diagnostics_fee = $1, diagnostics_duration = $2
+         SET diagnostics_fee = $1, diagnostics_duration = $2, billing_status = 'diagnostics_fee'
          WHERE job_id = $3`,
         [diagnosticsFee, diagnosticsDuration, jobId],
       );
       
-      // Update escrow for diagnostics
-      await client.query(
-        `INSERT INTO escrow_transactions (job_id, client_id, artisan_id, amount, transaction_type, status)
-         SELECT $1, client_id, artisan_id, $2, 'diagnostics_fee', 'held'
-         FROM jobs WHERE id = $1`,
-        [jobId, diagnosticsFee],
-      );
+   
       
       const descript = `Diagnostics completed for job ${jobId}: ${diagnosticsDuration} minutes`;
       //this.addTimelineEntry(jobId, 'diagnostics', descript, 'artisan', artisanId);
@@ -554,6 +524,14 @@ class JobService {
     if (result.rows.length === 0) {
       throw new AppError(404, 'Job not found or not in time-based mode');
     }
+
+      // Update billing
+      await pool.query(
+        `UPDATE job_billing 
+         SET execution_mode =  'start_execution'
+         WHERE job_id = $1`,
+        [jobId],
+      );
     
     await cacheSet(`job:${jobId}:execution_start`, executionStart.toISOString(), 28800); // 8 hours
     
@@ -584,6 +562,14 @@ class JobService {
       `UPDATE jobs SET job_status = 'paused' WHERE id = $1 AND artisan_id = $2`,
       [jobId, artisanId]
     );
+
+       // Update billing
+      await pool.query(
+        `UPDATE job_billing 
+         SET execution_mode =  'paused_execution'
+         WHERE job_id = $1`,
+        [jobId],
+      );
     
     logger.info(`Execution paused for job ${jobId}: ${reason}`);
 
@@ -607,6 +593,14 @@ class JobService {
       `UPDATE jobs SET job_status = 'execution' WHERE id = $1 AND artisan_id = $2`,
       [jobId, artisanId]
     );
+
+       // Update billing
+      await pool.query(
+        `UPDATE job_billing 
+         SET execution_mode =  'resumed_execution'
+         WHERE job_id = $1`,
+        [jobId],
+      );
     
     logger.info(`Execution resumed for job ${jobId}, paused for ${pauseDuration} seconds`);
     
@@ -656,7 +650,7 @@ class JobService {
       // Update billing
       await client.query(
         `UPDATE job_billing 
-         SET execution_fee = $1, execution_duration = $2
+         SET execution_fee = $1, execution_duration = $2, execution_mode = 'stopped_execution', billing_status = 'execution_fee'
          WHERE job_id = $3`,
         [executionFee, totalDuration, jobId]
       );
@@ -700,6 +694,16 @@ class JobService {
     if (result.rows.length === 0) {
       throw new AppError(404, 'Job not found or not in quoted mode');
     }
+
+        await pool.query(
+          `UPDATE job_billing 
+          SET billing_status = 'pending_quote_approval', 
+          execution_mode = 'submit_quote'
+          workmanship_cost = $1
+          WHERE job_id = $2
+          RETURNING *`,
+          [quoteAmount, jobId]
+        );
     
     // Notify client
     const job = result.rows[0];
@@ -728,6 +732,14 @@ class JobService {
     if (result.rows.length === 0) {
       throw new AppError(404, 'Quote not found or already processed');
     }
+
+      await pool.query(
+          `UPDATE job_billing 
+          SET billing_status = 'quote_approved',
+          WHERE job_id = $1
+          RETURNING *`,
+          [jobId]
+        );
     
     const job = result.rows[0];
     
@@ -757,6 +769,15 @@ class JobService {
     if (result.rows.length === 0) {
       throw new AppError(404, 'Quote not found or already processed');
     }
+
+     await pool.query(
+          `UPDATE job_billing 
+          SET billing_status = 'quote_rejected'
+          WHERE job_id = $1
+          RETURNING *`,
+          [jobId]
+        );
+    
     
     const job = result.rows[0];
     
@@ -781,13 +802,65 @@ class JobService {
 
     const result = await pool.query(
       `UPDATE jobs 
-       SET job_status = 'completed', 
+       SET job_status = 'awaiting_completion_confirmation', 
            completed_at = $1,
            completion_notes = $2
        WHERE id = $3 AND artisan_id = $4
-         AND job_status IN ('execution', 'quote_approved', 'awaiting_completion_confirmation')
        RETURNING *`,
       [completionTime, completionNotes, jobId, artisanId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Job not found or cannot be completed');
+    }
+    
+    const job = result.rows[0];
+    
+    // update job_billing
+    const billingResult = await pool.query(
+      `UPDATE job_billing 
+       SET billing_status = 'awaiting_job_confirmation'
+       WHERE job_id = $1
+       RETURNING *`,
+      [jobId]
+    );
+    
+    // Notify client
+    await NotificationService.sendPushNotification(
+      job.client_id,
+      'Job Completed, awaiting confirmation',
+      'Your job has been marked as completed. Please review and make payment.',
+      { jobId, type: 'job_completed' }
+    );
+    
+    logger.info(`Job ${jobId} completed by artisan ${artisanId}`);
+    
+    const descript = 'Job completion awaiting confirmation';
+    this.addTimelineEntry(jobId, 'completed', descript);
+
+    await client.query('COMMIT');
+    return { job, billing: billingResult.rows[0] };
+     } catch (error) {
+     await client.query('ROLLBACK');
+     throw error;
+    } finally {
+    client.release();
+    }
+  }
+
+    static async confirmCompleteJob(jobId, clientId, completionNotes = null) {
+    const client = await pool.connect();
+    try{ 
+      await client.query('BEGIN');
+
+    const result = await pool.query(
+      `UPDATE jobs 
+       SET job_status = 'completed',
+           completion_notes = $1
+       WHERE id = $2 AND client_id = $3
+         AND job_status IN ('execution', 'quote_approved', 'awaiting_completion_confirmation')
+       RETURNING *`,
+      [completionNotes, jobId, clientId]
     );
     
     if (result.rows.length === 0) {
@@ -805,34 +878,9 @@ class JobService {
       [jobId]
     );
     
-    // Notify client
-    await NotificationService.sendPushNotification(
-      job.client_id,
-      'Job Completed',
-      'Your job has been marked as completed. Please review and make payment.',
-      { jobId, type: 'job_completed' }
-    );
-    
-    logger.info(`Job ${jobId} completed by artisan ${artisanId}`);
-    
-    const billing = billingResult.rows[0];
-    const artisanEarnings = billing.workmanship_cost;
-    // Credit artisan's wallet
-  
-    await Wallet.credit(
-      artisanId, 
-      artisanEarnings, 
-      'earning', 
-    { 
-    description: `Payment for job #${jobId.slice(0, 8)}`,
-        jobId 
-      }
-    );
+    logger.info(`Job ${jobId} completed  and confirmed by client ${clientId}`);
+    const descript = `Job ${jobId} completed  and confirmed by client ${clientId}`;
 
-    // if client paid via wallet, debit client's wallet
-    // this would be handle in the payment service 
-
-    const descript = 'Job completed';
     this.addTimelineEntry(jobId, 'completed', descript);
 
     await client.query('COMMIT');
@@ -897,6 +945,15 @@ class JobService {
       if (result.rows.length === 0) {
         throw new AppError(404, 'Job not found or cannot be cancelled');
       }
+
+       await pool.query(
+          `UPDATE job_billing 
+          SET billing_status = 'job_cancelled'
+          WHERE job_id = $1
+          RETURNING *`,
+          [jobId]
+        );
+    
       
       const job = result.rows[0];
       

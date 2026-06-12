@@ -99,6 +99,7 @@ const requireVerification = async (req, res, next) => {
   next();
 };
 
+/*
 const requireActiveSubscription = async (req, res, next) => {
   if (req.user.user_type === 'artisan') {
     const result = await pool.query(
@@ -111,7 +112,7 @@ const requireActiveSubscription = async (req, res, next) => {
     }
   }
   next();
-};
+};  */
 
 const requireOnboardingComplete = async (req, res, next) => {
   if (req.user.user_type === 'artisan') {
@@ -154,6 +155,32 @@ const optionalAuth = async (req, res, next) => {
   } catch (error) {
     next();
   }
+};
+
+// Add middleware to check active subscription
+const requireActiveSubscription = async (req, res, next) => {
+  if (req.user.user_type === 'artisan') {
+    const FeeService = require('../services/fee.service');
+    const hasActiveSubscription = await FeeService.hasActiveSubscription(req.user.id);
+    const hasPaidOnboarding = await FeeService.hasPaidOnboardingFee(req.user.id);
+    
+    if (!hasPaidOnboarding) {
+      return res.status(403).json({ 
+        error: 'Onboarding fee required',
+        message: 'Please pay the onboarding fee to activate your account',
+        feeType: 'onboarding'
+      });
+    }
+    
+    if (!hasActiveSubscription) {
+      return res.status(403).json({ 
+        error: 'Active subscription required',
+        message: 'Please pay your monthly fee to continue',
+        feeType: 'monthly'
+      });
+    }
+  }
+  next();
 };
 
 module.exports = { 

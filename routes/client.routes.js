@@ -16,7 +16,7 @@ const ClientController = require('../controllers/client.controller');
 router.get(
   '/profile',
   authenticateToken,
-  requireRole(['client']),
+  requireRole(['client', 'admin']),
   ClientController.getProfile,
 );
 
@@ -55,7 +55,7 @@ router.post('/addresses', authenticateToken, requireRole(['client']), [
 router.get(
   '/addresses',
   authenticateToken,
-  requireRole(['client']),
+  requireRole(['client', 'admin']),
   ClientController.getAddresses);
 
 // Update service address
