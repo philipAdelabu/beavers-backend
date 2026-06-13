@@ -234,6 +234,7 @@ class AuthService {
    */
   static async login(identifier, password, ipAddress, userAgent) {
     const client = await pool.connect();
+    await client.query('BEGIN');
     
     try {
       // Determine if identifier is email or phone
@@ -303,10 +304,11 @@ class AuthService {
           `SELECT monthly_fee_status FROM artisan_profiles WHERE user_id = $1`,
           [user.id]
         );
-        
+
+        /*
        if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
           throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
-        } 
+        } */
 
       }
       
@@ -330,9 +332,14 @@ class AuthService {
       );
       
       const userProfileResult = await client.query(
-        `SELECT * FROM ${user.user_type}_profiles WHERE user_id = $1`,
+        `SELECT up.*, u.is_logged_in FROM ${user.user_type}_profiles up
+        JOIN users u on u.id = up.user_id
+         WHERE user_id = $1`,
         [user.id],
       );
+
+      await client.query('COMMIT');
+
       const userProfile = userProfileResult.rows[0];
       logger.info(`User logged in: ${user.email} / ${user.phone}`);
       
@@ -345,13 +352,14 @@ class AuthService {
           phone: user.phone,
           userType: user.user_type,
           fullName: user.full_name,
-          isLoggedIn: user.is_logged_in,
+          isLoggedIn: userProfile.is_logged_in,
           isVerified: user.is_verified,
           verificationStatus: user.verification_status,
           profile: userProfile,
         }
       };
     } catch (error) {
+      await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();

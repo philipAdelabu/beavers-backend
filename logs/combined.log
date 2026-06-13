@@ -27214,3 +27214,433 @@
 2026-06-12 22:41:01 [INFO]: getting to  port .. 
 2026-06-12 22:41:01 [INFO]: Server running on port 3000 
 2026-06-12 22:41:20 [INFO]: SIGINT received. Starting graceful shutdown... 
+2026-06-13 08:41:03 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:41:06 [INFO]: Database pool connected 
+2026-06-13 08:41:06 [INFO]: Database extensions initialized 
+2026-06-13 08:41:06 [INFO]: Database connected successfully at Sat Jun 13 2026 08:41:06 GMT+0100 (West Africa Time) 
+2026-06-13 08:41:06 [INFO]: Database connected successfully 
+2026-06-13 08:41:06 [INFO]: Redis connecting... 
+2026-06-13 08:41:06 [INFO]: Redis connected successfully 
+2026-06-13 08:41:06 [INFO]: Redis initialized and connected 
+2026-06-13 08:41:06 [INFO]: Redis connected successfully 
+2026-06-13 08:41:06 [INFO]: getting to  port .. 
+2026-06-13 08:41:06 [INFO]: Server running on port 3000 
+2026-06-13 08:42:45 [INFO]: Database pool connected 
+2026-06-13 08:42:46 [INFO]: Test environment - Email OTP for dev@gmail.com: 375386 
+2026-06-13 08:42:46 [INFO]: Test environment - Phone OTP for +2348137121315: 530767 
+2026-06-13 08:42:46 [INFO]: New artisan registered: dev@gmail.com 
+2026-06-13 08:44:25 [INFO]: Database pool connected 
+2026-06-13 08:44:25 [INFO]: Email verified: dev@gmail.com 
+2026-06-13 08:45:24 [INFO]: Database pool connected 
+2026-06-13 08:45:24 [INFO]: Phone verified: +2348137121315 
+2026-06-13 08:45:48 [INFO]: Database pool connected 
+2026-06-13 08:47:14 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:47:15 [INFO]: Database pool connected 
+2026-06-13 08:47:15 [INFO]: Database extensions initialized 
+2026-06-13 08:47:15 [INFO]: Database connected successfully at Sat Jun 13 2026 08:47:15 GMT+0100 (West Africa Time) 
+2026-06-13 08:47:15 [INFO]: Database connected successfully 
+2026-06-13 08:47:15 [INFO]: Redis connecting... 
+2026-06-13 08:47:15 [INFO]: Redis connected successfully 
+2026-06-13 08:47:15 [INFO]: Redis initialized and connected 
+2026-06-13 08:47:15 [INFO]: Redis connected successfully 
+2026-06-13 08:47:15 [INFO]: getting to  port .. 
+2026-06-13 08:47:15 [INFO]: Server running on port 3000 
+2026-06-13 08:47:16 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:47:17 [INFO]: Database pool connected 
+2026-06-13 08:47:17 [INFO]: Database extensions initialized 
+2026-06-13 08:47:17 [INFO]: Database connected successfully at Sat Jun 13 2026 08:47:17 GMT+0100 (West Africa Time) 
+2026-06-13 08:47:17 [INFO]: Database connected successfully 
+2026-06-13 08:47:17 [INFO]: Redis connecting... 
+2026-06-13 08:47:17 [INFO]: Redis connected successfully 
+2026-06-13 08:47:17 [INFO]: Redis initialized and connected 
+2026-06-13 08:47:17 [INFO]: Redis connected successfully 
+2026-06-13 08:47:17 [INFO]: getting to  port .. 
+2026-06-13 08:47:17 [INFO]: Server running on port 3000 
+2026-06-13 08:47:18 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:47:18 [INFO]: Database pool connected 
+2026-06-13 08:47:18 [INFO]: Database extensions initialized 
+2026-06-13 08:47:18 [INFO]: Database connected successfully at Sat Jun 13 2026 08:47:18 GMT+0100 (West Africa Time) 
+2026-06-13 08:47:18 [INFO]: Database connected successfully 
+2026-06-13 08:47:18 [INFO]: Redis connecting... 
+2026-06-13 08:47:18 [INFO]: Redis connected successfully 
+2026-06-13 08:47:18 [INFO]: Redis initialized and connected 
+2026-06-13 08:47:18 [INFO]: Redis connected successfully 
+2026-06-13 08:47:18 [INFO]: getting to  port .. 
+2026-06-13 08:47:18 [INFO]: Server running on port 3000 
+2026-06-13 08:47:26 [INFO]: Database pool connected 
+2026-06-13 08:47:26 [INFO]: User logged in: dev@gmail.com / +2348137121315 
+2026-06-13 08:50:17 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:50:17 [INFO]: Database pool connected 
+2026-06-13 08:50:17 [INFO]: Database extensions initialized 
+2026-06-13 08:50:17 [INFO]: Database connected successfully at Sat Jun 13 2026 08:50:17 GMT+0100 (West Africa Time) 
+2026-06-13 08:50:17 [INFO]: Database connected successfully 
+2026-06-13 08:50:17 [INFO]: Redis connecting... 
+2026-06-13 08:50:17 [INFO]: Redis connected successfully 
+2026-06-13 08:50:17 [INFO]: Redis initialized and connected 
+2026-06-13 08:50:17 [INFO]: Redis connected successfully 
+2026-06-13 08:50:17 [INFO]: getting to  port .. 
+2026-06-13 08:50:17 [INFO]: Server running on port 3000 
+2026-06-13 08:50:33 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:50:33 [INFO]: Database pool connected 
+2026-06-13 08:50:33 [INFO]: Database extensions initialized 
+2026-06-13 08:50:33 [INFO]: Database connected successfully at Sat Jun 13 2026 08:50:33 GMT+0100 (West Africa Time) 
+2026-06-13 08:50:33 [INFO]: Database connected successfully 
+2026-06-13 08:50:33 [INFO]: Redis connecting... 
+2026-06-13 08:50:33 [INFO]: Redis connected successfully 
+2026-06-13 08:50:33 [INFO]: Redis initialized and connected 
+2026-06-13 08:50:33 [INFO]: Redis connected successfully 
+2026-06-13 08:50:33 [INFO]: getting to  port .. 
+2026-06-13 08:50:33 [INFO]: Server running on port 3000 
+2026-06-13 08:50:36 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:50:36 [INFO]: Database pool connected 
+2026-06-13 08:50:36 [INFO]: Database extensions initialized 
+2026-06-13 08:50:36 [INFO]: Database connected successfully at Sat Jun 13 2026 08:50:36 GMT+0100 (West Africa Time) 
+2026-06-13 08:50:36 [INFO]: Database connected successfully 
+2026-06-13 08:50:36 [INFO]: Redis connecting... 
+2026-06-13 08:50:36 [INFO]: Redis connected successfully 
+2026-06-13 08:50:36 [INFO]: Redis initialized and connected 
+2026-06-13 08:50:36 [INFO]: Redis connected successfully 
+2026-06-13 08:50:36 [INFO]: getting to  port .. 
+2026-06-13 08:50:36 [INFO]: Server running on port 3000 
+2026-06-13 08:51:01 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:01 [INFO]: Database pool connected 
+2026-06-13 08:51:01 [INFO]: Database extensions initialized 
+2026-06-13 08:51:01 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:01 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:01 [INFO]: Database connected successfully 
+2026-06-13 08:51:01 [INFO]: Redis connecting... 
+2026-06-13 08:51:01 [INFO]: Redis connected successfully 
+2026-06-13 08:51:01 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:01 [INFO]: Redis connected successfully 
+2026-06-13 08:51:01 [INFO]: getting to  port .. 
+2026-06-13 08:51:01 [INFO]: Server running on port 3000 
+2026-06-13 08:51:13 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:13 [INFO]: Database pool connected 
+2026-06-13 08:51:13 [INFO]: Database extensions initialized 
+2026-06-13 08:51:13 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:13 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:13 [INFO]: Database connected successfully 
+2026-06-13 08:51:13 [INFO]: Redis connecting... 
+2026-06-13 08:51:13 [INFO]: Redis connected successfully 
+2026-06-13 08:51:13 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:13 [INFO]: Redis connected successfully 
+2026-06-13 08:51:13 [INFO]: getting to  port .. 
+2026-06-13 08:51:13 [INFO]: Server running on port 3000 
+2026-06-13 08:51:16 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:16 [INFO]: Database pool connected 
+2026-06-13 08:51:16 [INFO]: Database extensions initialized 
+2026-06-13 08:51:16 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:16 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:16 [INFO]: Database connected successfully 
+2026-06-13 08:51:16 [INFO]: Redis connecting... 
+2026-06-13 08:51:16 [INFO]: Redis connected successfully 
+2026-06-13 08:51:16 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:16 [INFO]: Redis connected successfully 
+2026-06-13 08:51:16 [INFO]: getting to  port .. 
+2026-06-13 08:51:16 [INFO]: Server running on port 3000 
+2026-06-13 08:51:22 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:22 [INFO]: Database pool connected 
+2026-06-13 08:51:22 [INFO]: Database extensions initialized 
+2026-06-13 08:51:22 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:22 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:22 [INFO]: Database connected successfully 
+2026-06-13 08:51:22 [INFO]: Redis connecting... 
+2026-06-13 08:51:22 [INFO]: Redis connected successfully 
+2026-06-13 08:51:22 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:22 [INFO]: Redis connected successfully 
+2026-06-13 08:51:22 [INFO]: getting to  port .. 
+2026-06-13 08:51:22 [INFO]: Server running on port 3000 
+2026-06-13 08:51:27 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:28 [INFO]: Database pool connected 
+2026-06-13 08:51:28 [INFO]: Database extensions initialized 
+2026-06-13 08:51:28 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:28 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:28 [INFO]: Database connected successfully 
+2026-06-13 08:51:28 [INFO]: Redis connecting... 
+2026-06-13 08:51:28 [INFO]: Redis connected successfully 
+2026-06-13 08:51:28 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:28 [INFO]: Redis connected successfully 
+2026-06-13 08:51:28 [INFO]: getting to  port .. 
+2026-06-13 08:51:28 [INFO]: Server running on port 3000 
+2026-06-13 08:51:35 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:35 [INFO]: Database pool connected 
+2026-06-13 08:51:36 [INFO]: Database extensions initialized 
+2026-06-13 08:51:36 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:36 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:36 [INFO]: Database connected successfully 
+2026-06-13 08:51:36 [INFO]: Redis connecting... 
+2026-06-13 08:51:36 [INFO]: Redis connected successfully 
+2026-06-13 08:51:36 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:36 [INFO]: Redis connected successfully 
+2026-06-13 08:51:36 [INFO]: getting to  port .. 
+2026-06-13 08:51:36 [INFO]: Server running on port 3000 
+2026-06-13 08:51:39 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:39 [INFO]: Database pool connected 
+2026-06-13 08:51:39 [INFO]: Database extensions initialized 
+2026-06-13 08:51:39 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:39 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:39 [INFO]: Database connected successfully 
+2026-06-13 08:51:39 [INFO]: Redis connecting... 
+2026-06-13 08:51:39 [INFO]: Redis connected successfully 
+2026-06-13 08:51:39 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:39 [INFO]: Redis connected successfully 
+2026-06-13 08:51:39 [INFO]: getting to  port .. 
+2026-06-13 08:51:39 [INFO]: Server running on port 3000 
+2026-06-13 08:51:40 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:51:41 [INFO]: Database pool connected 
+2026-06-13 08:51:41 [INFO]: Database extensions initialized 
+2026-06-13 08:51:41 [INFO]: Database connected successfully at Sat Jun 13 2026 08:51:41 GMT+0100 (West Africa Time) 
+2026-06-13 08:51:41 [INFO]: Database connected successfully 
+2026-06-13 08:51:41 [INFO]: Redis connecting... 
+2026-06-13 08:51:41 [INFO]: Redis connected successfully 
+2026-06-13 08:51:41 [INFO]: Redis initialized and connected 
+2026-06-13 08:51:41 [INFO]: Redis connected successfully 
+2026-06-13 08:51:41 [INFO]: getting to  port .. 
+2026-06-13 08:51:41 [INFO]: Server running on port 3000 
+2026-06-13 08:53:10 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:10 [INFO]: Database pool connected 
+2026-06-13 08:53:10 [INFO]: Database extensions initialized 
+2026-06-13 08:53:10 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:10 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:10 [INFO]: Database connected successfully 
+2026-06-13 08:53:10 [INFO]: Redis connecting... 
+2026-06-13 08:53:10 [INFO]: Redis connected successfully 
+2026-06-13 08:53:10 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:10 [INFO]: Redis connected successfully 
+2026-06-13 08:53:10 [INFO]: getting to  port .. 
+2026-06-13 08:53:10 [INFO]: Server running on port 3000 
+2026-06-13 08:53:18 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:18 [INFO]: Database pool connected 
+2026-06-13 08:53:18 [INFO]: Database extensions initialized 
+2026-06-13 08:53:18 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:18 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:18 [INFO]: Database connected successfully 
+2026-06-13 08:53:18 [INFO]: Redis connecting... 
+2026-06-13 08:53:18 [INFO]: Redis connected successfully 
+2026-06-13 08:53:18 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:18 [INFO]: Redis connected successfully 
+2026-06-13 08:53:18 [INFO]: getting to  port .. 
+2026-06-13 08:53:18 [INFO]: Server running on port 3000 
+2026-06-13 08:53:24 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:24 [INFO]: Database pool connected 
+2026-06-13 08:53:24 [INFO]: Database extensions initialized 
+2026-06-13 08:53:24 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:24 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:24 [INFO]: Database connected successfully 
+2026-06-13 08:53:24 [INFO]: Redis connecting... 
+2026-06-13 08:53:24 [INFO]: Redis connected successfully 
+2026-06-13 08:53:24 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:24 [INFO]: Redis connected successfully 
+2026-06-13 08:53:24 [INFO]: getting to  port .. 
+2026-06-13 08:53:24 [INFO]: Server running on port 3000 
+2026-06-13 08:53:28 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:29 [INFO]: Database pool connected 
+2026-06-13 08:53:29 [INFO]: Database extensions initialized 
+2026-06-13 08:53:29 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:29 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:29 [INFO]: Database connected successfully 
+2026-06-13 08:53:29 [INFO]: Redis connecting... 
+2026-06-13 08:53:29 [INFO]: Redis connected successfully 
+2026-06-13 08:53:29 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:29 [INFO]: Redis connected successfully 
+2026-06-13 08:53:29 [INFO]: getting to  port .. 
+2026-06-13 08:53:29 [INFO]: Server running on port 3000 
+2026-06-13 08:53:32 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:32 [INFO]: Database pool connected 
+2026-06-13 08:53:32 [INFO]: Database extensions initialized 
+2026-06-13 08:53:32 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:32 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:32 [INFO]: Database connected successfully 
+2026-06-13 08:53:32 [INFO]: Redis connecting... 
+2026-06-13 08:53:32 [INFO]: Redis connected successfully 
+2026-06-13 08:53:32 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:32 [INFO]: Redis connected successfully 
+2026-06-13 08:53:32 [INFO]: getting to  port .. 
+2026-06-13 08:53:32 [INFO]: Server running on port 3000 
+2026-06-13 08:53:36 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:37 [INFO]: Database pool connected 
+2026-06-13 08:53:37 [INFO]: Database extensions initialized 
+2026-06-13 08:53:37 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:37 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:37 [INFO]: Database connected successfully 
+2026-06-13 08:53:37 [INFO]: Redis connecting... 
+2026-06-13 08:53:37 [INFO]: Redis connected successfully 
+2026-06-13 08:53:37 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:37 [INFO]: Redis connected successfully 
+2026-06-13 08:53:37 [INFO]: getting to  port .. 
+2026-06-13 08:53:37 [INFO]: Server running on port 3000 
+2026-06-13 08:53:48 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:49 [INFO]: Database pool connected 
+2026-06-13 08:53:49 [INFO]: Database extensions initialized 
+2026-06-13 08:53:49 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:49 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:49 [INFO]: Database connected successfully 
+2026-06-13 08:53:49 [INFO]: Redis connecting... 
+2026-06-13 08:53:49 [INFO]: Redis connected successfully 
+2026-06-13 08:53:49 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:49 [INFO]: Redis connected successfully 
+2026-06-13 08:53:49 [INFO]: getting to  port .. 
+2026-06-13 08:53:49 [INFO]: Server running on port 3000 
+2026-06-13 08:53:57 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:53:57 [INFO]: Database pool connected 
+2026-06-13 08:53:57 [INFO]: Database extensions initialized 
+2026-06-13 08:53:57 [INFO]: Database connected successfully at Sat Jun 13 2026 08:53:57 GMT+0100 (West Africa Time) 
+2026-06-13 08:53:57 [INFO]: Database connected successfully 
+2026-06-13 08:53:57 [INFO]: Redis connecting... 
+2026-06-13 08:53:57 [INFO]: Redis connected successfully 
+2026-06-13 08:53:57 [INFO]: Redis initialized and connected 
+2026-06-13 08:53:57 [INFO]: Redis connected successfully 
+2026-06-13 08:53:57 [INFO]: getting to  port .. 
+2026-06-13 08:53:57 [INFO]: Server running on port 3000 
+2026-06-13 08:54:02 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:54:03 [INFO]: Database pool connected 
+2026-06-13 08:54:03 [INFO]: Database extensions initialized 
+2026-06-13 08:54:03 [INFO]: Database connected successfully at Sat Jun 13 2026 08:54:03 GMT+0100 (West Africa Time) 
+2026-06-13 08:54:03 [INFO]: Database connected successfully 
+2026-06-13 08:54:03 [INFO]: Redis connecting... 
+2026-06-13 08:54:03 [INFO]: Redis connected successfully 
+2026-06-13 08:54:03 [INFO]: Redis initialized and connected 
+2026-06-13 08:54:03 [INFO]: Redis connected successfully 
+2026-06-13 08:54:03 [INFO]: getting to  port .. 
+2026-06-13 08:54:03 [INFO]: Server running on port 3000 
+2026-06-13 08:54:08 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:54:08 [INFO]: Database pool connected 
+2026-06-13 08:54:08 [INFO]: Database extensions initialized 
+2026-06-13 08:54:08 [INFO]: Database connected successfully at Sat Jun 13 2026 08:54:08 GMT+0100 (West Africa Time) 
+2026-06-13 08:54:08 [INFO]: Database connected successfully 
+2026-06-13 08:54:08 [INFO]: Redis connecting... 
+2026-06-13 08:54:08 [INFO]: Redis connected successfully 
+2026-06-13 08:54:08 [INFO]: Redis initialized and connected 
+2026-06-13 08:54:08 [INFO]: Redis connected successfully 
+2026-06-13 08:54:08 [INFO]: getting to  port .. 
+2026-06-13 08:54:08 [INFO]: Server running on port 3000 
+2026-06-13 08:54:14 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:54:15 [INFO]: Database pool connected 
+2026-06-13 08:54:15 [INFO]: Database extensions initialized 
+2026-06-13 08:54:15 [INFO]: Database connected successfully at Sat Jun 13 2026 08:54:15 GMT+0100 (West Africa Time) 
+2026-06-13 08:54:15 [INFO]: Database connected successfully 
+2026-06-13 08:54:15 [INFO]: Redis connecting... 
+2026-06-13 08:54:15 [INFO]: Redis connected successfully 
+2026-06-13 08:54:15 [INFO]: Redis initialized and connected 
+2026-06-13 08:54:15 [INFO]: Redis connected successfully 
+2026-06-13 08:54:15 [INFO]: getting to  port .. 
+2026-06-13 08:54:15 [INFO]: Server running on port 3000 
+2026-06-13 08:54:19 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:54:19 [INFO]: Database pool connected 
+2026-06-13 08:54:19 [INFO]: Database extensions initialized 
+2026-06-13 08:54:19 [INFO]: Database connected successfully at Sat Jun 13 2026 08:54:19 GMT+0100 (West Africa Time) 
+2026-06-13 08:54:19 [INFO]: Database connected successfully 
+2026-06-13 08:54:19 [INFO]: Redis connecting... 
+2026-06-13 08:54:19 [INFO]: Redis connected successfully 
+2026-06-13 08:54:19 [INFO]: Redis initialized and connected 
+2026-06-13 08:54:19 [INFO]: Redis connected successfully 
+2026-06-13 08:54:19 [INFO]: getting to  port .. 
+2026-06-13 08:54:19 [INFO]: Server running on port 3000 
+2026-06-13 08:56:27 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:56:27 [INFO]: Database pool connected 
+2026-06-13 08:56:27 [INFO]: Database extensions initialized 
+2026-06-13 08:56:27 [INFO]: Database connected successfully at Sat Jun 13 2026 08:56:27 GMT+0100 (West Africa Time) 
+2026-06-13 08:56:27 [INFO]: Database connected successfully 
+2026-06-13 08:56:27 [INFO]: Redis connecting... 
+2026-06-13 08:56:27 [INFO]: Redis connected successfully 
+2026-06-13 08:56:27 [INFO]: Redis initialized and connected 
+2026-06-13 08:56:27 [INFO]: Redis connected successfully 
+2026-06-13 08:56:27 [INFO]: getting to  port .. 
+2026-06-13 08:56:27 [INFO]: Server running on port 3000 
+2026-06-13 08:56:32 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:56:32 [INFO]: Database pool connected 
+2026-06-13 08:56:32 [INFO]: Database extensions initialized 
+2026-06-13 08:56:32 [INFO]: Database connected successfully at Sat Jun 13 2026 08:56:32 GMT+0100 (West Africa Time) 
+2026-06-13 08:56:32 [INFO]: Database connected successfully 
+2026-06-13 08:56:32 [INFO]: Redis connecting... 
+2026-06-13 08:56:32 [INFO]: Redis connected successfully 
+2026-06-13 08:56:32 [INFO]: Redis initialized and connected 
+2026-06-13 08:56:32 [INFO]: Redis connected successfully 
+2026-06-13 08:56:32 [INFO]: getting to  port .. 
+2026-06-13 08:56:32 [INFO]: Server running on port 3000 
+2026-06-13 08:56:38 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:56:39 [INFO]: Database pool connected 
+2026-06-13 08:56:39 [INFO]: Database extensions initialized 
+2026-06-13 08:56:39 [INFO]: Database connected successfully at Sat Jun 13 2026 08:56:39 GMT+0100 (West Africa Time) 
+2026-06-13 08:56:39 [INFO]: Database connected successfully 
+2026-06-13 08:56:39 [INFO]: Redis connecting... 
+2026-06-13 08:56:39 [INFO]: Redis connected successfully 
+2026-06-13 08:56:39 [INFO]: Redis initialized and connected 
+2026-06-13 08:56:39 [INFO]: Redis connected successfully 
+2026-06-13 08:56:39 [INFO]: getting to  port .. 
+2026-06-13 08:56:39 [INFO]: Server running on port 3000 
+2026-06-13 08:56:40 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:56:40 [INFO]: Database pool connected 
+2026-06-13 08:56:40 [INFO]: Database extensions initialized 
+2026-06-13 08:56:40 [INFO]: Database connected successfully at Sat Jun 13 2026 08:56:40 GMT+0100 (West Africa Time) 
+2026-06-13 08:56:40 [INFO]: Database connected successfully 
+2026-06-13 08:56:40 [INFO]: Redis connecting... 
+2026-06-13 08:56:40 [INFO]: Redis connected successfully 
+2026-06-13 08:56:40 [INFO]: Redis initialized and connected 
+2026-06-13 08:56:40 [INFO]: Redis connected successfully 
+2026-06-13 08:56:40 [INFO]: getting to  port .. 
+2026-06-13 08:56:40 [INFO]: Server running on port 3000 
+2026-06-13 08:57:12 [INFO]: Database pool connected 
+2026-06-13 08:57:13 [INFO]: Database pool connected 
+2026-06-13 08:57:52 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:57:52 [INFO]: Database pool connected 
+2026-06-13 08:57:52 [INFO]: Database extensions initialized 
+2026-06-13 08:57:52 [INFO]: Database connected successfully at Sat Jun 13 2026 08:57:52 GMT+0100 (West Africa Time) 
+2026-06-13 08:57:52 [INFO]: Database connected successfully 
+2026-06-13 08:57:52 [INFO]: Redis connecting... 
+2026-06-13 08:57:52 [INFO]: Redis connected successfully 
+2026-06-13 08:57:52 [INFO]: Redis initialized and connected 
+2026-06-13 08:57:52 [INFO]: Redis connected successfully 
+2026-06-13 08:57:52 [INFO]: getting to  port .. 
+2026-06-13 08:57:52 [INFO]: Server running on port 3000 
+2026-06-13 08:57:53 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:57:53 [INFO]: Database pool connected 
+2026-06-13 08:57:53 [INFO]: Database extensions initialized 
+2026-06-13 08:57:53 [INFO]: Database connected successfully at Sat Jun 13 2026 08:57:53 GMT+0100 (West Africa Time) 
+2026-06-13 08:57:53 [INFO]: Database connected successfully 
+2026-06-13 08:57:53 [INFO]: Redis connecting... 
+2026-06-13 08:57:53 [INFO]: Redis connected successfully 
+2026-06-13 08:57:53 [INFO]: Redis initialized and connected 
+2026-06-13 08:57:53 [INFO]: Redis connected successfully 
+2026-06-13 08:57:53 [INFO]: getting to  port .. 
+2026-06-13 08:57:53 [INFO]: Server running on port 3000 
+2026-06-13 08:57:58 [INFO]: Database pool connected 
+2026-06-13 08:59:22 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:59:23 [INFO]: Database pool connected 
+2026-06-13 08:59:23 [INFO]: Database extensions initialized 
+2026-06-13 08:59:23 [INFO]: Database connected successfully at Sat Jun 13 2026 08:59:23 GMT+0100 (West Africa Time) 
+2026-06-13 08:59:23 [INFO]: Database connected successfully 
+2026-06-13 08:59:23 [INFO]: Redis connecting... 
+2026-06-13 08:59:23 [INFO]: Redis connected successfully 
+2026-06-13 08:59:23 [INFO]: Redis initialized and connected 
+2026-06-13 08:59:23 [INFO]: Redis connected successfully 
+2026-06-13 08:59:23 [INFO]: getting to  port .. 
+2026-06-13 08:59:23 [INFO]: Server running on port 3000 
+2026-06-13 08:59:30 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:59:30 [INFO]: Database pool connected 
+2026-06-13 08:59:30 [INFO]: Database extensions initialized 
+2026-06-13 08:59:30 [INFO]: Database connected successfully at Sat Jun 13 2026 08:59:30 GMT+0100 (West Africa Time) 
+2026-06-13 08:59:30 [INFO]: Database connected successfully 
+2026-06-13 08:59:30 [INFO]: Redis connecting... 
+2026-06-13 08:59:30 [INFO]: Redis connected successfully 
+2026-06-13 08:59:30 [INFO]: Redis initialized and connected 
+2026-06-13 08:59:30 [INFO]: Redis connected successfully 
+2026-06-13 08:59:30 [INFO]: getting to  port .. 
+2026-06-13 08:59:30 [INFO]: Server running on port 3000 
+2026-06-13 08:59:33 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:59:33 [INFO]: Database pool connected 
+2026-06-13 08:59:33 [INFO]: Database extensions initialized 
+2026-06-13 08:59:33 [INFO]: Database connected successfully at Sat Jun 13 2026 08:59:33 GMT+0100 (West Africa Time) 
+2026-06-13 08:59:33 [INFO]: Database connected successfully 
+2026-06-13 08:59:33 [INFO]: Redis connecting... 
+2026-06-13 08:59:33 [INFO]: Redis connected successfully 
+2026-06-13 08:59:33 [INFO]: Redis initialized and connected 
+2026-06-13 08:59:33 [INFO]: Redis connected successfully 
+2026-06-13 08:59:33 [INFO]: getting to  port .. 
+2026-06-13 08:59:33 [INFO]: Server running on port 3000 
+2026-06-13 08:59:36 [INFO]: Firebase Admin SDK initialized successfully 
+2026-06-13 08:59:36 [INFO]: Database pool connected 
+2026-06-13 08:59:36 [INFO]: Database extensions initialized 
+2026-06-13 08:59:36 [INFO]: Database connected successfully at Sat Jun 13 2026 08:59:36 GMT+0100 (West Africa Time) 
+2026-06-13 08:59:36 [INFO]: Database connected successfully 
+2026-06-13 08:59:36 [INFO]: Redis connecting... 
+2026-06-13 08:59:36 [INFO]: Redis connected successfully 
+2026-06-13 08:59:36 [INFO]: Redis initialized and connected 
+2026-06-13 08:59:36 [INFO]: Redis connected successfully 
+2026-06-13 08:59:36 [INFO]: getting to  port .. 
+2026-06-13 08:59:36 [INFO]: Server running on port 3000 
+2026-06-13 09:00:01 [INFO]: Database pool connected 
+2026-06-13 09:00:01 [INFO]: User logged in: dev@gmail.com / +2348137121315 
+2026-06-13 09:00:55 [INFO]: SIGINT received. Starting graceful shutdown... 
+2026-06-13 09:01:08 [INFO]: Running pending migrations... 
+2026-06-13 09:01:08 [INFO]: Database pool connected 
+2026-06-13 09:01:08 [INFO]: Migrations table ready 
+2026-06-13 09:01:08 [INFO]: Found 1 pending migration(s) 
+2026-06-13 09:01:09 [INFO]: Executed migration: 033_create_fee_table.js 
+2026-06-13 09:01:09 [INFO]: All migrations executed successfully 
