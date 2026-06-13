@@ -20,6 +20,16 @@ class AdminController {
       next(error);
     }
   }
+
+    static async getAllAdmin(req, res, next) {
+    try {
+      const roles = await AdminService.getAllAdmin();
+      sendSuccess(res, roles, 'Admins retrieved');
+    } catch (error) {
+      sendError(res, error.message || 'Fail to get admins', error.statusCode || 500);
+      next(error);
+    }
+  }
   
   static async createAdmin(req, res, next) {
     const errors = validationResult(req);
@@ -35,6 +45,22 @@ class AdminController {
       next(error);
     }
   }
+
+    static async createBasicAdmin(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+    
+    try {
+      const admin = await AdminService.createAdmin(req.body);
+      sendSuccess(res, admin, 'Admin created', 201);
+    } catch (error) {
+      sendError(res, error.message || 'Fail to create admin', error.statusCode || 500);
+      next(error);
+    }
+  }
+  
   
   static async updateAdminRole(req, res, next) {
     const errors = validationResult(req);

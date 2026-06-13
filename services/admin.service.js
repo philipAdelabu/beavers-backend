@@ -824,6 +824,49 @@ class AdminService {
   }
   
   // ==================== Admin User Management ====================
+
+   static async createBasicAdmin(adminData) {
+    const { email, phone, password, fullName } = adminData;
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const userId = uuidv4();
+      
+      await client.query(
+        `INSERT INTO users (id, email, phone, password_hash, user_type, is_verified, verification_status, is_active)
+         VALUES ($1, $2, $3, $4, 'admin', true, 'verified', true)`,
+        [userId, email, phone, hashedPassword]
+      );
+
+      const admin_role = await client.query(
+       `SELECT * FROM admin_roles  WHERE name = 'super_admin'`
+      );
+      
+      if(admin_role.rows[0].name === 'super_admin'){
+        const roleId = admin_role.rows[0].id;
+          await client.query(
+        `INSERT INTO admin_profiles (user_id, role_id, full_name, department)
+         VALUES ($1, $2, $3, $4)`,
+        [userId, roleId, fullName, 'HR']
+      );
+      }
+    
+      
+      await client.query('COMMIT');
+      
+      await this.logAdminActivity(userId, 'admin_created', adminData);
+      
+      return { userId, email, fullName };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
   
   static async createAdmin(adminData) {
     const { email, phone, password, fullName, roleId, department } = adminData;
@@ -866,6 +909,18 @@ class AdminService {
     );
     return result.rows;
   }
+
+  static async getAllAdmin() {
+    const result = await pool.query(
+      `SELECT ap.*, u.email, u.phone, u.id as user_id, ar.name as role_type, ar.permissions, ar.description,
+      ar.is_active as is_role_active 
+      FROM users u JOIN admin_profiles ap ON u.id = ap.user_id
+      LEFT JOIN admin_roles ar ON ar.id = ap.role_id 
+       ORDER BY name ASC`
+    );
+    return result.rows;
+  }
+
   
   static async updateAdminRole(adminId, roleId) {
     const result = await pool.query(

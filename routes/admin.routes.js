@@ -16,12 +16,20 @@ router.post('/auth/forgot-password', [
   body('email').isEmail(),
 ], AdminController.forgotPassword);
 
+router.post('/auth/create/basic_admin', [
+  body('email').isEmail(),
+  body('phone').matches(/^\+?[0-9]{10,15}$/),
+  body('password').isLength({ min: 8 }),
+  body('fullName').notEmpty(),
+], AdminController.createBasicAdmin);
 
 // Reset Password 
 router.post('/auth/reset-password', [
   body('token').notEmpty(),
   body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
 ], AdminController.resetPassword);
+
+
 
 // All admin routes require authentication and admin role
 router.use(authenticateToken);
@@ -105,6 +113,8 @@ router.post('/users/:userId/suspend', [
 router.post('/users/:userId/activate', [
   param('userId').isUUID(),
 ], AdminController.activateUser);
+
+router.get('/admins', AdminController.getAllAdmin);
 
 
 // ==================== Verification Management ====================
