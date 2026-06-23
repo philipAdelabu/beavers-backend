@@ -5,6 +5,9 @@ const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
+const BillingService = require('./billing.service');
+const EscrowService = require('./escrow.service');
+const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 
 // Paystack API configuration
 let PAYSTACK_SECRET_KEY;
@@ -26,6 +29,21 @@ const paystackAxios = axios.create({
 });
 
 class PaymentService {
+
+
+
+
+
+
+    static async getJobBilling(jobId){
+      try{
+      const jobBilling = await BillingService.calculateJobCost(jobId);
+      return jobBilling;
+      }catch(error){
+        throw error;
+      }
+    }
+
   /**
    * Initialize payment for a job
    * @param {string} jobId - Job ID
@@ -33,7 +51,7 @@ class PaymentService {
    * @param {string} email - Client email
    * @returns {Promise<Object>} Payment authorization URL
    */
-  static async initializePayment(jobId, clientId, email) {
+  static async initializePayment(jobId, amount, clientId, email) {
     const client = await pool.connect();
     
     try {
@@ -52,23 +70,19 @@ class PaymentService {
       }
       
       const billing = billingResult.rows[0];
-      let totalAmount = 0;
-     
-      if (billing.billing_mode === 'quoted'){
-        totalAmount = parseFloat(billing.quoted_amount);
-      }else {
-      totalAmount = parseFloat((billing.base_fee || 0));
-      totalAmount += parseFloat((billing.diagnostics_fee || 0));
-      totalAmount += parseFloat((billing.execution_fee || 0));
-      totalAmount += parseFloat((billing.materials_cost || 0));
-      totalAmount += parseFloat((billing.workmanship_cost || 0));
+      const bill = BillingService.getJobBilling(jobId);
+
+      let totalAmount = parseFloat(bill.total);
+
+      if(parseFloat(amount) !== totalAmount){
+        throw new AppError(400, `Invalid payment amount. Amount required is: ${totalAmount}`);
       }
-      
-      if (totalAmount <= 0) {
+    
+      if (!totalAmount || totalAmount <= 0) {
         throw new AppError(400, 'Invalid payment amount');
       }
 
-      totalAmount = parseInt(totalAmount);
+      totalAmount = parseInt(totalAmount, 10);
 
       // Create unique reference
       const reference = this.generateReference(jobId);
@@ -78,8 +92,8 @@ class PaymentService {
       const paystackData = {
         amount: Math.round(totalAmount * 100), // Convert to kobo
         currency: 'NGN',
-        email: email,
-        reference: reference,
+        email,
+        reference,
         metadata: {
           job_id: jobId,
           client_id: clientId,
@@ -146,6 +160,30 @@ class PaymentService {
       const result = await client.query(
         `SELECT job_id, client_id, payment_intent_id, client_secret, amount, currency, status, metadata, status, failure_reason, paid_at, failed_at, created_at, updated_at  FROM payment_intents WHERE job_id = $1 AND client_id = $2`,
         [jobId, clientId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Payment intent not found');
+      }
+      
+      return result.rows;
+    } catch (error) {
+      throw new AppError(500, error.message || 'Failed to retrieve payment intent');
+    } finally {
+      client.release();
+    }
+  }
+
+    static async getPendingPaymentIntent(clientId) {
+    const client = await pool.connect();
+    
+    try {
+      const result = await client.query(
+        `SELECT job_id, 
+        client_id, payment_intent_id, client_secret, amount, 
+        currency, status, metadata, status, failure_reason, paid_at, 
+        failed_at, created_at, updated_at  FROM payment_intents WHERE status <> 'succeeded' AND client_id = $1`,
+        [clientId]
       );
       
       if (result.rows.length === 0) {
@@ -231,51 +269,24 @@ class PaymentService {
            WHERE payment_intent_id = $2`,
           [metadata, reference]
         );
-        
-        // Move funds to escrow
-        await client.query(
-          `INSERT INTO escrow_transactions (job_id, client_id, amount, transaction_type, status, dispute_buffer_until)
-           VALUES ($1, $2, $3, 'full_payment', 'held', NOW() + INTERVAL '3 days')`,
-          [payment.job_id, clientId, transaction.amount / 100]
-        );
-        
-        // Release base fee immediately (non-refundable)
-        await client.query(
-          `UPDATE escrow_transactions 
-           SET status = 'released', release_date = NOW()
-           WHERE job_id = $1 AND transaction_type = 'base_fee'`,
-          [payment.job_id]
-        );
-        
-        // Release materials cost immediately
-        await client.query(
-          `UPDATE escrow_transactions 
-           SET status = 'released', release_date = NOW()
-           WHERE job_id = $1 AND transaction_type = 'materials'`,
-          [payment.job_id]
-        );
-        
-        // Update job billing status
-        await client.query(
-          `UPDATE job_billing 
-           SET billing_status = 'paid', paid_at = NOW()
-           WHERE job_id = $1`,
-          [payment.job_id]
-        );
-        
-         await client.query('COMMIT');
-        
+    
+         await this.processEscrow(payment.job_id, clientId, payment.amount);
+
         // Send notifications
+        if(process.env.NODE_ENV === 'production'){
         await this.sendPaymentSuccessNotifications(payment.job_id, clientId, transaction.amount / 100);
-        
+        }else{
         logger.info(`Payment verified successfully for job ${payment.job_id}: ₦${transaction.amount / 100}`);
-        
+        }
+
+        await client.query('COMMIT');
         return {
           status: 'succeeded',
           amount: transaction.amount / 100,
           reference: reference,
           message: 'Payment verified successfully',
         };
+
       } else {
         await client.query(
           `UPDATE payment_intents 
@@ -285,7 +296,7 @@ class PaymentService {
            WHERE payment_intent_id = $2`,
           [transaction.gateway_response || 'Payment failed', reference]
         );
-        
+        await client.query('COMMIT');
         return {
           status: 'failed',
           message: transaction.gateway_response || 'Payment failed'
@@ -298,6 +309,82 @@ class PaymentService {
     } finally {
       client.release();
     }
+  }
+
+
+  static async processEscrow(jobId, clientId, amount){
+       const client = await pool.connect();
+       try{
+        await client.query('BEGIN');
+
+        const jobResult = await client.query(
+          `SELECT j.client_id, j.artisan_id, jb.job_id, jb.base_fee, jb.material_cost, jb.diagnostics_fee, jb.execution_fee,
+          jb.workmanship_cost, jb.total_amount, jb.platform_fee  
+           FROM jobs j JOIN job_billing jb ON j.id = jb.job_id 
+           WHERE j.id = $1`, [jobId]);
+
+        if(jobResult.rows.length !== 1){
+          throw AppError(404, 'The job reference could not be found');
+        }
+
+        const job = jobResult.rows[0];
+      
+        const escrowData = {
+           jobId: payment.job_id,
+           clientId,
+           artisanId: payment.artisan_id,
+           amount,
+           transactiontype: 'full_payment',
+           status: 'held',
+           disputeBufferDays: 3,
+        };
+
+        await EscrowService.createHold(escrowData);
+
+        escrowData.transactionType = 'base_fee';
+        escrowData.status  = 'release';
+        escrowData.disputeBufferDays = 0;
+        // Release base fee immediately (non-refundable)
+        await EscrowService.createHold(escrowData);
+ 
+        if(job.material_cost > 0){
+             // release materials cost immediately
+              escrowData.transactionType = 'materials';
+             await EscrowService.createHold(escrowData); 
+        }
+       
+        if(job.diagnostics_fee > 0){
+             // release materials cost immediately
+              escrowData.transactionType = 'diagnotics';
+             await EscrowService.createHold(escrowData); 
+        }
+
+        if(job.execution_fee > 0){
+               escrowData.transactionType = 'execution';
+               escrowData.status = 'held',
+               escrowData.disputeBufferDays = 3,
+             await EscrowService.createHold(escrowData); 
+        }
+
+
+        if(job.workmanship_cost > 0){
+              escrowData.transactionType = 'workmanship';
+             await EscrowService.createHold(escrowData); 
+        }
+    
+        // Update job billing status
+        await client.query(
+          `UPDATE job_billing 
+           SET billing_status = 'paid', paid_at = NOW()
+           WHERE job_id = $1`,
+          [jobId]
+        );
+         
+         await client.query('COMMIT');
+       }catch(error){
+        await client.query('ROLLBACK');
+        throw error;
+       }
   }
   
   /**

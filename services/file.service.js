@@ -10,7 +10,7 @@ class FileService {
    * @param {string} userId - User ID
    * @param {string} fileType - Type of file
    * @param {string} filePath - Path to file
-   * @param {Object} metadata - Additional metadata
+   * @param {Object} metadata - Additional metadata 
    * @returns {Promise<Object>} File record
    */
   static async saveFileReference(userId, fileType, filePath, metadata = {}) {

@@ -6,6 +6,25 @@ const { pool } = require('./database');
 
 
 
+/*
+  key: [notification_settings, job_settings, maintenance_mode, platform_fees]
+*/
+const sysConfig = async (key) => {
+      const client = await pool.connect(); 
+      const sys_conf =  await client.query(
+        ` SELECT value FROM system_configurations WHERE key = $1`, [key]);
+
+        return sys_conf.rows[0];
+};
+
+
+const NOTIFICATION_SETTINGS = sysConfig('notification_settings');
+const JOB_SETTINGS = sysConfig('job_settings');
+const MAINTENANCE_MODE = sysConfig('maintenance_mode');
+const PLATFORM_FEES = sysConfig('platform_fees');
+const GeoFENCE = sysConfig('geofence');
+const JOB_SETTING_TIMEOUT = sysConfig('job_setting_timeouts');
+
 // User Types
 const USER_TYPES = {
   CLIENT: 'client',
@@ -270,16 +289,16 @@ const FILE_UPLOAD = {
 
 // Geofence Defaults
 const GEOFENCE = {
-  DEFAULT_RADIUS: 100, // meters
-  ARRIVAL_RADIUS: 50, // meters
-  CHECK_INTERVAL: 30 // seconds
+  DEFAULT_RADIUS: GeoFENCE.default_radius || process.env.GEOFENCE_RADIUS_METERS, // meters
+  ARRIVAL_RADIUS: GeoFENCE.arrival_radius || process.env.GEOFENCE_RADIUS_METERS, // meters
+  CHECK_INTERVAL: GeoFENCE.check_interval || process.env.GEOFENCE_CHECK_INTERVAL_SECONDS, // seconds
 };
 
 // Timeouts (in seconds)
 const TIMEOUTS = {
-  JOB_OFFER_EXPIRY: 120, // 2 minutes
-  ARRIVAL_PIN_EXPIRY: 1800, // 30 minutes
-  DISPUTE_BUFFER: 3 * 24 * 60 * 60, // 3 days
+  JOB_OFFER_EXPIRY: JOB_SETTING_TIMEOUT.job_offer_expiry || process.env.JOB_OFFER_EXPIRY_MINUTES, // 2 minutes
+  ARRIVAL_PIN_EXPIRY: JOB_SETTING_TIMEOUT.arrival_pin_expiry || process.env.JOB_GENERATED_PIN_ARRIVAL_EXPIRES_MINUTES, // 30 minutes
+  DISPUTE_BUFFER: JOB_SETTING_TIMEOUT.dispute_buffer || process.env.JOB_DISPUTE_BUFFER, // 3 days
   CACHE_DEFAULT: 3600, // 1 hour
   CACHE_USER_SESSION: 86400, // 24 hours
   CACHE_LOCATION: 60 // 1 minute
@@ -287,12 +306,12 @@ const TIMEOUTS = {
 
 // Pricing Defaults
 const PRICING = {
-  BASE_FEE: 2500,
-  DIAGNOSTICS_RATE_PER_MINUTE: 500,
-  EXECUTION_RATE_PER_MINUTE: 1000,
-  PLATFORM_COMMISSION_PERCENT: 10,
-  MONTHLY_TECHNOLOGY_FEE: 5000,
-  ARTISAN_ONBOARDING_FEE: 5000
+  BASE_FEE: PLATFORM_FEES.base_fee || process.env.BASE_FEE,
+  DIAGNOSTICS_RATE_PER_MINUTE: PLATFORM_FEES.diagnostics_rate || process.env.DIAGNOSTICS_RATE_PER_MINUTE,
+  EXECUTION_RATE_PER_MINUTE: PLATFORM_FEES.execution_rate || process.env.EXECUTION_RATE_PER_MINUTE,
+  PLATFORM_COMMISSION_PERCENT: PLATFORM_FEES.commission_percent || process.env.PLATFORM_COMMISSION_PERCENT,
+  MONTHLY_TECHNOLOGY_FEE: PLATFORM_FEES.monthly_technology_fee || process.env.MONTHLY_TECHNOLOGY_FEE,
+  ARTISAN_ONBOARDING_FEE: PLATFORM_FEES.onboarding_rate || process.env.ARTISAN_ONBOARDING_FEE,
 };
 
 // Socket Events

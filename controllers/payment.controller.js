@@ -1,9 +1,9 @@
+const { validationResult } = require('express-validator');
 const PaymentService = require('../services/payment.service');
 const EscrowService = require('../services/escrow.service');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
-const { AppError } = require('../middleware/error.middleware');
-const { validationResult } = require('express-validator');
-const { logger } = require('../config/logger');
+
+
 
 class PaymentController {
   /**
@@ -18,10 +18,9 @@ class PaymentController {
 
     try {
       const { jobId } = req.params;
-      const clientId = req.user.id;
-      const email = req.user.email;
-      logger.info(`Initializing payment for job ${jobId} by client ${clientId}`);
-      const result = await PaymentService.initializePayment(jobId, clientId, email);
+      const { amount } = req.body;
+      const { email, id } = req.user;
+      const result = await PaymentService.initializePayment(jobId, amount, id, email);
       sendSuccess(res, result, 'Payment initialized successfully');
     } catch (error) {
       sendError(res, error.message || 'Failed to initialize payment', error.statusCode || 500);
@@ -29,6 +28,23 @@ class PaymentController {
     }
   }
   
+   static async getJobBilling(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const { jobId } = req.params;
+      const clientId = req.user.id;
+      const result = await PaymentService.getJobBilling(jobId, clientId);
+      sendSuccess(res, result, 'Job billing retrieved successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve job billing', error.statusCode || 500);
+      next(error);
+    }
+  }
+
   static async getPaymentIntent(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -46,7 +62,22 @@ class PaymentController {
     }
   }
 
-static async getPaymentStatus(req, res, next) {
+  static async getPendingPaymentIntent(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try {
+      const clientId = req.user.id;
+      const result = await PaymentService.getPendingPaymentIntent(clientId);
+      sendSuccess(res, result, 'Pending Payment intents retrieved successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve pending payment intent', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+  static async getPaymentStatus(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());

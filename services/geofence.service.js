@@ -3,6 +3,7 @@ const { cacheGet, cacheSet } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { calculateDistance } = require('../utils/geo.utils');
+const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 
 class GeofenceService {
   static async createGeofence(jobId, centerLat, centerLng, radius = 100, expirationHours = 2) {

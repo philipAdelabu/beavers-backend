@@ -28,17 +28,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 }));
 
 // Import routes
-const authRoutes = require('./routes/auth.routes');
-const clientRoutes = require('./routes/client.routes');
-const artisanRoutes = require('./routes/artisan.routes');
-const jobRoutes = require('./routes/job.routes');
-const paymentRoutes = require('./routes/payment.routes');
 
-const adminRoutes = require('./routes/admin.routes');
-const locationRoutes = require('./routes/location.routes');
-const boqRoutes = require('./routes/boq.routes');
-const warehouseRoutes = require('./routes/warehouse.routes');
-
+const router = require('./routes/index');
 // Import services
 const { pool, initializeDatabase } = require('./config/database');
 const { redis, initializeRedis } = require('./config/redis');
@@ -48,15 +39,8 @@ const { logger } = require('./config/logger');
 app.get('/', (req, res) => {
   res.send(`Welcome to the BeaverWorks API!  ${new Date().toISOString()}`);
 });
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/clients', clientRoutes);
-app.use('/api/v1/artisans', artisanRoutes);
-app.use('/api/v1/jobs', jobRoutes);
-app.use('/api/v1/payments', paymentRoutes);
-app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/location', locationRoutes);
-app.use('/api/v1/boq', boqRoutes);
-app.use('/api/v1/warehouse', warehouseRoutes);
+
+app.use('/api/v1', router);
 
 // Health check
 app.get('/health', (req, res) => {

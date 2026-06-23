@@ -6,6 +6,7 @@ const { cacheSet, cacheGet } = require('../config/redis');
 const { sendEmail, sendSMS } = require('../services/notification.service');
 const { logger } = require('../config/logger');
 const { sendSuccess, sendError } = require('../utils/response');
+const { authenticateToken, requireRole, requirePermissions } = require('../middleware/auth.middleware');
 
 // Stripe webhook handler
 router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res) => {

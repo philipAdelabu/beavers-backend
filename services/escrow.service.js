@@ -19,14 +19,14 @@ class EscrowService {
 
 
   static async createHold(escrowData) {
-    const { jobId, clientId, artisanId, amount, transactionType, disputeBufferDays = 3 } = escrowData;
+    const { jobId, clientId, artisanId, amount, transactionType, status, disputeBufferDays = 3 } = escrowData;
     
     const result = await pool.query(
       `INSERT INTO escrow_transactions 
        (job_id, client_id, artisan_id, amount, transaction_type, status, dispute_buffer_until)
-       VALUES ($1, $2, $3, $4, $5, 'held', NOW() + ($6 || ' days')::INTERVAL)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW() + ($7 || ' days')::INTERVAL)
        RETURNING *`,
-      [jobId, clientId, artisanId, amount, transactionType, disputeBufferDays]
+      [jobId, clientId, artisanId, amount, transactionType, status, disputeBufferDays]
     );
     
     logger.info(`Escrow hold created: ${result.rows[0].id} - ${transactionType}: ₦${amount}`);

@@ -8,12 +8,20 @@ const { paymentLimiter } = require('../middleware/rateLimit.middleware');
 // All payment routes require authentication
 router.use(authenticateToken);
 
+
+router.get('/job/billing/:jobId', [
+  param('jobId').isUUID().withMessage('Invalid job ID'),
+], PaymentController.getJobBilling);
+
 // Payment initialization and verification
 router.post('/initialize/:jobId', paymentLimiter, [
-  param('jobId').isUUID().withMessage('Invalid job ID')
+  param('jobId').isUUID().withMessage('Invalid job ID'),
+  body('amount').notEmpty().isNumeric(),
 ], PaymentController.initializePayment);
 
-router.get('/payment_intent/:jobId', [
+router.get('/payment/intent/pending', PaymentController.getPaymentIntent);
+
+router.get('/payment/intent/:jobId', [
   param('jobId').isUUID().withMessage('Invalid job ID'),
 ], PaymentController.getPaymentIntent);
 

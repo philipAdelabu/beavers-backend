@@ -5,6 +5,7 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const { generateArrivalPIN, calculateDistance } = require('../utils/geo.utils');
 const Wallet = require('../models/Wallet');
+const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 
 
 class JobService {
@@ -872,7 +873,8 @@ class JobService {
     // Calculate total amount
     const billingResult = await pool.query(
       `UPDATE job_billing 
-       SET billing_status = 'awaiting_payment'
+       SET billing_status = 'awaiting_payment',
+       total_amount = DIFF(SUM(base_fee, diagnostics_fee, execution_fee, materials_cost, workmanship_cost, platform_fee), discount_amount)
        WHERE job_id = $1
        RETURNING *`,
       [jobId]

@@ -33,71 +33,29 @@ class PaymentService {
    * @param {string} email - Client email
    * @returns {Promise<Object>} Payment authorization URL
    */
-  static async initializePayment(jobId, clientId, email) {
-    const client = await pool.connect();
-    
-    try {
-      await client.query('BEGIN');
-      // Get job billing details
-      const billingResult = await client.query(
-        `SELECT jb.*, j.client_id, j.artisan_id, j.category, j.description, j.billing_mode
-         FROM job_billing jb
-         JOIN jobs j ON jb.job_id = j.id
-         WHERE jb.job_id = $1 AND j.client_id = $2`,
-        [jobId, clientId]
-      );
-      
-      if (billingResult.rows.length === 0) {
-        throw new AppError(404, 'Job billing not found');
-      }
-      
-      const billing = billingResult.rows[0];
-      let totalAmount = 0;
+  static async initializePayment(refId, amount, userId, email, customFields) {
      
-      if (billing.billing_mode === 'quoted'){
-        totalAmount = parseFloat(billing.quoted_amount);
-      }else {
-      totalAmount = parseFloat((billing.base_fee || 0));
-      totalAmount += parseFloat((billing.diagnostics_fee || 0));
-      totalAmount += parseFloat((billing.execution_fee || 0));
-      totalAmount += parseFloat((billing.materials_cost || 0));
-      totalAmount += parseFloat((billing.workmanship_cost || 0));
-      }
-      
+    try {
+      // Get job billing details
+       const totalAmount = parseFloat(amount).toFixed(2);
       if (totalAmount <= 0) {
         throw new AppError(400, 'Invalid payment amount');
-      }
-
-      totalAmount = parseInt(totalAmount);
+       }
 
       // Create unique reference
-      const reference = this.generateReference(jobId);
-      
+      const reference = this.generateReference(refId);
 
       // Prepare Paystack initialization data
       const paystackData = {
         amount: Math.round(totalAmount * 100), // Convert to kobo
         currency: 'NGN',
-        email: email,
-        reference: reference,
+        email,
+        reference,
         metadata: {
-          job_id: jobId,
-          client_id: clientId,
-          billing_id: billing.id,
-          custom_fields: [
-            {
-              display_name: "Job Category",
-              variable_name: "category",
-              value: billing.category
-            },
-            {
-              display_name: "Job ID",
-              variable_name: "job_id",
-              value: jobId
-            }
-          ]
+          ref_id: refId,
+          custom_fields: customFields,
         },
-        callback_url: `${process.env.APP_FRONTEND_URL}/payment/verify?jobId=${jobId}`,
+        callback_url: `${process.env.APP_FRONTEND_URL}/payment/verify?refId=${refId}`,
         channels: ['card', 'bank_transfer', 'ussd', 'qr', 'mobile_money', 'bank']
       };
       
@@ -110,18 +68,8 @@ class PaymentService {
       
       // Store payment intent in database
       const metadata = response.data.data;
-      logger.info(`Paystack initialization response for job ${jobId}:`, response.data);
-  
-       const client_secret = `${jobId}_${clientId}`;
-      await client.query(
-        `INSERT INTO payment_intents (job_id, client_id, payment_intent_id, 
-        client_secret,  amount, currency, status, metadata)
-         VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7)`,
-        [jobId, clientId, metadata.reference, client_secret, totalAmount, 'NGN', metadata],
-      );
-      
-      logger.info(`Payment initialized for job ${jobId}: ₦${totalAmount}, Reference: ${metadata.reference}`);
-      await client.query('COMMIT');
+      logger.info(`Paystack initialization response for ref_id ${refId}:`, response.data);
+
       return {
         authorizationUrl: metadata.authorization_url,
         reference: metadata.reference,
@@ -132,20 +80,76 @@ class PaymentService {
         metadata,
       };
     } catch (error) {
-      await client.query('ROLLBACK');
       throw new AppError(500, error.response?.data?.message || error.message || 'Failed to initialize payment');
+    }
+  }
+
+   static async verifyPayment(reference, userId) {
+    const client = await pool.connect();
+    
+    try {
+      // Verify with Paystack
+      const response = await paystackAxios.get(`/transaction/verify/${reference}`);
+      
+      if (!response.data.status) {
+        throw new AppError(400, response.data.message || 'Verification failed');
+      }
+      
+      const transaction = response.data.data;
+      
+      if (transaction.status === 'success') {
+            await client.query(
+             `UPDATE fee_payment_intents 
+               SET status = 'succeeded', 
+               paid_at = NOW(),
+               metadata = $1 
+           WHERE payment_intent_id = $2`,
+          [transaction, reference]
+        );
+    
+        logger.info(`Payment verified successfully for ref. ${reference}: ₦${transaction.amount / 100}`);
+        
+        return {
+          status: 'succeeded',
+          amount: transaction.amount / 100,
+          reference,
+          message: 'Payment verified successfully',
+          user_id: userId,
+        };
+      } else {
+
+            await client.query(
+             `UPDATE fee_payment_intents 
+               SET status = 'failed', 
+               failure_reason = $1
+              WHERE payment_intent_id = $2`,
+          [transaction.gateway.response, reference]
+        );
+       
+        return {
+          status: 'failed',
+          message: transaction.gateway_response || 'Payment failed'
+        };
+      }
+    } catch (error) {
+  
+      logger.error('Payment verification error:', error);
+      throw new AppError(500, error.response?.data?.message || error.message || 'Failed to verify payment');
     } finally {
       client.release();
     }
   }
 
-  static async getPaymentIntent(jobId, clientId) {
+  static async getPaymentIntent(refId, userId) {
     const client = await pool.connect();
     
     try {
       const result = await client.query(
-        `SELECT job_id, client_id, payment_intent_id, client_secret, amount, currency, status, metadata, status, failure_reason, paid_at, failed_at, created_at, updated_at  FROM payment_intents WHERE job_id = $1 AND client_id = $2`,
-        [jobId, clientId]
+        `SELECT payment_reference as ref_id, artisan_id as user_id, payment_intent_id, 
+        client_secret as user_secret, amount, currency, status, metadata, 
+        status, failure_reason, paid_at, failed_at, created_at, updated_at  
+        FROM fee_payment_intents WHERE payment_reference = $1 AND client_id = $2`,
+        [refId, userId]
       );
       
       if (result.rows.length === 0) {
@@ -164,7 +168,8 @@ class PaymentService {
     const client = await pool.connect();
       try {
       const result = await client.query(
-        `SELECT job_id, status, amount, currency, metadata  FROM payment_intents WHERE payment_intent_id = $1`,
+        `SELECT payment_reference as ref_id, status, amount, 
+        currency, metadata  FROM fee_payment_intents WHERE payment_intent_id = $1`,
         [paymentIntentId]
       );
       
@@ -179,210 +184,22 @@ class PaymentService {
       client.release();
     }
   }
-  /**
-   * Verify payment after callback
-   * @param {string} reference - Paystack transaction reference
-   * @param {string} clientId - Client ID
-   * @returns {Promise<Object>} Payment verification result
-   */
-  static async verifyPayment(reference, clientId) {
-    const client = await pool.connect();
-    
-    try {
-      // Check if already processed
-      const existingPayment = await client.query(
-        `SELECT * FROM payment_intents WHERE payment_intent_id = $1 AND client_id = $2`,
-        [reference, clientId]
-      );
-      
-      if (existingPayment.rows.length === 0) {
-        throw new AppError(404, 'Payment record not found');
-      }
-      
-      const payment = existingPayment.rows[0];
-      
-      if (payment.status === 'succeeded') {
-        return {
-          status: 'succeeded',
-          amount: payment.amount,
-          message: 'Payment already verified'
-        };
-      }
-      
-      // Verify with Paystack
-      const response = await paystackAxios.get(`/transaction/verify/${reference}`);
-      
-      if (!response.data.status) {
-        throw new AppError(400, response.data.message || 'Verification failed');
-      }
-      
-      const transaction = response.data.data;
-      
-      if (transaction.status === 'success') {
-        await client.query('BEGIN');
-        const metadata = payment.metadata;
-          metadata.transaction = transaction;
-        // Update payment intent status
-        await client.query(
-          `UPDATE payment_intents 
-           SET status = 'succeeded', 
-               paid_at = NOW(),
-               metadata = $1 
-           WHERE payment_intent_id = $2`,
-          [metadata, reference]
-        );
-        
-        // Move funds to escrow
-        await client.query(
-          `INSERT INTO escrow_transactions (job_id, client_id, amount, transaction_type, status, dispute_buffer_until)
-           VALUES ($1, $2, $3, 'full_payment', 'held', NOW() + INTERVAL '3 days')`,
-          [payment.job_id, clientId, transaction.amount / 100]
-        );
-        
-        // Release base fee immediately (non-refundable)
-        await client.query(
-          `UPDATE escrow_transactions 
-           SET status = 'released', release_date = NOW()
-           WHERE job_id = $1 AND transaction_type = 'base_fee'`,
-          [payment.job_id]
-        );
-        
-        // Release materials cost immediately
-        await client.query(
-          `UPDATE escrow_transactions 
-           SET status = 'released', release_date = NOW()
-           WHERE job_id = $1 AND transaction_type = 'materials'`,
-          [payment.job_id]
-        );
-        
-        // Update job billing status
-        await client.query(
-          `UPDATE job_billing 
-           SET billing_status = 'paid', paid_at = NOW()
-           WHERE job_id = $1`,
-          [payment.job_id]
-        );
-        
-         await client.query('COMMIT');
-        
-        // Send notifications
-        await this.sendPaymentSuccessNotifications(payment.job_id, clientId, transaction.amount / 100);
-        
-        logger.info(`Payment verified successfully for job ${payment.job_id}: ₦${transaction.amount / 100}`);
-        
-        return {
-          status: 'succeeded',
-          amount: transaction.amount / 100,
-          reference: reference,
-          message: 'Payment verified successfully',
-        };
-      } else {
-        await client.query(
-          `UPDATE payment_intents 
-           SET status = 'failed', 
-               failure_reason = $1,
-               failed_at = NOW()
-           WHERE payment_intent_id = $2`,
-          [transaction.gateway_response || 'Payment failed', reference]
-        );
-        
-        return {
-          status: 'failed',
-          message: transaction.gateway_response || 'Payment failed'
-        };
-      }
-    } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error('Payment verification error:', error);
-      throw new AppError(500, error.response?.data?.message || error.message || 'Failed to verify payment');
-    } finally {
-      client.release();
-    }
-  }
+ 
+
+ 
   
   /**
    * Generate unique transaction reference
    * @param {string} jobId - Job ID
    * @returns {string} Unique reference
    */
-  static generateReference(jobId) {
+  static generateReference(refId) {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `BW-${jobId.slice(0, 8)}-${timestamp}-${random}`;
+    return `BW-${refId.slice(0, 8)}-${timestamp}-${random}`;
   }
   
-  /**
-   * Send payment success notifications
-   * @param {string} jobId - Job ID
-   * @param {string} clientId - Client ID
-   * @param {number} amount - Payment amount
-   * @returns {Promise<void>}
-   */
-  static async sendPaymentSuccessNotifications(jobId, clientId, amount) {
-    const client = await pool.connect();
-    
-    try {
-      const jobResult = await client.query(
-        `SELECT j.*, 
-                uc.email as client_email, cp.full_legal_name as client_name, uc.phone as client_phone,
-                ua.email as artisan_email, ap.full_legal_name as artisan_name, ua.phone as artisan_phone
-         FROM jobs j
-         JOIN client_profiles cp ON j.client_id = cp.user_id
-         JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
-         JOIN users uc ON uc.id = cp.user_id 
-         JOIN users ua ON ua.id = ap.user_id
-         WHERE j.id = $1`,
-        [jobId]
-      );
-      
-      const job = jobResult.rows[0];
-      
-      if (job) {
-        // Send email to client
-        await NotificationService.sendEmail(
-          job.client_email,
-          'Payment Confirmed',
-          `Your payment of ₦${amount.toLocaleString()} for job #${jobId.slice(0, 8)} has been confirmed.`,
-          `<h2>Payment Confirmed</h2>
-           <p>Dear ${job.client_name},</p>
-           <p>Your payment of <strong>₦${amount.toLocaleString()}</strong> for job #${jobId.slice(0, 8)} has been confirmed.</p>
-           <p>The funds are now held in escrow and will be released to the artisan upon job completion.</p>
-           <p>Thank you for using BeaverWorks!</p>`
-        );
-        
-        // Send SMS to client
-        if (job.client_phone) {
-          await NotificationService.sendSMS(
-            job.client_phone,
-            `BeaverWorks: Payment of ₦${amount.toLocaleString()} confirmed for job #${jobId.slice(0, 8)}.`
-          );
-        }
-        
-        // Send email to artisan (optional)
-        await NotificationService.sendEmail(
-          job.artisan_email,
-          'Payment Received for Job',
-          `Payment of ₦${amount.toLocaleString()} has been confirmed for job #${jobId.slice(0, 8)}. Funds will be released upon job completion.`,
-          `<h2>Payment Received</h2>
-           <p>Dear ${job.artisan_name},</p>
-           <p>Payment of <strong>₦${amount.toLocaleString()}</strong> has been confirmed for job #${jobId.slice(0, 8)}.</p>
-           <p>Funds will be released to your wallet after job completion and client confirmation.</p>
-           <p>Thank you for using BeaverWorks!</p>`
-        );
-      }
-    } finally {
-      client.release();
-    }
-  }
-  
-  /**
-   * Process refund
-   * @param {string} jobId - Job ID
-   * @param {string} clientId - Client ID
-   * @param {number} amount - Refund amount
-   * @param {string} reason - Refund reason
-   * @returns {Promise<Object>} Refund result
-   */
+
   static async createRefund(jobId, clientId, amount, reason) {
     const client = await pool.connect();
     

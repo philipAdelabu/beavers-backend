@@ -1058,7 +1058,7 @@ class AdminService {
   }
 
 
-      static async refreshToken(refreshToken) {
+  static async refreshToken(refreshToken) {
     try {
       const decoded = verifyRefreshToken(refreshToken);
       const storedToken = await cacheGet(`refresh_token:${decoded.userId}`);
@@ -1169,7 +1169,8 @@ class AdminService {
 
  
   
-  // ==================== Activity Logging ====================
+  // ==================== Activity Logging ==================== //
+
   
   static async getActivityLogs(filters = {}) {
     const { adminId, action, page = 1, limit = 50, startDate, endDate } = filters;
@@ -1238,8 +1239,10 @@ class AdminService {
       [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress, userAgent]
     );
   }
+
+
   
-  // ==================== Reports ====================
+  // ==================== Reports ==================== //
   
   static async generateReport(reportType, filters = {}) {
     const { startDate, endDate, format = 'json' } = filters;

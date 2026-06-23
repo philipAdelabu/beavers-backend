@@ -7,7 +7,7 @@ class FeeController {
   // ==================== Onboarding Fee ====================
   
   /**
-   * Pay onboarding fee
+   * Pay onboarding fee 
    * @route POST /api/v1/fees/onboarding/pay
    */
   static async payOnboardingFee(req, res, next) {
@@ -15,12 +15,42 @@ class FeeController {
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
     }
-    
     try {
-      const { paymentMethodId } = req.body;
-      const result = await FeeService.payOnboardingFee(req.user.id, paymentMethodId);
+      const { amount, paymentMethodId } = req.body;
+      const result = await FeeService.payOnboardingFee(req.user.id, amount, paymentMethodId);
       sendSuccess(res, result, 'Onboarding fee paid successfully');
     } catch (error) {
+      sendError(res, error.message || 'Onboarding Fee payment failed.', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+  static async getPaymentIntents(req, res, next){
+         const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try {
+      const result = await FeeService.getPaymentIntents(req.user.id, req.query.status);
+      sendSuccess(res, result, 'Payment intents retrieved successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Payment intents retrieve failed.', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+
+  static async verifyPayment(req, res, next){
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try {
+      const { payment_intent_id } = req.params;  
+      const result = await FeeService.confirmPayment(payment_intent_id, req.user.id);
+      sendSuccess(res, result, 'Payment verified successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Failed to verify payment', error.statusCode || 500);
       next(error);
     }
   }
@@ -29,6 +59,7 @@ class FeeController {
    * Check onboarding fee status
    * @route GET /api/v1/fees/onboarding/status
    */
+
   static async getOnboardingFeeStatus(req, res, next) {
     try {
       const hasPaid = await FeeService.hasPaidOnboardingFee(req.user.id);
@@ -41,6 +72,7 @@ class FeeController {
         isRequired: !hasPaid
       }, 'Onboarding fee status retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve onboarding status', error.statusCode || 500);
       next(error);
     }
   }
@@ -55,13 +87,14 @@ class FeeController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
-    }
+     }
     
     try {
-      const { paymentMethodId } = req.body;
-      const result = await FeeService.payMonthlyFee(req.user.id, paymentMethodId);
+      const { amount, paymentMethodId } = req.body;
+      const result = await FeeService.payMonthlyFee(req.user.id, amount, req.user.email, paymentMethodId);
       sendSuccess(res, result, 'Monthly fee paid successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to pay monthly fee', error.statusCode || 500);
       next(error);
     }
   }
@@ -83,6 +116,7 @@ class FeeController {
         currency: feeConfig.monthly.currency
       }, 'Subscription status retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to get subscription status', error.statusCode || 500);
       next(error);
     }
   }
@@ -96,6 +130,7 @@ class FeeController {
       const result = await FeeService.cancelSubscription(req.user.id);
       sendSuccess(res, result, 'Subscription cancelled');
     } catch (error) {
+      sendError(res, error.message || 'Fail to cancel subscription', error.statusCode || 500);
       next(error);
     }
   }
@@ -120,6 +155,7 @@ class FeeController {
       );
       sendPaginated(res, result.payments, page, limit, result.total, 'Payment history retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve payment history', error.statusCode || 500);
       next(error);
     }
   }
@@ -135,6 +171,7 @@ class FeeController {
       const config = await FeeService.getFeeConfiguration();
       sendSuccess(res, config, 'Fee configuration retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to get fee configuration', error.statusCode || 500);
       next(error);
     }
   }

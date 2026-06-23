@@ -4,6 +4,7 @@ const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
+const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 
 
 class BOQService { 

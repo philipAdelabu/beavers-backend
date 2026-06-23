@@ -3,7 +3,7 @@ const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
-const PaymentService = require('./payment.service');
+const FeePaymentService = require('./fee.payment.service');
 const { v4: uuidv4 } = require('uuid');
 
 class FeeService {
@@ -66,103 +66,179 @@ class FeeService {
   /**
    * Pay onboarding fee for artisan
    */
-  static async payOnboardingFee(artisanId, paymentMethodId = null) {
+  static async payOnboardingFee(artisanId, onboardingAmount, paymentMethodId = null) {
     const client = await pool.connect();
     
     try {
-      await client.query('BEGIN');
       
-      // Check if already paid
-      const existingPayment = await client.query(
+        // Check if already paid
+       const existingPayment = await client.query(
         `SELECT * FROM artisan_fee_payments 
-         WHERE artisan_id = $1 AND fee_type = 'onboarding' AND status = 'completed'`,
+         WHERE artisan_id = $1 AND fee_type = 'onboarding' `,
         [artisanId]
       );
-      
-      if (existingPayment.rows.length > 0) {
-        throw new AppError(400, 'Onboarding fee already paid');
+       var exist = null;
+      if (existingPayment.rows.length === 1) {
+         exist = existingPayment.rows[0];
+         if(exist.status === 'pending') throw new AppError(400, 'Onboarding Fee payment still pending');
+         if(exist.status === 'onboarding') throw new AppError(400, 'Onboarding fee already paid');
+
+         await client.query(`DELETE FROM artisan_fee_payments WHERE artisan_id = $1 `, [artisanId]);
       }
-      
+
       // Get fee amount
       const feeConfig = await this.getFeeConfiguration();
-      const amount = feeConfig.onboarding.amount;
-      
-      // Create payment record
-      const paymentReference = `ONB-${Date.now()}-${artisanId.slice(0, 8)}`;
-      const paymentRecord = await client.query(
-        `INSERT INTO artisan_fee_payments 
-         (artisan_id, fee_type, amount, payment_reference, status, currency)
-         VALUES ($1, 'onboarding', $2, $3, 'pending', $4)
-         RETURNING *`,
-        [artisanId, amount, paymentReference, 'NGN']
-      );
-      
-      // Process payment (integrate with Paystack/Stripe)
-      const paymentResult = await this.processFeePayment(
-        artisanId, 
-        amount, 
-        paymentReference, 
-        'onboarding',
-        paymentMethodId
-      );
-      
-      if (paymentResult.success) {
-        await client.query(
-          `UPDATE artisan_fee_payments 
-           SET status = 'completed', 
-               payment_date = NOW(),
-               payment_method = $1,
-               transaction_id = $2,
-               payment_gateway = $3
-           WHERE id = $4`,
-          [paymentResult.paymentMethod, paymentResult.transactionId, paymentResult.gateway, paymentRecord.rows[0].id]
-        );
-        
-        // Update artisan profile
-        await client.query(
-          `UPDATE artisan_profiles 
-           SET onboarding_fee_paid = true,
-               updated_at = NOW()
-           WHERE user_id = $1`,
-          [artisanId]
-        );
-        
-        // Log payment
-        await this.logFeePayment(artisanId, paymentRecord.rows[0].id, 'onboarding_fee_paid', 
-          { amount, reference: paymentReference });
-        
-        await client.query('COMMIT');
-        
-        // Send notification
-        await NotificationService.sendEmail(
-          await this.getArtisanEmail(artisanId),
-          'Onboarding Fee Paid Successfully',
-          `Your onboarding fee of ₦${amount.toLocaleString()} has been paid successfully. You can now accept jobs on BeaverWorks.`,
-          `<h2>Payment Successful</h2>
-           <p>Your onboarding fee of <strong>₦${amount.toLocaleString()}</strong> has been paid successfully.</p>
-           <p>You can now accept jobs on BeaverWorks.</p>
-           <p>Thank you for joining our platform!</p>`
-        );
-        
-        return { success: true, amount, reference: paymentReference };
-      } else {
-        await client.query(
-          `UPDATE artisan_fee_payments 
-           SET status = 'failed', metadata = $1
-           WHERE id = $2`,
-          [JSON.stringify({ error: paymentResult.error }), paymentRecord.rows[0].id]
-        );
-        
-        await client.query('COMMIT');
-        
-        throw new AppError(400, paymentResult.error || 'Payment failed');
+      const amount = feeConfig.onboarding.amount || process.env.ARTISAN_ONBOARDING_FEE;
+      if(parseFloat(amount).toFixed(2) !== parseFloat(onboardingAmount).toFixed(2)) {
+          throw new AppError(403, `The required Onboarding Fee is : ${amount}`)
       }
+      
+       const artisanResult = await client.query(
+        `SELECT u.email, u.phone, ap.full_legal_name
+         FROM users u
+         JOIN artisan_profiles ap ON u.id = ap.user_id
+         WHERE u.id = $1`,
+        [artisanId]
+      );
+      const artisan = artisanResult.rows[0];
+      const initPay = await this.initializePayment(artisanId, amount, 'onboarding', artisan.email, paymentMethodId);
+
+   
+      return initPay;
+
     } catch (error) {
-      await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
     }
+  }
+
+   static async initializePayment(artisanId, amount, feeType, artisanEmail, paymentMethodId = null){
+       
+        const client =  await pool.connect();
+
+        try{
+          await client.query('BEGIN');
+
+         const paymentReference = `ONB-${Date.now()}-${artisanId.slice(0, 8)}`;
+
+         const customFields = [
+         {
+           paymentMethod: paymentMethodId || 'online card',
+           feeType,
+           value: amount,
+         },
+      ];
+  
+      const initPay = await FeePaymentService.initializePayment(paymentReference, amount, artisanId, artisanEmail, customFields);
+
+      const client_secret = `${paymentReference}_${artisanId}`;
+
+      await client.query(
+        `INSERT INTO fee_payment_intents (payment_reference, artisan_id, payment_intent_id, 
+        client_secret,  amount, currency, status, metadata, fee_type, payment_method_type, paid_at)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, 'online_payment', NOW())`,
+        [paymentReference, artisanId, initPay.metadata.reference,
+         client_secret, amount, 'NGN', initPay.metadata, feeType],
+      );
+    
+      await client.query(
+        `INSERT INTO artisan_fee_payments (status, payment_date, payment_gateway, artisan_id, amount, 
+        payment_reference, transaction_id,  metadata, fee_type)
+        VALUES ('pending', NOW(), 'paystack', $1, $2, $3, $4, $5, $6)`,
+        [artisanId, amount, paymentReference, initPay.metadata.reference, initPay.metadata, feeType]
+      );
+
+      await client.query('COMMIT');
+
+      return initPay;
+
+    }catch(error){
+      await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
+      
+   }
+
+  static async getPaymentIntents(artisanId, status = null){
+   
+
+     try{
+  
+       let query = `
+       SELECT id, artisan_id, fee_type, amount, currency, status, payment_reference, 
+       payment_intent_id, client_secret, metadata, gateway, payment_method_type, payment_method_id, gateway_transaction_id, gateway_reference, paid_at, failed_at, failure_reason, expires_at, refunded_at, created_at, updated_at 
+       FROM fee_payment_intents WHERE artisan_id = $1 `;
+       const params = [artisanId];
+       let paramIndex = 2;
+
+       if(status){
+        query += ` AND status = $${paramIndex}`;
+        params.push(status);
+       }
+      
+       const payInts = await pool.query(query, params);
+       return payInts.rows;
+
+     }catch(error){
+       throw error;
+     }
+  }
+
+  static async confirmPayment(reference, userId) {
+    const client = await pool.connect();
+     try{
+         await client.query('BEGIN');
+           // Check if already processed
+            const existingPayment = await client.query(
+              `SELECT * FROM fee_payment_intents WHERE payment_intent_id = $1 AND artisan_id = $2`,
+              [reference, userId]
+            );
+            
+            if (existingPayment.rows.length === 0) {
+              throw new AppError(404, 'Payment record not found');
+            }
+            
+            const payment = existingPayment.rows[0];
+            
+            if (payment.status === 'succeeded') {
+              return {
+                status: 'already_verified',
+                amount: payment.amount,
+                message: 'Payment already verified'
+              };
+            }
+       
+      const verify = await FeePaymentService.verifyPayment(reference, userId);
+
+       if(verify.status === 'succeeded'){
+         await client.query(
+          `UPDATE artisan_fee_payments 
+            SET status = 'completed' WHERE artisan_id = $1 AND transaction_id = $2
+          `, [userId, reference]
+         );
+
+         if(payment.fee_type === 'monthly'){
+            await this.monthlyFeeConfirmed(userId, reference);
+         }
+       }else{
+         await client.query(
+          `UPDATE artisan_fee_payments 
+           SET status = $1 WHERE artisan_id = $2 AND transaction_id = $3
+          `, [verify.status, userId, reference]);
+       }
+      
+       await client.query('COMMIT');
+      return verify;
+
+     }catch(error){
+      await client.query('ROLLBACK');
+       throw error;
+     }finally{
+       client.release();
+     }
   }
   
   /**
@@ -185,54 +261,40 @@ class FeeService {
   /**
    * Pay monthly fee
    */
-  static async payMonthlyFee(artisanId, paymentMethodId = null) {
-    const client = await pool.connect();
+  static async payMonthlyFee(artisanId, monthlyFee, artisanEmail, paymentMethodId = null) {
+  
     
-    try {
-      await client.query('BEGIN');
-      
+   try {
+         // Get fee amount
+      const feeConfig = await this.getFeeConfiguration();
+      const amount = feeConfig.monthly.amount || process.env.MONTHLY_TECHNOLOGY_FEE;
+
+      if(parseFloat(amount).toFixed(2) !== parseFloat(monthlyFee).toFixed(2)) {
+          throw new AppError(403, `The required monthly Fee is : ${amount}`)
+      }
+    
+      const paymentResult = await this.initializePayment(artisanId, amount, 'monthly', artisanEmail,  paymentMethodId);
+      return paymentResult;
+      }catch(error){
+          throw error;
+     }  
+  }
+
+  static async monthlyFeeConfirmed(artisanId){
+     
+     const client = await pool.connect();
+
+        try{
+
       // Check subscription status
       const subscription = await this.getArtisanSubscription(artisanId);
-      const feeConfig = await this.getFeeConfiguration();
-      const amount = feeConfig.monthly.amount;
-      
+     
       // Calculate period
       const now = new Date();
       const periodStart = subscription?.current_period_end || now;
       const periodEnd = new Date(periodStart);
       periodEnd.setMonth(periodEnd.getMonth() + 1);
-      
-      // Create payment record
-      const paymentReference = `MON-${Date.now()}-${artisanId.slice(0, 8)}`;
-      const paymentRecord = await client.query(
-        `INSERT INTO artisan_fee_payments 
-         (artisan_id, fee_type, amount, payment_reference, status, currency, expiry_date)
-         VALUES ($1, 'monthly', $2, $3, 'pending', $4, $5)
-         RETURNING *`,
-        [artisanId, amount, paymentReference, 'NGN', periodEnd]
-      );
-      
-      // Process payment
-      const paymentResult = await this.processFeePayment(
-        artisanId, 
-        amount, 
-        paymentReference, 
-        'monthly',
-        paymentMethodId
-      );
-      
-      if (paymentResult.success) {
-        await client.query(
-          `UPDATE artisan_fee_payments 
-           SET status = 'completed', 
-               payment_date = NOW(),
-               payment_method = $1,
-               transaction_id = $2,
-               payment_gateway = $3
-           WHERE id = $4`,
-          [paymentResult.paymentMethod, paymentResult.transactionId, paymentResult.gateway, paymentRecord.rows[0].id]
-        );
-        
+
         // Update or create subscription
         await this.updateArtisanSubscription(artisanId, {
           status: 'active',
@@ -240,7 +302,6 @@ class FeeService {
           currentPeriodEnd: periodEnd,
           lastPaymentDate: now,
           nextPaymentDate: periodEnd,
-          paymentMethodId: paymentMethodId
         }, client);
         
         // Update artisan profile monthly fee status
@@ -252,39 +313,10 @@ class FeeService {
            WHERE user_id = $1`,
           [artisanId]
         );
-        
-        // Log payment
-        await this.logFeePayment(artisanId, paymentRecord.rows[0].id, 'monthly_fee_paid',
-          { amount, reference: paymentReference, periodStart, periodEnd });
-        
-        await client.query('COMMIT');
-        
-        // Send notification
-        await NotificationService.sendEmail(
-          await this.getArtisanEmail(artisanId),
-          'Monthly Fee Paid Successfully',
-          `Your monthly fee of ₦${amount.toLocaleString()} has been paid. Your subscription is active until ${periodEnd.toLocaleDateString()}.`,
-          `<h2>Payment Successful</h2>
-           <p>Your monthly fee of <strong>₦${amount.toLocaleString()}</strong> has been paid successfully.</p>
-           <p>Your subscription is active until <strong>${periodEnd.toLocaleDateString()}</strong>.</p>
-           <p>Thank you for using BeaverWorks!</p>`
-        );
-        
-        return { success: true, amount, reference: paymentReference, validUntil: periodEnd };
-      } else {
-        await client.query(
-          `UPDATE artisan_fee_payments 
-           SET status = 'failed', metadata = $1
-           WHERE id = $2`,
-          [JSON.stringify({ error: paymentResult.error }), paymentRecord.rows[0].id]
-        );
-        
-        await client.query('COMMIT');
-        
-        throw new AppError(400, paymentResult.error || 'Payment failed');
-      }
+           
+   return;
+      
     } catch (error) {
-      await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
@@ -552,10 +584,7 @@ class FeeService {
   /**
    * Process fee payment via payment gateway
    */
-  static async processFeePayment(artisanId, amount, reference, feeType, paymentMethodId = null) {
-    // This integrates with Paystack/Stripe
-    // For now, simulate successful payment
-    // In production, integrate with actual payment gateway
+  static async processFeePayment(artisanId, amount, refId, feeType, paymentMethodId = null) {
     
     try {
       // Get artisan email
@@ -567,54 +596,44 @@ class FeeService {
         [artisanId]
       );
       
-      const artisan = artisanResult.rows[0];
+      const artisan = artisanResult.rows[0]; 
       
-      // For demo/development - simulate success
-      // In production, replace with actual payment gateway integration
-      const isProduction = process.env.NODE_ENV === 'production';
+  
+      const customFields = [
+         {
+           paymentMethod: paymentMethodId || 'online card',
+           feeType,
+           value: amount,
+         }
+      ,]
+
+      const initPay = await FeePaymentService.initializePayment(refId, amount, artisanId, artisan.email, customFields);
+ 
+     if(initPay.reference){
+
+      const verifyPay = await FeePaymentService.verifyPayment(initPay.reference, artisanId);
       
-      if (!isProduction) {
-        return {
-          success: true,
-          transactionId: `TEST-${Date.now()}`,
-          paymentMethod: paymentMethodId || 'test_card',
-          gateway: 'test'
-        };
+      if(verifyPay.status === 'succeeded'){
+          return {
+            success: true,
+            transactionId: initPay.reference,
+            amount: initPay.amount / 100,
+            paymentMethod: paymentMethodId || 'online',
+            message: 'Payment was successfull',
+            artisan_id: artisanId,
+            gateway: 'paystack'
+          };
       }
-      
-      // Actual payment processing would go here
-      // Example with Paystack:
-      /*
-      const paystackData = {
-        amount: amount * 100,
-        email: artisan.email,
-        reference: reference,
-        metadata: {
+    }
+    
+    return {
+          success: false,
+          amount,
+          paymentMethod: paymentMethodId || 'online',
+          message: 'Payment failed',
           artisan_id: artisanId,
-          fee_type: feeType,
-          customer_name: artisan.full_legal_name
-        }
-      };
-      
-      const response = await axios.post('https://api.paystack.co/transaction/initialize', paystackData, {
-        headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
-      });
-      
-      return {
-        success: true,
-        transactionId: response.data.data.reference,
-        paymentMethod: 'paystack',
-        gateway: 'paystack',
-        authorizationUrl: response.data.data.authorization_url
-      };
-      */
-      
-      return {
-        success: true,
-        transactionId: `FEE-${Date.now()}`,
-        paymentMethod: paymentMethodId || 'auto',
-        gateway: 'system'
-      };
+
+         }
       
     } catch (error) {
       logger.error('Fee payment processing error:', error);

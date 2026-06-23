@@ -2,9 +2,11 @@ const { pool } = require('../config/database');
 const { cacheGet, cacheSet } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
+const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 
 class BillingService {
 
+   // get job billing, the billing could be for awaiting_payment
   static async calculateJobCost(jobId, get_billing = null) {
 
    let result = null;
@@ -17,15 +19,15 @@ class BillingService {
        WHERE jb.job_id = $1 AND jb.billing_status = 'awaiting_payment' `,
       [jobId]
     );
-   }
-
-     result = await pool.query(
+   } else {
+    result = await pool.query(
       `SELECT jb.*, j.billing_mode, j.service_type
        FROM job_billing jb
        JOIN jobs j ON jb.job_id = j.id
        WHERE jb.job_id = $1`,
       [jobId]
     );
+  }
     
     if (result.rows.length === 0) {
       throw new AppError(404, 'Job billing not found');
@@ -47,6 +49,8 @@ class BillingService {
     const total = subtotal + parseFloat(platformFee).toFixed(2);
     
     return {
+      job_id: jobId,
+      billing_mode: billing.billing_mode,
       breakdown: {
         baseFee,
         diagnosticsFee,
@@ -56,13 +60,15 @@ class BillingService {
         subtotal,
         platformFee,
       },
-      total
+      total,
+      
     };
   }
 
   static async getJobBilling(jobId) {
      return this.calculateJobCost(jobId, 'awaiting_payment');
   }
+
   
   static async generateInvoice(jobId) {
     const jobResult = await pool.query(
