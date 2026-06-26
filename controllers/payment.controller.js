@@ -32,7 +32,7 @@ class PaymentController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
-    }
+    }  
 
     try {
       const { jobId } = req.params;

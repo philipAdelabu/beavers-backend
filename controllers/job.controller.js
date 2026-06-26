@@ -103,10 +103,40 @@ class JobController {
     }
 
     try {
-      const result = await JobService.stopDiagnostics(req.params.jobId, req.user.id, req.body.executionMode);
+      const result = await JobService.stopDiagnostics(req.params.jobId, req.user.id, req.body.diagnostics_findinds);
       sendSuccess(res, result, 'Diagnostics completed');
     } catch (error) {
       sendError(res, error.message || 'Fail to stop diagnostics', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+   static async setBillingMode(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const result = await JobService.setBillingMode(req.params.jobId, req.user.id, req.body.billing_mode);
+      sendSuccess(res, result, 'Billing mode successfully set');
+    } catch (error) {
+      sendError(res, error.message || 'Fail to set Billing Mode', error.statusCode || 500);
+      next(error);
+    }
+  }
+
+   static async approveExecution(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const result = await JobService.approveExecution(req.params.jobId, req.user.id);
+      sendSuccess(res, result, 'Job Execution approved');
+    } catch (error) {
+      sendError(res, error.message || 'Fail to approve job execution', error.statusCode || 500);
       next(error);
     }
   }
@@ -209,7 +239,8 @@ class JobController {
     }
 
     try {
-      const result = await JobService.rejectQuote(req.params.jobId, req.user.id);
+      const  { rejection_reason } = req.body;
+      const result = await JobService.rejectQuote(req.params.jobId, req.user.id, rejection_reason);
       sendSuccess(res, result, 'Quote rejected');
     } catch (error) {
       sendError(res, error.message || 'Fail to reject quote', error.statusCode || 500);

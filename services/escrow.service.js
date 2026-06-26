@@ -20,7 +20,10 @@ class EscrowService {
 
   static async createHold(escrowData) {
     const { jobId, clientId, artisanId, amount, transactionType, status, disputeBufferDays = 3 } = escrowData;
-    
+     
+    const client = await pool.connect();
+    try{
+      client.query('BEGIN')
     const result = await pool.query(
       `INSERT INTO escrow_transactions 
        (job_id, client_id, artisan_id, amount, transaction_type, status, dispute_buffer_until)
@@ -28,10 +31,25 @@ class EscrowService {
        RETURNING *`,
       [jobId, clientId, artisanId, amount, transactionType, status, disputeBufferDays]
     );
-    
+
+        await pool.query(
+          `UPDATE job_billing 
+           SET escrow_hold_id = $1
+           WHERE job_id = $2
+           RETURNING *`,
+          [result.rows[0].id, jobId]
+        );
+
+    await client.query('COMMIT');
     logger.info(`Escrow hold created: ${result.rows[0].id} - ${transactionType}: ₦${amount}`);
     
     return result.rows[0];
+      }catch(error){
+        await client.query('ROLLBACK');
+        throw error;
+      }finally{
+        client.release();
+      }
   }
   
   static async releaseFunds(transactionId, releaseReason = 'normal', releasedBy = null) {

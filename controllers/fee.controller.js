@@ -75,7 +75,7 @@ class FeeController {
       sendError(res, error.message || 'Failed to retrieve onboarding status', error.statusCode || 500);
       next(error);
     }
-  }
+  } 
   
   // ==================== Monthly Fee ====================
   

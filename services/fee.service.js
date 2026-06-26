@@ -5,6 +5,8 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const FeePaymentService = require('./fee.payment.service');
 const { v4: uuidv4 } = require('uuid');
+const { PRICING } = require('../config/constants');
+const SysConfig = require('../config/syst-config');
 
 class FeeService {
   // ==================== Fee Configuration ====================
@@ -56,7 +58,7 @@ class FeeService {
       throw new AppError(404, 'Fee configuration not found');
     }
     
-    await cacheDel('fee:configuration');
+   await SysConfig.updateConfigValue();
     
     return result.rows[0];
   }
@@ -86,9 +88,10 @@ class FeeService {
          await client.query(`DELETE FROM artisan_fee_payments WHERE artisan_id = $1 `, [artisanId]);
       }
 
-      // Get fee amount
-      const feeConfig = await this.getFeeConfiguration();
-      const amount = feeConfig.onboarding.amount || process.env.ARTISAN_ONBOARDING_FEE;
+  
+      const sys_config = await SysConfig.getSysConfig();
+
+      const amount = sys_config.onboarding_fee || process.env.ARTISAN_ONBOARDING_FEE;
       if(parseFloat(amount).toFixed(2) !== parseFloat(onboardingAmount).toFixed(2)) {
           throw new AppError(403, `The required Onboarding Fee is : ${amount}`)
       }
@@ -202,6 +205,8 @@ class FeeService {
             }
             
             const payment = existingPayment.rows[0];
+
+          
             
             if (payment.status === 'succeeded') {
               return {
@@ -209,11 +214,12 @@ class FeeService {
                 amount: payment.amount,
                 message: 'Payment already verified'
               };
-            }
+            } 
        
       const verify = await FeePaymentService.verifyPayment(reference, userId);
-
+       logger.info(`payment.fee_type: ${payment.fee_type}`)
        if(verify.status === 'succeeded'){
+
          await client.query(
           `UPDATE artisan_fee_payments 
             SET status = 'completed' WHERE artisan_id = $1 AND transaction_id = $2
@@ -222,8 +228,20 @@ class FeeService {
 
          if(payment.fee_type === 'monthly'){
             await this.monthlyFeeConfirmed(userId, reference);
+              // Update artisan profile monthly fee status
+        await client.query(
+          `UPDATE artisan_profiles 
+           SET monthly_fee_status = 'paid',
+               last_fee_payment = NOW(),
+               updated_at = NOW()
+           WHERE user_id = $1`,
+          [userId]
+        );
+           
          }
+         
        }else{
+
          await client.query(
           `UPDATE artisan_fee_payments 
            SET status = $1 WHERE artisan_id = $2 AND transaction_id = $3
@@ -266,8 +284,9 @@ class FeeService {
     
    try {
          // Get fee amount
-      const feeConfig = await this.getFeeConfiguration();
-      const amount = feeConfig.monthly.amount || process.env.MONTHLY_TECHNOLOGY_FEE;
+      const sys_config = await SysConfig.getSysConfig();
+
+      const amount = sys_config.monthly_technology_fee ||  PRICING.MONTHLY_TECHNOLOGY_FEE;
 
       if(parseFloat(amount).toFixed(2) !== parseFloat(monthlyFee).toFixed(2)) {
           throw new AppError(403, `The required monthly Fee is : ${amount}`)
@@ -304,16 +323,6 @@ class FeeService {
           nextPaymentDate: periodEnd,
         }, client);
         
-        // Update artisan profile monthly fee status
-        await client.query(
-          `UPDATE artisan_profiles 
-           SET monthly_fee_status = 'paid',
-               last_fee_payment = NOW(),
-               updated_at = NOW()
-           WHERE user_id = $1`,
-          [artisanId]
-        );
-           
    return;
       
     } catch (error) {

@@ -6,17 +6,19 @@ const NotificationService = require('./notification.service');
 const { generateArrivalPIN, calculateDistance } = require('../utils/geo.utils');
 const Wallet = require('../models/Wallet');
 const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
+const SysConfig = require('../config/syst-config');
 
 
 class JobService {
+
   static async createJob(clientId, jobData) {
-    const { category, description, mediaUrls, serviceType, location } = jobData;
+    const { category, description, mediaUrls, serviceType, location } = jobData;   
     
     const client = await pool.connect();
     
     try {
       await client.query('BEGIN');
-
+      
       const {longitude, latitude} = location;
       
       // Create job
@@ -37,9 +39,10 @@ class JobService {
         [job.id]
       ); 
       
+      const sys_config = await SysConfig.getSysConfig();
     
-      const Google_map_radius = process.env.GOOGLE_MAP_RADIUS || 20;
-      const expires_at = process.env.JOB_GENERATED_PIN_ARRIVAL_EXPIRES_MINUTES || 2400;
+      const Google_map_radius = sys_config.job_settings.max_distance_km || GEOFENCE.ARRIVAL_RADIUS;
+      const expires_at = sys_config.job_setting_timeouts.arrival_pin_expiry || TIMEOUTS.ARRIVAL_PIN_EXPIRY;
 
       // Find and notify nearby artisans
       const nearbyArtisans = await this.findNearbyArtisans(category, location, Google_map_radius);
@@ -211,10 +214,13 @@ class JobService {
     const location = job.location;
     const category = job.category;
       // Update offer status
-    const expires_at = process.env.JOB_OFFER_EXPIRY_MINUTES ||  2040;
+
+    const sys_config = await SysConfig.getSysConfig();
+
+    const expires_at =  sys_config.job_setting_timeouts.job_offer_expiry || TIMEOUTS.JOB_OFFER_EXPIRY;
 
  
-     const Google_map_radius = process.env.GOOGLE_MAP_RADIUS || 20;
+     const Google_map_radius =  sys_config.job_settings.max_distance_km || GEOFENCE.ARRIVAL_RADIUS;
 
     
       // Find and notify nearby artisans
@@ -281,7 +287,7 @@ class JobService {
       // Check offer
       const offerResult = await client.query(
         `SELECT * FROM job_offers 
-         WHERE job_id = $1 AND artisan_id = $2 AND (status = 'pending' OR status = 'rejected') 
+         WHERE job_id = $1 AND artisan_id = $2 AND (status = 'pending') 
          AND expires_at > NOW()`,
         [jobId, artisanId]
       );
@@ -316,16 +322,18 @@ class JobService {
         `UPDATE artisan_profiles SET is_available = false WHERE user_id = $1`,
         [artisanId]
       );
+
+       const sys_config = await SysConfig.getSysConfig();
       
       // Generate arrival PIN
       const pin = generateArrivalPIN(4);
-      const pin_expires = process.env.JOB_GENERATED_PIN_ARRIVAL_EXPIRES_MINUTES || 2400;
+      const pin_expires = sys_config.job_setting_timeouts.arrival_pin_expiry || TIMEOUTS.ARRIVAL_PIN_EXPIRY;
       await client.query(
         `INSERT INTO arrival_pins (job_id, pin, expires_at)
          VALUES ($1, $2, NOW() + INTERVAL '${pin_expires}  minutes')`,
         [jobId, pin],
       );
-
+      logger.info(`Arrival PIN: ${pin}`);
       const descript = `Job accepted by artisan with id: ${artisanId}`;
       const userId = artisanId;
       const userType = 'artisan';
@@ -381,9 +389,11 @@ class JobService {
          WHERE id = $1`,
         [jobId]
       );
+
+       const sys_config = await SysConfig.getSysConfig();
       
       // Create base fee billing
-      const baseFee = process.env.JOB_BASE_FEE || 2500; // Configurable
+      const baseFee = sys_config.platform_fees.base_fee || PRICING.BASE_FEE; // Configurable
 
       
       await client.query(
@@ -427,6 +437,17 @@ class JobService {
   
   static async startDiagnostics(jobId, artisanId) {
     const diagnosticsStart = new Date();
+
+    const arrivalStatus = await pool.query(
+      `SELECT j.job_status, p.is_used 
+      FROM  jobs j JOIN arrival_pins p ON j.id = p.job_id 
+      WHERE j.job_status = 'arrived' AND p.is_used = true 
+      AND j.id = $1 AND j.artisan_id = $2`, [jobId, artisanId]
+    );
+
+       if (arrivalStatus.rows.length !== 1) {
+      throw new AppError(404, 'Job not found or unauthorized or artisan arrival not confirmed');
+    }
     
     const result = await pool.query(
       `UPDATE jobs 
@@ -450,17 +471,21 @@ class JobService {
     return { startTime: diagnosticsStart };
   }
   
-  static async stopDiagnostics(jobId, artisanId, executionMode) {
+  static async stopDiagnostics(jobId, artisanId, diagnostics_findings) {
     const diagnosticsEnd = new Date();
     const diagnosticsStart = await cacheGet(`job:${jobId}:diagnostics_start`);
     
     if (!diagnosticsStart) {
       throw new AppError(400, 'Diagnostics not started');
     }
+
+    const sys_config = await SysConfig.getSysConfig();
     
     const startTime = new Date(diagnosticsStart);
     const diagnosticsDuration = (diagnosticsEnd - startTime) / 1000 / 60; // minutes
-    const diagnosticsFee = Math.ceil(diagnosticsDuration * 500); // ₦500 per minute
+    const rate_per_min = sys_config.platform_fees.diagnostics_rate_per_min
+                                 || PRICING.DIAGNOSTICS_RATE_PER_MINUTE;
+    const diagnosticsFee = Math.ceil(diagnosticsDuration * rate_per_min); // ₦500 per minute
     
     const client = await pool.connect();
     
@@ -470,11 +495,11 @@ class JobService {
       const result = await client.query(
         `UPDATE jobs 
          SET diagnostics_ended_at = $1, 
-             billing_mode = $2, 
-             job_status = 'awaiting_execution_approval'
+             job_status = 'awaiting_execution_approval',
+             diagnostics_findings = $2
          WHERE id = $3 AND artisan_id = $4
          RETURNING *`,
-        [diagnosticsEnd, executionMode, jobId, artisanId]
+        [diagnosticsEnd, diagnostics_findings, jobId, artisanId]
       );
       
       if (result.rows.length === 0) {
@@ -500,8 +525,7 @@ class JobService {
       
       return {
         duration: diagnosticsDuration,
-        fee: diagnosticsFee,
-        executionMode
+        estimated_diagnostics_fee: diagnosticsFee,
       };
     } catch (error) {
       await client.query('ROLLBACK');
@@ -511,19 +535,102 @@ class JobService {
     }
   }
   
-  static async startExecution(jobId, artisanId) {
-    const executionStart = new Date();
+    static async setBillingMode(jobId, artisanId, billingMode) {
     
     const result = await pool.query(
       `UPDATE jobs 
-       SET execution_started_at = $1, job_status = 'execution'
-       WHERE id = $2 AND artisan_id = $3 AND billing_mode = 'time_based' 
+       SET billing_mode = $1
+       WHERE id = $2 AND artisan_id = $3
        RETURNING *`,
-      [executionStart, jobId, artisanId]
+      [billingMode, jobId, artisanId]
     );
     
     if (result.rows.length === 0) {
-      throw new AppError(404, 'Job not found or not in time-based mode');
+      throw new AppError(404, 'Job not found or unauthorized');
+    }
+
+    const job = result.rows[0];
+     return {
+      billing_mode: job.billing_mode,
+      job_id: job.id,
+      job_status: job.job_status,
+      category: job.category,
+      description: job.description,
+    };
+  }
+
+    static async approveExecution(jobId, clientId) {
+
+    const arrivalStatus = await pool.query(
+      `SELECT j.job_status, p.is_used 
+      FROM  jobs j JOIN arrival_pins p ON j.id = p.job_id 
+      WHERE j.job_status in ('arrived', 'awaiting_execution_approval') AND p.is_used = true 
+      AND j.id = $1 AND j.client_id = $2`, [jobId, clientId]
+    );
+
+       if (arrivalStatus.rows.length !== 1) {
+      throw new AppError(404, 'Job not found or unauthorized or artisan arrival not confirmed');
+    }
+
+    const result = await pool.query(
+      `UPDATE jobs 
+       SET job_status = 'execution_approved'
+       WHERE id = $1 AND client_id = $2
+       RETURNING *`,
+      [jobId, clientId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Job not found or unauthorized');
+    }
+    const job = result.rows[0];
+    return {
+      job_status: job.job_status,
+      job_id: job.id,
+      category: job.category,
+      description: job.description,
+      client_id: job.client_id,
+      artisan_id: job.artisan_id,
+    };
+  }
+
+  static async startExecution(jobId, artisanId) {
+
+    const jb = await this.getJobById(jobId);
+    if(!jb.billing_mode){
+            throw new AppError(404, 'Billing Mode not set');
+    } 
+
+    if(jb.billing_mode === 'quoted'){
+        if(jb.job_status !== 'quote_approved')
+        throw new AppError(404, 'Quote not submitted or not approved');
+    }
+
+   
+
+      const arrivalStatus = await pool.query(
+      `SELECT j.job_status, p.is_used 
+      FROM  jobs j JOIN arrival_pins p ON j.id = p.job_id 
+      WHERE j.job_status in ('execution_approved', 'quote_approved') AND p.is_used = true 
+      AND j.id = $1 AND j.artisan_id = $2`, [jobId, artisanId]
+    );
+
+       if (arrivalStatus.rows.length !== 1) {
+      throw new AppError(404, 'Job not found or unauthorized or job execution not approved');
+    }
+    
+     const executionStart = new Date();
+   
+    const result = await pool.query(
+      `UPDATE jobs 
+       SET execution_started_at = $1, job_status = 'execution', billing_mode = $2
+       WHERE id = $3 AND artisan_id = $4
+       RETURNING *`,
+      [executionStart, jb.billing_mode || 'time_based', jobId, artisanId]
+    );
+    
+    if (result.rows.length === 0) {
+      throw new AppError(404, 'Job not found');
     }
 
       // Update billing
@@ -613,7 +720,7 @@ class JobService {
   static async stopExecution(jobId, artisanId) {
     const executionEnd = new Date();
     const executionStart = await cacheGet(`job:${jobId}:execution_start`);
-    
+  
     if (!executionStart) {
       throw new AppError(400, 'Execution not started');
     }
@@ -628,7 +735,7 @@ class JobService {
       const pauseDuration = (new Date(pauseData.pauseStart) - startTime) / 1000 / 60;
       totalDuration -= pauseDuration;
     }
-    const job_exc_fee_min = process.env.JOB_EXEC_FEE_MIN || 1000;
+    const job_exc_fee_min = (await SysConfig.getSysConfig()).platform_fees.execution_rate_per_min || PRICING.EXECUTION_RATE_PER_MINUTE;
     const executionFee = Math.ceil(totalDuration * job_exc_fee_min); // ₦1000 per minute
     
     const client = await pool.connect();
@@ -638,7 +745,7 @@ class JobService {
       
       const result = await client.query(
         `UPDATE jobs 
-         SET execution_ended_at = $1, job_status = 'awaiting_completion_confirmation'
+         SET execution_ended_at = $1, job_status = 'execution_ended'
          WHERE id = $2 AND artisan_id = $3
          RETURNING *`,
         [executionEnd, jobId, artisanId]
@@ -649,12 +756,14 @@ class JobService {
       }
       
       // Update billing
+      if (result.rows[0].billing_mode === 'time_based'){
       await client.query(
         `UPDATE job_billing 
          SET execution_fee = $1, execution_duration = $2, execution_mode = 'stopped_execution', billing_status = 'execution_fee'
          WHERE job_id = $3`,
         [executionFee, totalDuration, jobId]
       );
+    }
 
     const descript = `Execution stopped for job ${jobId}: ${totalDuration} minutes`;
    // this.addTimelineEntry(jobId, 'execution completed', descript);
@@ -664,11 +773,11 @@ class JobService {
       await cacheDel(`job:${jobId}:execution_start`);
       await cacheDel(`job:${jobId}:execution_paused`);
       
-      logger.info(`Execution completed for job ${jobId}: ${totalDuration} minutes, ₦${executionFee}`);
+      logger.info(`Execution completed for job ${jobId}: ${totalDuration} minutes, and the estimated fee is ₦${executionFee}`);
       
       return {
         duration: totalDuration,
-        fee: executionFee
+        estimated_execution_fee: executionFee
       };
     } catch (error) {
       await client.query('ROLLBACK');
@@ -677,10 +786,23 @@ class JobService {
       client.release();
     }
   }
+
+  static async getJobById(jobId){
+      const job = await pool.query(`SELECT * FROM jobs WHERE id = $1`, [jobId]);
+        if (job.rows.length !== 1) {
+      throw new AppError(404, 'Job not found ');
+    }
+    return job.rows[0];
+  }
   
   static async submitQuote(jobId, artisanId, quoteData) {
     const { quoteAmount, quoteDetails, estimatedDuration } = quoteData;
-    
+
+    const jb = await this.getJobById(jobId);
+    if(jb.billing_mode === 'time_based'){
+      throw new AppError(404, 'Job billing mode is not quoted');
+    }
+
     const result = await pool.query(
       `UPDATE jobs 
        SET quoted_amount = $1, 
@@ -699,7 +821,7 @@ class JobService {
         await pool.query(
           `UPDATE job_billing 
           SET billing_status = 'pending_quote_approval', 
-          execution_mode = 'submit_quote'
+          execution_mode = 'submit_quote',
           workmanship_cost = $1
           WHERE job_id = $2
           RETURNING *`,
@@ -721,7 +843,11 @@ class JobService {
   }
   
   static async approveQuote(jobId, clientId) {
-    const result = await pool.query(
+     const client = await pool.connect();
+    try{
+      await client.query('BEGIN');
+
+    const result = await client.query(
       `UPDATE jobs 
        SET job_status = 'quote_approved', quote_approved_at = NOW()
        WHERE id = $1 AND client_id = $2 AND (
@@ -736,14 +862,14 @@ class JobService {
 
       await pool.query(
           `UPDATE job_billing 
-          SET billing_status = 'quote_approved',
+          SET billing_status = 'quote_approved'
           WHERE job_id = $1
           RETURNING *`,
           [jobId]
         );
     
     const job = result.rows[0];
-    
+    await client.query('COMMIT');
     // Notify artisan
     await NotificationService.sendPushNotification(
       job.artisan_id,
@@ -755,16 +881,23 @@ class JobService {
     logger.info(`Quote approved for job ${jobId}`);
     
     return result.rows[0];
+      }catch(error){
+       await client.query('ROLLBACK');
+       throw error;
+      }finally{
+        client.release();
+      }
   }
 
-    static async rejectQuote(jobId, clientId) {
+    static async rejectQuote(jobId, clientId, reason = null) {
+
     const result = await pool.query(
       `UPDATE jobs 
-       SET job_status = 'quote_rejected', quote_approved_at = NOW()
-       WHERE id = $1 AND client_id = $2 AND 
+       SET job_status = 'quote_rejected', quote_rejection_reason = $1, quote_rejected_at = NOW()
+       WHERE id = $2 AND client_id = $3 AND 
        ( job_status = 'pending_quote_approval' OR job_status = 'quote_rejected')
        RETURNING *`,
-      [jobId, clientId]
+      [reason, jobId, clientId]
     );
     
     if (result.rows.length === 0) {
@@ -794,13 +927,30 @@ class JobService {
     
     return result.rows[0];
   }
+
+  static async isOK(jobId){
+      const jb = await this.getJobById(jobId);
+    if(jb.job_status === 'awaiting_completion_confirmation' 
+      || jb.job_status === 'quote_rejected' 
+      || jb.job_status === 'cancelled'
+      || jb.job_status === 'completed'
+     )
+       throw new AppError(404, 'Action unauthorized');
+
+       return;
+  }
   
   static async completeJob(jobId, artisanId, completionNotes = null) {
     const client = await pool.connect();
     const completionTime = new Date();
-    try{ 
-      await client.query('BEGIN');
 
+
+    try{ 
+
+      this.isOK();
+      
+      await client.query('BEGIN');
+ 
     const result = await pool.query(
       `UPDATE jobs 
        SET job_status = 'awaiting_completion_confirmation', 
@@ -820,7 +970,8 @@ class JobService {
     // update job_billing
     const billingResult = await pool.query(
       `UPDATE job_billing 
-       SET billing_status = 'awaiting_job_confirmation'
+       SET billing_status = 'awaiting_job_confirmation', execution_mode = 'completed',
+       total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost + platform_fee - discount_amount
        WHERE job_id = $1
        RETURNING *`,
       [jobId]
@@ -873,8 +1024,8 @@ class JobService {
     // Calculate total amount
     const billingResult = await pool.query(
       `UPDATE job_billing 
-       SET billing_status = 'awaiting_payment',
-       total_amount = DIFF(SUM(base_fee, diagnostics_fee, execution_fee, materials_cost, workmanship_cost, platform_fee), discount_amount)
+       SET billing_status = 'awaiting_payment', execution_mode = 'completed',
+       total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost + platform_fee - discount_amount
        WHERE job_id = $1
        RETURNING *`,
       [jobId]
@@ -1201,12 +1352,7 @@ class JobService {
 
    // Add these methods to the existing JobService class
 
-/**
- * Get available jobs for artisans to browse
- * @param {Object} filters - Filter options
- * @param {string} artisanId - Artisan ID (for personalization)
- * @returns {Promise<Object>} Available jobs with pagination
- */
+
 static async getAvailableJobs(filters = {}, artisanId = null) {
   const {
     category,

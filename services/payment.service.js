@@ -8,6 +8,7 @@ const NotificationService = require('./notification.service');
 const BillingService = require('./billing.service');
 const EscrowService = require('./escrow.service');
 const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
+const SysConfig = require('../config/syst-config');
 
 // Paystack API configuration
 let PAYSTACK_SECRET_KEY;
@@ -70,19 +71,16 @@ class PaymentService {
       }
       
       const billing = billingResult.rows[0];
-      const bill = BillingService.getJobBilling(jobId);
 
-      let totalAmount = parseFloat(bill.total);
+      const totalAmount = Number(billing.total_amount);
 
-      if(parseFloat(amount) !== totalAmount){
+      if(Number(amount) !== totalAmount){
         throw new AppError(400, `Invalid payment amount. Amount required is: ${totalAmount}`);
       }
     
       if (!totalAmount || totalAmount <= 0) {
         throw new AppError(400, 'Invalid payment amount');
       }
-
-      totalAmount = parseInt(totalAmount, 10);
 
       // Create unique reference
       const reference = this.generateReference(jobId);
@@ -100,8 +98,8 @@ class PaymentService {
           billing_id: billing.id,
           custom_fields: [
             {
-              display_name: "Job Category",
-              variable_name: "category",
+              display_name: 'Job Category',
+              variable_name: 'category',
               value: billing.category
             },
             {
@@ -318,7 +316,7 @@ class PaymentService {
         await client.query('BEGIN');
 
         const jobResult = await client.query(
-          `SELECT j.client_id, j.artisan_id, jb.job_id, jb.base_fee, jb.material_cost, jb.diagnostics_fee, jb.execution_fee,
+          `SELECT j.client_id, j.artisan_id, jb.job_id, jb.base_fee, jb.materials_cost, jb.diagnostics_fee, jb.execution_fee,
           jb.workmanship_cost, jb.total_amount, jb.platform_fee  
            FROM jobs j JOIN job_billing jb ON j.id = jb.job_id 
            WHERE j.id = $1`, [jobId]);
@@ -328,15 +326,15 @@ class PaymentService {
         }
 
         const job = jobResult.rows[0];
-      
+        const sys_config = await SysConfig.getSysConfig();
         const escrowData = {
-           jobId: payment.job_id,
+           jobId: job.job_id,
            clientId,
-           artisanId: payment.artisan_id,
+           artisanId: job.artisan_id,
            amount,
            transactiontype: 'full_payment',
            status: 'held',
-           disputeBufferDays: 3,
+           disputeBufferDays: 3 ,
         };
 
         await EscrowService.createHold(escrowData);
@@ -347,7 +345,7 @@ class PaymentService {
         // Release base fee immediately (non-refundable)
         await EscrowService.createHold(escrowData);
  
-        if(job.material_cost > 0){
+        if(job.materials_cost > 0){
              // release materials cost immediately
               escrowData.transactionType = 'materials';
              await EscrowService.createHold(escrowData); 

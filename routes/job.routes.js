@@ -23,19 +23,20 @@ router.post('/create', requireRole(['client']), [
 
 // Repost an expired job
 router.post(
-  '/:jobId/repost',
-  requireRole(['client']),
+  '/:jobId/repost', 
+  requireRole(['client']), [param('jobId').isUUID().withMessage('Invalid job ID'),],
   JobController.repostJob,
 );
 
 // Accept job offer (artisan)
 router.post(
   '/:jobId/accept',
-  requireRole(['artisan']),
+  requireRole(['artisan']), [ param('jobId').isUUID().withMessage('Invalid job ID'),],
   JobController.acceptJob);
 
 // Confirm arrival with PIN
 router.post('/:jobId/confirm-arrival', requireRole(['client', 'artisan']), [
+  param('jobId').isUUID().withMessage('Invalid job ID'),
   body('pin').isLength({ min: 4, max: 4 }).notEmpty(),
 ], JobController.confirmArrival);
 
@@ -43,34 +44,49 @@ router.post('/:jobId/confirm-arrival', requireRole(['client', 'artisan']), [
 // Start diagnostics timer
 router.post(
   '/:jobId/start-diagnostics',
-  requireRole(['artisan']),
+  requireRole(['artisan']), [ param('jobId').isUUID().withMessage('Invalid job ID'),],
   JobController.startDiagnostics,
 );
 
 // Start diagnostics timer
 router.put(
   '/:jobId/diagnostics-progress',
-  requireRole(['artisan']),
+  requireRole(['artisan']), [ param('jobId').isUUID().withMessage('Invalid job ID'),],
   JobController.startDiagnostics,
 ); 
 
 // Stop diagnostics and choose execution mode
 router.post('/:jobId/stop-diagnostics', requireRole(['artisan']), [
-  body('executionMode').isIn(['time_based', 'quoted']),
+   param('jobId').isUUID().withMessage('Invalid job ID'),
+   body('diagnostics_findings').notEmpty(),
 ], JobController.stopDiagnostics);
+
+
+// post execution mode 
+router.post('/select/billing-mode/:jobId', requireRole(['artisan']), [
+     param('jobId').isUUID().withMessage('Invalid job ID'),
+     body('billing_mode').notEmpty().isIn(['time_based', 'quoted']),
+  ], JobController.setBillingMode);
+
+
+  // Client approve job execution
+router.post('/:jobId/approve-execution', requireRole(['client']), [
+     param('jobId').isUUID().withMessage('Invalid job ID'),
+  ], JobController.approveExecution);
 
 // Start Execution of the job
 router.post(
-  '/:jobId/start-execution',
-  requireRole(['artisan']),
-  JobController.startExecution,
-);
+  '/:jobId/start-execution', requireRole(['artisan']), [
+     param('jobId').isUUID().withMessage('Invalid job ID'),
+  ],
+  JobController.startExecution, );
 
 // Pause Job Execution
 router.post(
   '/:jobId/pause-execution',
   requireRole(['artisan']),
   [
+     param('jobId').isUUID().withMessage('Invalid job ID'),
     body('reason').notEmpty(),
     body('duration').isInt(),
   ],
@@ -80,13 +96,15 @@ router.post(
 // Resume Execution of the job
 router.post(
   '/:jobId/resume-execution',
-  requireRole(['artisan']),
+  requireRole(['artisan']), [
+     param('jobId').isUUID().withMessage('Invalid job ID'),
+  ],
   JobController.resumeExecution,
 );
 
 // Stop Execution of the job
 router.post(
-  '/:jobId/stop-execution',
+  '/:jobId/stop-execution',[param('jobId').isUUID().withMessage('Invalid job ID'),],
   requireRole(['artisan']),
   JobController.stopExecution,
 );
@@ -96,9 +114,10 @@ router.post(
   '/:jobId/submit-quote',
   requireRole(['artisan']),
   [
+    param('jobId').isUUID().withMessage('Invalid job ID'),
     body('quoteAmount').isNumeric().notEmpty(),
     body('quoteDetails').notEmpty(),
-    body('estimatedDuration').isInt().notEmpty(),
+    body('estimatedDuration').notEmpty().isInt(),
 
   ],
   JobController.submitQuote,
@@ -111,13 +130,11 @@ router.post(
   JobController.approveQuote,
 );
 
-// Client reject the quote
-router.post(
-  '/:jobId/reject-quote',
-  requireRole(['client']),
-  JobController.rejectQuote,
-);
-
+// client reject quote
+router.post('/:jobId/reject/job-quote', requireRole(['client']), [
+  body('rejection_reason').notEmpty(),
+  param('jobId').isUUID().withMessage('Invalid job ID'),
+], JobController.rejectQuote);
 
 // Job Completed
 router.post( '/:jobId/complete',
@@ -128,13 +145,10 @@ router.post( '/:jobId/complete',
   JobController.completeJob,
 );
 
-// Job Completed
-router.post( '/:jobId/confirm/complete',
-  requireRole(['client']),
-  [
+// Confirm job Completin
+router.post( '/:jobId/confirm/complete', requireRole(['client']),[
     body('completionNotes').optional(),
-  ],
-  JobController.completeJob,
+  ], JobController.confirmCompleteJob,
 );
 
 

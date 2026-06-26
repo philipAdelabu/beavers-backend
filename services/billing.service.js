@@ -35,18 +35,13 @@ class BillingService {
     
     const billing = result.rows[0];
     
-    const baseFee = parseFloat(billing.base_fee || 0).toFixed(2);
-    const diagnosticsFee = parseFloat(billing.diagnostics_fee || 0).toFixed(2);
-    const executionFee = parseFloat(billing.execution_fee || 0).toFixed(2);
-    const materialsCost = parseFloat(billing.materials_cost || 0).toFixed(2);
-    const workmanshipCost = parseFloat(billing.workmanship_cost || 0).toFixed(2);
-    
-    const subtotal = baseFee + diagnosticsFee + executionFee + materialsCost + workmanshipCost;
-    
-    // Apply platform commission
-    const platformFee = Math.ceil((subtotal * (process.env.PLATFORM_COMMISSION_PERCENT || 10)) / 100);
-    
-    const total = subtotal + parseFloat(platformFee).toFixed(2);
+    const baseFee = Number(billing.base_fee || 0);
+    const diagnosticsFee = Number(billing.diagnostics_fee || 0);
+    const executionFee = Number(billing.execution_fee || 0);
+    const materialsCost = Number(billing.materials_cost || 0);
+    const workmanshipCost = Number(billing.workmanship_cost || 0);
+ 
+ 
     
     return {
       job_id: jobId,
@@ -57,10 +52,10 @@ class BillingService {
         executionFee,
         materialsCost,
         workmanshipCost,
-        subtotal,
-        platformFee,
+        platformFee: Number(billing.platform_fee),
+ 
       },
-      total,
+      total: Number(billing.total_amount),
       
     };
   }
