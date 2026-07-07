@@ -70,8 +70,8 @@ class AuthService {
       // Send verification email
       if(process.env.NODE_ENV === 'production') {
         await sendEmail(email, 'Verify Your Email',
-        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
-         await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
+        `Your  email verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
+         await sendSMS(phone, `Your  phone verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
@@ -191,7 +191,7 @@ class AuthService {
       // Send verification email
         if(process.env.NODE_ENV === 'production') {
       await sendEmail(email, 'Verify Your Email', 
-        `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
+        `Your email verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
       await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
@@ -497,7 +497,7 @@ class AuthService {
       // Generate and send OTP
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production') {
-      await sendSMS(formattedPhone, `Your BeaverWorks login OTP is: ${otp}. This code expires in 10 minutes.`, user.user_id);
+      await sendSMS(formattedPhone, `Your BeaverWorks  OTP is: ${otp}. This code expires in 10 minutes.`, user.user_id);
       }else{
          logger.info(`Test environment - OTP for ${formattedPhone}: ${otp}`);
       }
@@ -694,7 +694,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       
       const otp = await generateAndStoreOTP(`email:${identifier}`, 600);
       if(process.env.NODE_ENV === 'production'){
-      await sendEmail(identifier, 'Your Verification Code', `Your verification code is: ${otp}`, userResult.rows[0].id);
+      await sendEmail(identifier, 'Your Verification Code', `Your email verification code is: ${otp}`, userResult.rows[0].id);
      }else {
         logger.info(`Test environment - Email OTP for ${identifier}: ${otp}`);
      }

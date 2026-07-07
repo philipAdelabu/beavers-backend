@@ -37,7 +37,7 @@ router.post('/register/artisan', authLimiter, uploadFields([
   body('nin').notEmpty(),
   body('residentialAddress').notEmpty(),
   body('skillCategory').notEmpty(),
-  body('onboardingFee').isNumeric(),
+  body('onboardingFee').optional().isNumeric(),
 ], AuthController.registerArtisan);
 
 
