@@ -3,19 +3,10 @@ const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
+const LogService = require('./log.services');
 
 class EscrowService {
 
-
-
-    
-  static async logAdminActivity(adminId, action, details = {}, ipAddress = null, userAgent = null) {
-    await pool.query(
-      `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress, userAgent]
-    );
-  }
 
 
   static async createHold(escrowData) {
@@ -31,6 +22,15 @@ class EscrowService {
        RETURNING *`,
       [jobId, clientId, artisanId, amount, transactionType, status, disputeBufferDays]
     );
+
+    if(status === 'released'){
+         
+        await client.query(
+          `INSERT INTO artisan_payouts (job_id, artisan_id, amount, status)
+           VALUES ($1, $2, $3, $4)`,
+          [jobId, artisanId, amount, 'pending']
+        );
+    }
 
         await pool.query(
           `UPDATE job_billing 
@@ -76,28 +76,29 @@ class EscrowService {
       const transaction = result.rows[0];
       
       // If this is workmanship payment, create payout record
-      if (transaction.transaction_type === 'workmanship') {
+     
         await client.query(
           `INSERT INTO artisan_payouts (job_id, artisan_id, amount, status)
            VALUES ($1, $2, $3, 'pending')`,
           [transaction.job_id, transaction.artisan_id, transaction.amount]
         );
-      }
+      
       
       await client.query('COMMIT');
       
       // Send notification to artisan
-      if (transaction.artisan_id && transaction.transaction_type === 'workmanship') {
+    
         await NotificationService.sendPushNotification(
           transaction.artisan_id,
           'Payment Released',
           `₦${transaction.amount.toLocaleString()} has been released to your account.`,
           { type: 'payment_released', amount: transaction.amount }
         );
-      }
+      
       
       logger.info(`Escrow funds released: ${transactionId} - ₦${transaction.amount}`);
-       await this.logAdminActivity(releasedBy, 'escrow_released', 
+
+       await LogService.logAdminActivity(releasedBy, 'escrow_released', 
       { transactionId: transaction.id, amount: transaction.amount, reason: 'Escrow Funds Released' });
       
 
@@ -119,7 +120,7 @@ class EscrowService {
       const transactions = await client.query(
         `SELECT * FROM escrow_transactions 
          WHERE job_id = $1 AND status = 'held'
-         `, // AND (dispute_buffer_until = null OR dispute_buffer_until < NOW()) // removed from this line.
+         AND (dispute_buffer_until = null OR dispute_buffer_until < NOW())`, // removed from this line.
         [jobId]
       );
       
@@ -215,10 +216,15 @@ class EscrowService {
     return result.rows[0];
   }
   
-  static async refundFunds(transactionId, refundReason, refundedBy = null) {
-    const result = await pool.query(
+  static async initiateRefunds(transactionId, refundReason, refundedBy) {
+   const client = await pool.connect();
+  try{
+
+    await client.query('BEGIN');
+
+    const result = await client.query(
       `UPDATE escrow_transactions 
-       SET status = 'refunded', 
+       SET status = 'refund_initiated', 
            refunded_at = NOW(),
            refund_reason = $1,
            refunded_by = $2
@@ -235,22 +241,32 @@ class EscrowService {
     
     // Create refund record
     await pool.query(
-      `INSERT INTO refunds (job_id, client_id, amount, reason, status)
-       VALUES ($1, $2, $3, $4, 'completed')`,
-      [transaction.job_id, transaction.client_id, transaction.amount, refundReason]
+      `INSERT INTO refunds (job_id, payment_intent_id, transaction_id, amount, reason, status, completed_at)
+       VALUES ($1, $2, $3, $4, $5, 'pending', NOW())`,
+      [transaction.job_id, transaction.payment_intent_id, transaction.id, transaction.amount, refundReason]
     );
     
-    logger.info(`Escrow funds refunded: ${transactionId} - ₦${transaction.amount}`);
+    logger.info(`Escrow funds pending: ${transactionId} - ₦${transaction.amount}`);
     
+    await client.query('COMMIT');
     // Send notification to client
     await NotificationService.sendPushNotification(
       transaction.client_id,
-      'Refund Processed',
-      `A refund of ₦${transaction.amount.toLocaleString()} has been processed for your job.`,
+      'Refund Pending',
+      `A refund of ₦${transaction.amount.toLocaleString()} has been processed and awaiting payout for your job.`,
       { type: 'refund', amount: transaction.amount, jobId: transaction.job_id }
     );
+
+    await LogService.logAdminActivity(refundedBy, 'Escrow funds initateed', 
+      { type: 'refund', amount: transaction.amount, jobId: transaction.job_id } );
     
     return transaction;
+    }catch(error){
+      await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
   }
   
   static async getBalance(jobId) {
@@ -259,7 +275,8 @@ class EscrowService {
          transaction_type,
          SUM(CASE WHEN status = 'held' THEN amount ELSE 0 END) as held_amount,
          SUM(CASE WHEN status = 'frozen' THEN amount ELSE 0 END) as frozen_amount,
-         SUM(CASE WHEN status = 'released' THEN amount ELSE 0 END) as released_amount
+         SUM(CASE WHEN status = 'released' THEN amount ELSE 0 END) as released_amount,
+         SUM(CASE WHEN status = 'release' THEN amount ELSE 0 END) as to_release_amount
        FROM escrow_transactions
        WHERE job_id = $1
        GROUP BY transaction_type`,
@@ -277,12 +294,14 @@ class EscrowService {
       summary.breakdown[row.transaction_type] = {
         held: parseFloat(row.held_amount || 0),
         frozen: parseFloat(row.frozen_amount || 0),
-        released: parseFloat(row.released_amount || 0)
+        released: parseFloat(row.released_amount || 0),
+        to_release: parseFloat(row.to_release_amount || 0)
       };
       
       summary.totalHeld += parseFloat(row.held_amount || 0);
       summary.totalFrozen += parseFloat(row.frozen_amount || 0);
       summary.totalReleased += parseFloat(row.released_amount || 0);
+      summary.totalToReleas += parseFloat(row.to_released_amount || 0);
     }
     
     return summary;
@@ -433,27 +452,50 @@ class EscrowService {
     }
   }
   
-  static async getPendingDisbursements() {
+  static async getPendingEscrowDisbursements() {
     const result = await pool.query(`
-      SELECT 
+      SELECT et.*,
         et.artisan_id,
-        ap.full_legal_name,
-        SUM(et.amount) as total_amount,
-        COUNT(*) as transaction_count
+        ap.full_legal_name
       FROM escrow_transactions et
       JOIN artisan_profiles ap ON et.artisan_id = ap.user_id
-      WHERE et.status = 'released' 
-        AND et.transaction_type = 'workmanship'
-        AND et.artisan_id NOT IN (
-          SELECT artisan_id FROM artisan_payouts 
-          WHERE status IN ('pending', 'completed')
-            AND created_at > NOW() - INTERVAL '1 hour'
-        )
-      GROUP BY et.artisan_id, ap.full_legal_name
-      HAVING SUM(et.amount) > 0
+      WHERE et.status = 'release' 
+    
     `);
     
     return result.rows;
+  }
+
+  static async getPendingDEscrowisbursementByArtisanId(artisanId){
+       const result = await pool.query(`
+      SELECT et.*,
+        et.artisan_id,
+        ap.full_legal_name
+      FROM escrow_transactions et
+      JOIN artisan_profiles ap ON et.artisan_id = ap.user_id
+      WHERE et.status = 'release' AND et.artisan_id = $1 `, [artisanId] 
+          );
+    
+    return result.rows;
+  } 
+
+  static async disburseEscrow(artisanId){
+     const client = await pool.connect();
+
+     try{
+         await client.query('BEGIN');
+
+         const escrow_trans = await client.query(
+           ` SELECT * from `
+         );
+
+
+     }catch(error){
+        await client.query('ROLLBACK');
+        throw error;
+     }finally{
+       client.release();
+     }
   }
 }
 

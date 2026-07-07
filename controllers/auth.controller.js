@@ -132,8 +132,13 @@ class AuthController {
     }
 
     try {
-      const { phone } = req.body;
-      const result = await AuthService.requestOTP(phone);
+      const { phone, email } = req.body;
+      let result;
+      if(phone)
+        result = await AuthService.requestOTP(phone);
+      else if(email)
+        result = await AuthService.sendVerificationCode(email);
+      
       sendSuccess(res, null, result.message);
     } catch (error) {
        sendError(res, error.message || 'OTP request failed', error.statusCode || 500); 

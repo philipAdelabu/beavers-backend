@@ -331,7 +331,6 @@ class PaymentService {
            jobId: job.job_id,
            clientId,
            artisanId: job.artisan_id,
-           amount,
            transactiontype: 'full_payment',
            status: 'held',
            disputeBufferDays: 3 ,
@@ -340,20 +339,23 @@ class PaymentService {
         await EscrowService.createHold(escrowData);
 
         escrowData.transactionType = 'base_fee';
-        escrowData.status  = 'release';
+        escrowData.status  = 'released';
         escrowData.disputeBufferDays = 0;
+        escrowData.amount = job.base_fee;
         // Release base fee immediately (non-refundable)
         await EscrowService.createHold(escrowData);
  
         if(job.materials_cost > 0){
              // release materials cost immediately
               escrowData.transactionType = 'materials';
+              escrowData.amount = job.materials_cost;
              await EscrowService.createHold(escrowData); 
         }
        
         if(job.diagnostics_fee > 0){
              // release materials cost immediately
               escrowData.transactionType = 'diagnotics';
+               escrowData.amount = job.diagnostics_fee;
              await EscrowService.createHold(escrowData); 
         }
 
@@ -361,12 +363,14 @@ class PaymentService {
                escrowData.transactionType = 'execution';
                escrowData.status = 'held',
                escrowData.disputeBufferDays = 3,
+                escrowData.amount = job.execution_fee;
              await EscrowService.createHold(escrowData); 
         }
 
 
         if(job.workmanship_cost > 0){
               escrowData.transactionType = 'workmanship';
+              escrowData.amount = job.workmanship_cost;
              await EscrowService.createHold(escrowData); 
         }
     
@@ -609,6 +613,19 @@ class PaymentService {
       limit,
       totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
     };
+  }
+
+  static async getTransactionDetails(transactionId){
+       const result = await pool.query(`
+            SELECT pi.*, jb.* FROM payment_intents pi
+            LEFT JOIN job_billing jb on jb.job_id = pi.job_id
+             WHERE payment_intent_id = $1
+        `, [transactionId]);
+
+        if(result.rows.length < 1){
+            throw new AppError(404, 'The transaction you are looking for is not found');
+        }
+        return result.rows
   }
   
   /**

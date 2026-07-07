@@ -183,7 +183,7 @@ router.post('/disputes/:disputeId/resolve', [
   body('amount').optional().isFloat({ min: 0 })
 ], AdminController.resolveDispute);
 
-// ==================== Category Management ====================
+// ==================== Category Management ==================== 
 
 router.get('/categories', AdminController.getCategories);
 
@@ -194,16 +194,16 @@ router.post('/categories', [
   body('billingRules').optional().isObject(),
   body('icon').optional().isString(),
   body('displayOrder').optional().isInt({ min: 0 })
-], AdminController.createCategory);
+], AdminController.createCategory); 
 
 router.put('/categories/:categoryId', [
-  param('categoryId').isInt(),
+  param('categoryId').isUUID(),
   body('name').optional().notEmpty(),
-  body('isActive').optional().isBoolean()
+  body('is_active').optional().isBoolean()
 ], AdminController.updateCategory);
 
 router.delete('/categories/:categoryId', [
-  param('categoryId').isInt()
+  param('categoryId').isUUID()
 ], AdminController.deleteCategory);
 
 
@@ -214,12 +214,12 @@ router.get('/subcategories', [
 
 
 router.post('/subcategories', [
-  body('categoryId').isUUID(),
+  body('category_id').isUUID(),
   body('name').notEmpty(),
   body('description').optional().isString(),
   body('icon').optional().isString(),
-  body('requiredCertifications').optional().isArray(),
-  body('displayOrder').optional().isInt({ min: 0 })
+  body('required_certifications').optional().isArray(),
+  body('display_order').optional().isInt({ min: 0 })
 ], AdminController.createSubcategory);
 
 router.put('/subcategories/:subcategoryId', [
@@ -289,7 +289,7 @@ router.post('/notifications/bulk', [
   ], AdminController.getPaymentAnalytics);
 
  
-router.get('/payments', [
+router.get('/payments/clients', [
   query('status').optional().isIn(['pending', 'succeeded', 'failed', 'refunded']),
   query('clientId').optional().isUUID(),
   query('artisanId').optional().isUUID(),
@@ -431,18 +431,37 @@ router.get('/escrow/transactions/:jobId/balance', [
 router.get('/escrow/summary', AdminController.getEscrowSummary);
 router.get('/escrow/pending/disbursements', AdminController.getPendingDisbursements);
 
+// get a particular artisan pending disbursements
+router.get('/escrow/pending/:artisanId/disbursements', 
+   [ param('artisanId').isUUID(),],
+   AdminController.getPendingArtisanDisbursements);
+
 // { jobId, clientId, artisanId, status, transactionType, page = 1, limit = 20 } = filters;
 
 router.get('/escrow/transactions/history', [
-  query('status').optional().isIn(['held', 'frozen', 'released', 'refunded']),
+  query('status').optional().isIn(['held', 'frozen', 'released', 'release', 'refunded']),
   query('transactionType').optional().isIn(['base_fee',
-    'diagnostics_fee', 'platform_fee', 'materials',
-    'workmanship ', 'full_payment', 'execution_fee']),
+    'diagnostics_fee', 'platform_fee', 'materials', 'workmanship ', 'full_payment', 'execution_fee']),
   query('jobId').optional().isUUID(),
   query('clientId').optional().isUUID(),
   query('artisanId').optional().isUUID(),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
-], AdminController.getPendingDisbursements);
+], AdminController.getTransactionHistory);
+ 
+// Initiate escrow Refund 
+router.post('/escrow/transactions/:escrowTransactionId/initiate_refund', [
+  param('escrowTransactionId').isUUID(),
+  body('reason').notEmpty()
+], AdminController.initiateFunds);
+
+// Complete Refund 
+/*
+router.post('/escrow/transactions/:escrowTransactionId/complete_refund', [
+    param('escrowTransactionId').isUUID(),
+], AdminController.completeRefunds);
+
+*/
+
 
 module.exports = router;

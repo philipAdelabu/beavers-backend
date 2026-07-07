@@ -10,6 +10,7 @@ class AdminController {
       const stats = await AdminService.getDashboardStats();
       sendSuccess(res, stats, 'Dashboard statistics retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to retrieve dashboard statistics', error.statusCode || 500);
       next(error);
     }
   }
@@ -25,6 +26,7 @@ class AdminController {
       const metrics = await AdminService.getDashboardMetrics(period);
       sendSuccess(res, metrics, 'Dashboard metrics retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to retrieve dashboard metrics', error.statusCode || 500);
       next(error);
     }
   }
@@ -34,6 +36,7 @@ class AdminController {
       const stats = await AdminService.getRealtimeStats();
       sendSuccess(res, stats, 'Real-time statistics retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail to retrieve dashboard statistics', error.statusCode || 500);
       next(error);
     }
   }

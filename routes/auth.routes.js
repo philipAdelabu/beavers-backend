@@ -61,7 +61,8 @@ router.post('/login', authLimiter, [
 
 // Request OTP for phone login
 router.post('/request-otp', authLimiter, [
-  body('phone').matches(/^\+?[0-9]{10,15}$/).withMessage('Valid phone number is required')
+  body('phone').optional().matches(/^\+?[0-9]{10,15}$/).withMessage('Valid phone number is required'),
+  body('email').optional().isEmail().withMessage('Valid email is required')
 ], AuthController.requestOTP);
 
 // Login with phone and OTP

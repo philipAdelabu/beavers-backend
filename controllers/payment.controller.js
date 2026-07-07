@@ -220,8 +220,8 @@ class PaymentController {
 
     try {
       const { transactionId } = req.params;
-      // Implement transaction details retrieval
-      sendSuccess(res, { transactionId }, 'Transaction details retrieved successfully');
+      const result = await PaymentService.getTransactionDetails(transactionId);
+      sendSuccess(res, result, 'Transaction details retrieved successfully');
     } catch (error) {
       sendError(res, error.message || 'Failed to retrieve transaction details', error.statusCode || 500);
       next(error);

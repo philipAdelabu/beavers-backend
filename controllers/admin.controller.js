@@ -11,7 +11,7 @@ class AdminController {
 
     // ==================== Admin User Management ==================== 
   
-  static async getAdminRoles(req, res, next) {
+  static async getAdminRoles(req, res, next) { 
     try {
       const roles = await AdminService.getAdminRoles();
       sendSuccess(res, roles, 'Admin roles retrieved');
@@ -425,6 +425,7 @@ class AdminController {
       sendSuccess(res, categories, 'Categories retrieved');
     } catch (error) {
       next(error);
+      sendError(res, error.message || 'Fail to retrieve all categories', error.statusCode || 500);
     }
   }
   
@@ -435,9 +436,10 @@ class AdminController {
     }
     
     try {
-      const category = await AdminService.createCategory(req.body);
+      const category = await AdminService.createCategory(req.body, req.user.id);
       sendSuccess(res, category, 'Category created', 201);
     } catch (error) {
+      sendError(res, error.message || 'Fail to create new category', error.statusCode || 500);
       next(error);
     }
   }
@@ -449,9 +451,10 @@ class AdminController {
     }
     
     try {
-      const category = await AdminService.updateCategory(req.params.categoryId, req.body);
+      const category = await AdminService.updateCategory(req.params.categoryId, req.body, req.user.id);
       sendSuccess(res, category, 'Category updated');
     } catch (error) {
+      sendError(res, error.message || 'Fail to update category', error.statusCode || 500);
       next(error);
     }
   }
@@ -463,9 +466,10 @@ class AdminController {
     }
     
     try {
-      const category = await AdminService.deleteCategory(req.params.categoryId);
+      const category = await AdminService.deleteCategory(req.params.categoryId, req.user.id);
       sendSuccess(res, category, 'Category deleted');
     } catch (error) {
+      sendError(res, error.message || 'Fail to delete category', error.statusCode || 500);
       next(error);
     }
   }
@@ -483,6 +487,7 @@ class AdminController {
       const subcategories = await AdminService.getSubcategories(categoryId);
       sendSuccess(res, subcategories, 'Subcategories retrieved');
     } catch (error) {
+     sendError(res, error.message || 'Fail to retreive sub-categories', error.statusCode || 500);
       next(error);
     }
   }
@@ -494,9 +499,10 @@ class AdminController {
     }
     
     try {
-      const subcategory = await AdminService.createSubcategory(req.body);
+      const subcategory = await AdminService.createSubcategory(req.body, req.user.id);
       sendSuccess(res, subcategory, 'Subcategory created', 201);
     } catch (error) {
+      sendError(res, error.message || 'Fail to add sub-category', error.statusCode || 500);
       next(error);
     }
   }
@@ -508,9 +514,10 @@ class AdminController {
     }
     
     try {
-      const subcategory = await AdminService.updateSubcategory(req.params.subcategoryId, req.body);
+      const subcategory = await AdminService.updateSubcategory(req.params.subcategoryId, req.body, req.user.id);
       sendSuccess(res, subcategory, 'Subcategory updated');
     } catch (error) {
+    sendError(res, error.message || 'Fail to update sub-category', error.statusCode || 500);
       next(error);
     }
   }
@@ -522,9 +529,10 @@ class AdminController {
     }
     
     try {
-      const subcategory = await AdminService.deleteSubcategory(req.params.subcategoryId);
+      const subcategory = await AdminService.deleteSubcategory(req.params.subcategoryId, req.user.id);
       sendSuccess(res, subcategory, 'Subcategory deleted');
     } catch (error) {
+      sendError(res, error.message || 'Fail to delete sub-category', error.statusCode || 500);
       next(error);
     }
   }
@@ -706,6 +714,7 @@ class AdminController {
           const analytics = await Payment.getAnalytics(period);
           sendSuccess(res, analytics, 'Payment analytics retrieved');
         } catch (error) {
+          sendError(res, error.message || 'Failed to retrieve the system health', error.statusCode || 500);
           next(error);
         }
       }
@@ -725,6 +734,7 @@ static async getAllPayments(req, res, next) {
     });
     sendPaginated(res, result.payments, page, limit, result.total, 'Payments retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve all the client payments', error.statusCode || 500);
     next(error);
   }
 }
@@ -739,6 +749,7 @@ static async getPaymentDetails(req, res, next) {
     const payment = await AdminService.getPaymentDetails(req.params.paymentId);
     sendSuccess(res, payment, 'Payment details retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve all the client payment details', error.statusCode || 500);
     next(error);
   }
 }
@@ -755,6 +766,7 @@ static async processRefund(req, res, next) {
     const result = await AdminService.processRefund(refundId, req.user.id, notes);
     sendSuccess(res, result, 'Refund processed');
   } catch (error) {
+    sendError(res, error.message || 'Failed to process refund', error.statusCode || 500);
     next(error);
   }
 }
@@ -1072,8 +1084,24 @@ static async getJobEscrowBalance(req, res, next) {
 
 static async getPendingDisbursements(req, res, next) {
   try {
-    const summary = await EscrowService.getPendingDisbursements();
+    const summary = await EscrowService.getPendingEscrowDisbursements();
     sendSuccess(res, summary, 'Escrow summary retrieved');
+  } catch (error) {
+    sendError(res, error.message || 'Failed to get the pending disbursement', error.statusCode || 500);
+    next(error);
+  }
+} 
+
+static async getPendingArtisanDisbursements(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+   }
+  
+  try {
+    const {artisanId} = req.params
+    const summary = await EscrowService.getPendingDEscrowisbursementByArtisanId(artisanId);
+    sendSuccess(res, summary, 'Artisan Escrow summary retrieved');
   } catch (error) {
     sendError(res, error.message || 'Failed to get the pending disbursement', error.statusCode || 500);
     next(error);
@@ -1093,6 +1121,22 @@ static async getPendingDisbursements(req, res, next) {
     next(error);
    }
  } 
+
+ static async initiateFunds(req, res, next){
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+   }  
+   try{
+    const { escrowTransactionId } = req.params;
+    const { reason } = req.body;
+    const result = await EscrowService.initiateFunds(escrowTransactionId, reason, req.user.id);
+    sendSuccess(res, result, 'Refund inititated');
+   }catch(error){
+    sendError(res, error.message || 'Failed to initiate refund escrow funds', error.statusCode || 500);
+    next(error);
+   }
+ }
 
 }
 

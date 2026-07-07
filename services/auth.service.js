@@ -68,7 +68,7 @@ class AuthService {
       const phoneOtp = await generateAndStoreOTP(`phone:${phone}`, 600);
       
       // Send verification email
-      if(process.env.NODE_ENV !== 'production') {
+      if(process.env.NODE_ENV === 'production') {
         await sendEmail(email, 'Verify Your Email',
         `Your verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
          await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);

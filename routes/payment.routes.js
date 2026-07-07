@@ -64,8 +64,6 @@ router.get('/receipt/:paymentId/download', [
 ], PaymentController.downloadReceipt);
 
 // Transaction details
-router.get('/transaction/:transactionId', [
-  param('transactionId').isUUID()
-], PaymentController.getTransactionDetails);
+router.get('/transaction/:transactionId', PaymentController.getTransactionDetails);
 
 module.exports = router;

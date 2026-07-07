@@ -651,31 +651,42 @@ class AdminService {
     return result.rows;
   }
   
-  static async createCategory(categoryData) {
-    const { name, description, requiredCertifications, billingRules, icon, displayOrder } = categoryData;
-    
-    const result = await pool.query(
+  static async createCategory(categoryData, userId) {
+    const { name, description, required_certifications, billing_rules, icon, display_order } = categoryData;
+       const client = await pool.connect();
+    try{
+     await client.query('BEGIN')
+
+    const result = await client.query(
       `INSERT INTO categories (name, description, required_certifications, billing_rules, icon, display_order, is_active)
        VALUES ($1, $2, $3, $4, $5, $6, true)
        RETURNING *`,
-      [name, description, requiredCertifications, billingRules, icon, displayOrder || 0]
+      [name, description, required_certifications, billing_rules, icon, display_order || 0]
     );
     
     await cacheDel('admin:categories');
     await cacheDel('categories:all');
     await cacheDel('categories:active');
     
-    await this.logAdminActivity(result.rows[0].id, 'category_created', categoryData);
+    await this.logAdminActivity(userId, 'category_created', categoryData);
+    await client.query('COMMIT');
     
     return result.rows[0];
+  }catch(error){
+    await client.query('ROLLBACK');
+    throw error;
+  }finally{
+     client.release();
+  }
   }
   
-  static async updateCategory(categoryId, updates) {
+  static async updateCategory(categoryId, updates, userId) {
     const allowedFields = ['name', 'description', 'required_certifications', 'billing_rules', 'icon', 'is_active', 'display_order'];
     const setClause = [];
     const values = [];
     let paramIndex = 1;
-    
+
+
     for (const [key, value] of Object.entries(updates)) {
       if (allowedFields.includes(key)) {
         setClause.push(`${key} = $${paramIndex}`);
@@ -703,12 +714,12 @@ class AdminService {
     await cacheDel('categories:all');
     await cacheDel('categories:active');
     
-    await this.logAdminActivity(categoryId, 'category_updated', updates);
+    await this.logAdminActivity(userId, 'category_updated', updates);
     
     return result.rows[0];
   }
   
-  static async deleteCategory(categoryId) {
+  static async deleteCategory(categoryId, userId) {
     const result = await pool.query(
       `UPDATE categories SET is_active = false WHERE id = $1 RETURNING *`,
       [categoryId]
@@ -722,10 +733,12 @@ class AdminService {
     await cacheDel('categories:all');
     await cacheDel('categories:active');
     
-    await this.logAdminActivity(categoryId, 'category_deleted', { categoryId });
+    await this.logAdminActivity(userId, 'category_deleted', { categoryId });
     
     return result.rows[0];
   }
+
+  
   
   // ==================== Subcategory Management ====================
   
@@ -748,25 +761,33 @@ class AdminService {
     return result.rows;
   }
   
-  static async createSubcategory(subcategoryData) {
-    const { categoryId, name, description, icon, requiredCertifications, displayOrder } = subcategoryData;
-    
-    const result = await pool.query(
+  static async createSubcategory(subcategoryData, userId) {
+    const { category_id, name, description, icon, required_certifications, display_order } = subcategoryData;
+    const client = await pool.connect();
+    try{
+     await client.query('BEGIN')
+    const result = await client.query(
       `INSERT INTO subcategories (category_id, name, description, icon, required_certifications, display_order, is_active)
        VALUES ($1, $2, $3, $4, $5, $6, true)
        RETURNING *`,
-      [categoryId, name, description, icon, requiredCertifications, displayOrder || 0]
+      [category_id, name, description, icon, required_certifications, display_order || 0]
     );
     
-    await cacheDel(`subcategories:category:${categoryId}`);
+    await cacheDel(`subcategories:category:${category_id}`);
     await cacheDel('subcategories:all');
     
-    await this.logAdminActivity(result.rows[0].id, 'subcategory_created', subcategoryData);
-    
+    await this.logAdminActivity(userId, 'subcategory_created', subcategoryData);
+     await client.query('COMMIT');
     return result.rows[0];
+   }catch(error){
+    await client.query('ROLLBACK');
+    throw error;
+   }finally{
+     client.release();
+   }
   }
   
-  static async updateSubcategory(subcategoryId, updates) {
+  static async updateSubcategory(subcategoryId, updates, userId) {
     const allowedFields = ['name', 'description', 'icon', 'required_certifications', 'is_active', 'display_order'];
     const setClause = [];
     const values = [];
@@ -799,12 +820,12 @@ class AdminService {
     await cacheDel(`subcategories:category:${subcategory.category_id}`);
     await cacheDel('subcategories:all');
     
-    await this.logAdminActivity(subcategoryId, 'subcategory_updated', updates);
+    await this.logAdminActivity(userId, 'subcategory_updated', updates);
     
     return result.rows[0];
   }
   
-  static async deleteSubcategory(subcategoryId) {
+  static async deleteSubcategory(subcategoryId, userId) {
     const result = await pool.query(
       `UPDATE subcategories SET is_active = false WHERE id = $1 RETURNING *`,
       [subcategoryId]
@@ -818,7 +839,7 @@ class AdminService {
     await cacheDel(`subcategories:category:${subcategory.category_id}`);
     await cacheDel('subcategories:all');
     
-    await this.logAdminActivity(subcategoryId, 'subcategory_deleted', { subcategoryId });
+    await this.logAdminActivity(userId, 'subcategory_deleted', { subcategoryId });
     
     return result.rows[0];
   }
@@ -967,7 +988,8 @@ class AdminService {
         if (userResult.rows.length === 0) {
           throw new AppError(401, 'Invalid credentials');
         }
-       
+        
+
 
         const user = userResult.rows[0];
 
@@ -1800,14 +1822,16 @@ static async getPaymentDetails(paymentId) {
   const result = await pool.query(`
     SELECT pi.*, 
            j.category, j.service_type, j.description as job_description,
-           cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
-           ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+           cp.full_legal_name as client_name, uc.email as client_email, uc.phone as client_phone,
+           ap.full_legal_name as artisan_name, ua.email as artisan_email, ua.phone as artisan_phone,
            jb.base_fee, jb.diagnostics_fee, jb.execution_fee, jb.materials_cost, jb.workmanship_cost,
            (SELECT json_agg(row_to_json(r)) FROM refunds r WHERE r.payment_intent_id = pi.payment_intent_id) as refunds
     FROM payment_intents pi
     JOIN jobs j ON pi.job_id = j.id
     LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN users uc ON uc.id = cp.user_id
     LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+    LEFT JOIN users ua ON ua.id = ap.user_id
     LEFT JOIN job_billing jb ON j.id = jb.job_id
     WHERE pi.id = $1
   `, [paymentId]);
