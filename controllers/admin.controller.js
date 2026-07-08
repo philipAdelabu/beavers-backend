@@ -782,6 +782,7 @@ static async getAllRefunds(req, res, next) {
     const result = await AdminService.getAllRefunds({ status, jobId, page, limit, startDate, endDate });
     sendPaginated(res, result.refunds, page, limit, result.total, 'Refunds retrieved');
   } catch (error) {
+     sendError(res, error.message || 'Failed to retrieve all refunds', error.statusCode || 500);
     next(error);
   }
 }
@@ -799,6 +800,7 @@ static async getAllBOQs(req, res, next) {
     const result = await AdminService.getAllBOQs({ status, jobId, artisanId, page, limit, startDate, endDate });
     sendPaginated(res, result.boqs, page, limit, result.total, 'BOQs retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve all the BOQ', error.statusCode || 500);
     next(error);
   }
 }
@@ -813,6 +815,7 @@ static async getBOQDetails(req, res, next) {
     const boq = await AdminService.getBOQDetails(req.params.boqId);
     sendSuccess(res, boq, 'BOQ details retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve BOQ details', error.statusCode || 500);
     next(error);
   }
 }
@@ -829,6 +832,7 @@ static async adminApproveBOQ(req, res, next) {
     const result = await AdminService.adminApproveBOQ(boqId, req.user.id, notes);
     sendSuccess(res, result, 'BOQ approved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to approve BOQ', error.statusCode || 500);
     next(error);
   }
 }
@@ -845,6 +849,7 @@ static async adminRejectBOQ(req, res, next) {
     const result = await AdminService.adminRejectBOQ(boqId, req.user.id, reason);
     sendSuccess(res, result, 'BOQ rejected');
   } catch (error) {
+   sendError(res, error.message || 'Failed to reject BOQ', error.statusCode || 500);
     next(error);
   }
 }

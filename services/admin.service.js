@@ -2084,8 +2084,8 @@ static async getBOQDetails(boqId) {
   const result = await pool.query(`
     SELECT b.*, 
            j.category, j.service_type, j.description as job_description,
-           cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
-           ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+           cp.full_legal_name as client_name, uc.email as client_email, uc.phone as client_phone,
+           ap.full_legal_name as artisan_name, ua.email as artisan_email, ua.phone as artisan_phone,
            jb.base_fee, jb.diagnostics_fee, jb.execution_fee,
            (SELECT json_agg(row_to_json(sr)) FROM substitution_requests sr WHERE sr.boq_id = b.id) as substitution_requests
     FROM bill_of_quantities b
@@ -2093,6 +2093,8 @@ static async getBOQDetails(boqId) {
     LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
     LEFT JOIN artisan_profiles ap ON b.artisan_id = ap.user_id
     LEFT JOIN job_billing jb ON j.id = jb.job_id
+    LEFT JOIN users uc ON uc.id = cp.user_id 
+    LEFT JOIN users ua ON ua.id = ap.user_id
     WHERE b.id = $1
   `, [boqId]);
   
@@ -2129,7 +2131,7 @@ static async adminApproveBOQ(boqId, adminId, notes = null) {
            admin_approved = true,
            admin_approved_at = NOW(),
            admin_id = $1,
-           admin_notes = $2
+           notes = $2
        WHERE id = $3`,
       [adminId, notes, boqId]
     );
@@ -2142,10 +2144,20 @@ static async adminApproveBOQ(boqId, adminId, notes = null) {
        WHERE job_id = $3`,
       [boq.total_materials_cost, boq.total_workmanship_cost, boq.job_id]
     );
-    
+
+    // total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost + platform_fee - discount_amount
+  
+     await client.query(
+      `UPDATE job_billing 
+       SET 
+        total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost + platform_fee - discount_amount
+       WHERE job_id = $1`,
+      [boq.job_id]
+    );
+
     await client.query('COMMIT');
     
-    await this.logAdminActivity(boqId, 'boq_approved', 
+    await this.logAdminActivity(adminId, 'boq_approved', 
       { boqId, jobId: boq.job_id, notes });
     
     return boq;
@@ -2184,7 +2196,7 @@ static async adminRejectBOQ(boqId, adminId, reason) {
     
     await client.query('COMMIT');
     
-    await this.logAdminActivity(boqId, 'boq_rejected', 
+    await this.logAdminActivity(adminId, 'boq_rejected', 
       { boqId, reason });
     
     return result.rows[0];
@@ -2313,7 +2325,7 @@ static async processSettlement(payoutId, adminId, transferReference = null) {
     
     await client.query('COMMIT');
     
-    await this.logAdminActivity(payoutId, 'settlement_processed', 
+    await this.logAdminActivity(adminId, 'settlement_processing', 
       { payoutId, amount: payout.amount, transferReference });
     
     return { payoutId, status: 'processing', amount: payout.amount };
@@ -2350,7 +2362,7 @@ static async completeSettlement(payoutId, adminId, transactionId = null) {
     
     await client.query('COMMIT');
     
-    await this.logAdminActivity(payoutId, 'settlement_completed', 
+    await this.logAdminActivity(adminId, 'settlement_completed', 
       { payoutId, transactionId });
     
     return result.rows[0];

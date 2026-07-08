@@ -9,6 +9,8 @@ const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { upload } = require('../config/multer');
 const { profile, log } = require('winston');
+const { PRICING } = require('../config/constants');
+const SysConfig = require('../config/syst-config');
 
 class AuthService {
   static async registerClient(userData, uploadedFiles = {}) {
@@ -104,7 +106,7 @@ class AuthService {
   }
   
   static async registerArtisan(userData, uploadedFiles = {}) {
-    const { email, phone, password, fullLegalName, nin, residentialAddress, skillCategory, onboardingFee } = userData;
+    const { email, phone, password, fullLegalName, nin, residentialAddress, skillCategory } = userData;
     
     const client = await pool.connect();
     
@@ -146,33 +148,21 @@ class AuthService {
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           user.id, fullLegalName, nin, residentialAddress, skillCategory, 
-          uploadedFiles.passportPhoto || null, !(onboardingFee === 0),
+          uploadedFiles.passportPhoto || null, false,
         ],
       );
       
-       // Check if onboarding fee is required and paid
-          if (onboardingFee === 0) {
-            // Onboarding fee required but not paid yet
-            // Artisan needs to pay onboarding fee before becoming active
-            await client.query(
-              `UPDATE artisan_profiles 
-              SET is_available = false, 
-                  onboarding_fee_paid = false
-              WHERE user_id = $1`,
-              [user.id]
-            );
-            
+              const sys_config = await SysConfig.getSysConfig();
+              const onboardingFee = sys_config.onboarding_fee || process.env.ARTISAN_ONBOARDING_FEE;
+    
              if(process.env.NODE_ENV === 'production') {
-            // Send notification about onboarding fee
               await sendEmail(
               email, 'Complete Your Registration - Pay Onboarding Fee',
               `Dear ${fullLegalName},\n\nPlease pay the onboarding fee of ₦${onboardingFee.toLocaleString()} to activate your account and start receiving job offers.\n\nThank you for choosing BeaverWorks!`,
               user.id
              );
             }
-          }
-
-
+          
 
       const userProfile = userProfileResult.rows[0];
 
