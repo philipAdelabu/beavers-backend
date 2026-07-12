@@ -100,7 +100,6 @@ class AdminController {
     static async logout(req, res, next) {
       try {
         const userId = req.user.id;
-        console.log('userId: ', userId);
         const accessToken = req.token || req.headers.authorization?.split(' ')[1];
         const result = await AdminService.logout(userId, accessToken);
         sendSuccess(res, null, result.message);
@@ -139,6 +138,7 @@ class AdminController {
       const result = await AuthService.forgotPassword(email);
       sendSuccess(res, null, result.message);
     } catch (error) {
+      sendError(res, error.message || 'Password reset request failed', error.statusCode || 500);
       next(error);
     }
   }
@@ -183,6 +183,7 @@ class AdminController {
       const stats = await AdminService.getDashboardStats();
       sendSuccess(res, stats, 'Dashboard statistics retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve dashboard statistics', error.statusCode || 500);
       next(error);
     }
   }
@@ -226,6 +227,7 @@ class AdminController {
       const result = await AdminService.getAllUsers({ type, status, search, page, limit });
       sendPaginated(res, result.users, page, limit, result.total, 'Users retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve users', error.statusCode || 500);
       next(error);
     }
   }
@@ -240,6 +242,7 @@ class AdminController {
       const user = await AdminService.getUserDetails(req.params.userId);
       sendSuccess(res, user, 'User details retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve user details', error.statusCode || 500);
       next(error);
     }
   }
@@ -255,6 +258,7 @@ class AdminController {
       const user = await AdminService.updateUserStatus(req.params.userId, isActive, req.body.reason);
       sendSuccess(res, user, `User ${isActive ? 'activated' : 'suspended'} successfully`);
     } catch (error) {
+      sendError(res, error.message || 'Failed to update user status', error.statusCode || 500);
       next(error);
     }
   }
@@ -272,6 +276,7 @@ class AdminController {
       const result = await AdminService.getPendingVerifications(type, page, limit);
       sendPaginated(res, result.users, page, limit, result.total, 'Pending verifications retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve pending verifications', error.statusCode || 500);
       next(error);
     }
   }
@@ -352,6 +357,7 @@ class AdminController {
       const job = await AdminService.getJobDetails(req.params.jobId);
       sendSuccess(res, job, 'Job details retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve job details', error.statusCode || 500);
       next(error);
     }
   }
@@ -384,6 +390,7 @@ class AdminController {
       const result = await AdminService.getAllDisputes({ status, page, limit });
       sendPaginated(res, result.disputes, page, limit, result.total, 'Disputes retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve disputes', error.statusCode || 500);
       next(error);
     }
   }
@@ -398,6 +405,7 @@ class AdminController {
       const dispute = await AdminService.getDisputeDetails(req.params.disputeId);
       sendSuccess(res, dispute, 'Dispute details retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve dispute details', error.statusCode || 500);
       next(error);
     }
   }
@@ -413,6 +421,7 @@ class AdminController {
       const result = await AdminService.resolveDispute(req.params.disputeId, resolution);
       sendSuccess(res, result, 'Dispute resolved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to resolve dispute', error.statusCode || 500);
       next(error);
     }
   }
@@ -424,8 +433,8 @@ class AdminController {
       const categories = await AdminService.getCategories();
       sendSuccess(res, categories, 'Categories retrieved');
     } catch (error) {
-      next(error);
       sendError(res, error.message || 'Fail to retrieve all categories', error.statusCode || 500);
+      next(error);
     }
   }
   
@@ -546,6 +555,7 @@ class AdminController {
       const configs = await AdminService.getSystemConfigurations();
       sendSuccess(res, configs, 'System configurations retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve system configurations', error.statusCode || 500);
       next(error);
     }
   }
@@ -561,6 +571,7 @@ class AdminController {
       const config = await AdminService.updateSystemConfiguration(key, value, req.user.id);
       sendSuccess(res, config, 'Configuration updated');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update system configuration', error.statusCode || 500);
       next(error);
     }
   }
@@ -578,6 +589,7 @@ class AdminController {
       const result = await AdminService.getActivityLogs({ adminId, action, page, limit, startDate, endDate });
       sendPaginated(res, result.logs, page, limit, result.total, 'Activity logs retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve activity logs', error.statusCode || 500);
       next(error);
     }
   }
@@ -593,6 +605,7 @@ class AdminController {
         const result = await AdminService.getAuditLogs({ entityType, action, userId, startDate, endDate, page, limit });
         sendPaginated(res, result.logs, page, limit, result.total, 'Audit logs retrieved successfully');
       } catch (error) {
+        sendError(res, error.message || 'Failed to retrieve audit logs', error.statusCode || 500);
         next(error);
       }
     }
@@ -617,6 +630,7 @@ class AdminController {
         res.send(report.data);
       }
     } catch (error) {
+      sendError(res, error.message || 'Failed to generate report', error.statusCode || 500);
       next(error);
     }
   }
@@ -633,6 +647,7 @@ class AdminController {
       const result = await AdminService.sendBulkNotification(req.body);
       sendSuccess(res, result, 'Bulk notification sent');
     } catch (error) {
+      sendError(res, error.message || 'Failed to send bulk notification', error.statusCode || 500);
       next(error);
     }
   }
@@ -651,6 +666,7 @@ class AdminController {
             const result = await AdminService.suspendUser(adminId, req.params.userId, req.body.reason);
             sendSuccess(res, result, 'User suspended successfully');
           } catch (error) {
+            sendError(res, error.message || 'Failed to suspend user', error.statusCode || 500);
             next(error);
           }
         }
@@ -665,6 +681,7 @@ class AdminController {
             const result = await AdminService.activateUser(req.params.userId);
             sendSuccess(res, result, 'User activated successfully');
           } catch (error) {
+            sendError(res, error.message || 'Failed to activate user', error.statusCode || 500);
             next(error);
           }
         }
@@ -680,6 +697,7 @@ class AdminController {
               const config = await AdminService.updateFeeConfiguration(req.user.id, req.body);
               sendSuccess(res, config, 'Fee configuration updated successfully');
             } catch (error) {
+              sendError(res, error.message || 'Failed to update fee configuration', error.statusCode || 500);
               next(error);
             }
           }
@@ -689,6 +707,7 @@ class AdminController {
               const config = await AdminService.getSystemConfigurations('platform_fees');
               sendSuccess(res, config, 'Fee configuration retrieved successfully');
             } catch (error) {
+              sendError(res, error.message || 'Failed to retrieve fee configuration', error.statusCode || 500);
               next(error);
             }
          } 
@@ -698,6 +717,7 @@ class AdminController {
             const health = await AdminService.getSystemHealth();
             sendSuccess(res, health, 'System health check completed');
           } catch (error) {
+            sendError(res, error.message || 'Failed to retrieve system health', error.statusCode || 500);
             next(error);
           }
         }
@@ -714,7 +734,7 @@ class AdminController {
           const analytics = await Payment.getAnalytics(period);
           sendSuccess(res, analytics, 'Payment analytics retrieved');
         } catch (error) {
-          sendError(res, error.message || 'Failed to retrieve the system health', error.statusCode || 500);
+          sendError(res, error.message || 'Failed to retrieve payment analytics', error.statusCode || 500);
           next(error);
         }
       }
@@ -867,11 +887,12 @@ static async getAllSettlements(req, res, next) {
     const result = await AdminService.getAllSettlements({ status, artisanId, page, limit, startDate, endDate });
     sendPaginated(res, result.settlements, page, limit, result.total, 'Settlements retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Fail to get all settlement', error.statusCode || 500);
     next(error);
   }
 }
 
-static async processSettlement(req, res, next) {
+static async settlementDetail(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return sendError(res, 'Validation error', 400, errors.array());
@@ -879,26 +900,63 @@ static async processSettlement(req, res, next) {
   
   try {
     const { payoutId } = req.params;
-    const { transferReference } = req.body;
-    const result = await AdminService.processSettlement(payoutId, req.user.id, transferReference);
+    const result = await AdminService.settlementDetail(payoutId);
     sendSuccess(res, result, 'Settlement processed');
   } catch (error) {
+    sendError(res, error.message || 'Fail to get settlement detail', error.statusCode || 500);
     next(error);
   }
 }
 
-static async completeSettlement(req, res, next) {
+
+
+static async processSettlementByJobId(req, res, next) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return sendError(res, 'Validation error', 400, errors.array());
   }
   
   try {
-    const { payoutId } = req.params;
-    const { transactionId } = req.body;
-    const result = await AdminService.completeSettlement(payoutId, req.user.id, transactionId);
-    sendSuccess(res, result, 'Settlement completed');
+    const { jobId } = req.params;
+    const { transferReference } = req.body;
+    const result = await AdminService.processSettlement(jobId, 'jobId', req.user.id, transferReference);
+    sendSuccess(res, result, 'Settlement processed');
   } catch (error) {
+    sendError(res, error.message || 'Failed to process settlement', error.statusCode || 500);
+    next(error);
+  }
+}
+
+static async processSettlementByArtisanId(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const { artisanId } = req.params;
+    const { transactionId } = req.body;
+    const result = await AdminService.processSettlement(artisanId, 'artisanId', req.user.id, transactionId);
+    sendSuccess(res, result, 'Settlement processed');
+  } catch (error) {
+    sendError(res, error.message || 'Fail to complete settlement', error.statusCode || 500);
+    next(error);
+  }
+}
+
+static async processSettlementByPayoutId(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+  
+  try {
+    const {  payoutId } = req.params;
+    const { transactionId } = req.body;
+    const result = await AdminService.processSettlement(payoutId, 'payoutId', req.user.id, transactionId);
+    sendSuccess(res, result, 'Settlement processed');
+  } catch (error) {
+    sendError(res, error.message || 'Fail to complete settlement', error.statusCode || 500);
     next(error);
   }
 }
@@ -915,6 +973,7 @@ static async failSettlement(req, res, next) {
     const result = await AdminService.failSettlement(payoutId, req.user.id, reason);
     sendSuccess(res, result, 'Settlement failed');
   } catch (error) {
+    sendError(res, error.message || 'Failed to process settlement', error.statusCode || 500);
     next(error);
   }
 }
@@ -932,6 +991,7 @@ static async getAllWithdrawals(req, res, next) {
     const result = await AdminService.getAllWithdrawals({ status, artisanId, page, limit, startDate, endDate });
     sendPaginated(res, result.withdrawals, page, limit, result.total, 'Withdrawals retrieved');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve all withdrawals', error.statusCode || 500);
     next(error);
   }
 }
@@ -948,11 +1008,12 @@ static async processWithdrawal(req, res, next) {
     const result = await AdminService.processWithdrawal(withdrawalId, req.user.id, action, notes);
     sendSuccess(res, result, `Withdrawal ${action}d`);
   } catch (error) {
+    sendError(res, error.message || 'Failed to process withdrawal', error.statusCode || 500);
     next(error);
   }
 }
 
-// ==================== Escrow Management ====================
+// ==================== Escrow Management ==================== 
 
 static async getAllEscrowTransactions(req, res, next) {
   const errors = validationResult(req);
@@ -979,7 +1040,7 @@ static async releaseFundEscrow(req, res, next) {
   try {
     const { transactionId } = req.params;
     const { reason } = req.body;
-    const result = await EscrowService.releaseFunds(transactionId, reason, req.user.id);
+    const result = await EscrowService.releaseEscrowHoldFund(transactionId, reason, req.user.id);
     sendSuccess(res, result, 'Fund Escrow released');
   } catch (error) {
     sendError(res, error.message || 'Failed to release escrow funds', error.statusCode || 500);
@@ -1112,6 +1173,67 @@ static async getPendingArtisanDisbursements(req, res, next) {
     next(error);
   }
 } 
+
+
+static async processJobPendingDisbursement(req, res, next){
+     const errors = validationResult(req);
+    if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+     const  jobId  = req.params.jobId;
+     const result = await EscrowService.processJobPendingDisbursement(jobId, req.user.id);
+     return sendSuccess(res, result, 'Job Ecrow Disbursement Released');
+    }catch(error){
+      sendError(res, error.message || 'Failed to process job pending disbursement', error.statusCode || 500);
+      next(error);
+    }
+}
+
+static async processJobPendingDisbursementByArtisanId(req, res, next){
+     const errors = validationResult(req);
+    if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+     const { artisanId } = req.params;
+     const result = await EscrowService.processJobPendingDisbursementByArtisanId(artisanId, req.user.id);
+     return sendSuccess(res, result, 'Job Ecrow Disbursement Released');
+    }catch(error){
+       sendError(res, error.message || 'Failed to disburse Job Pending Fund', error.statusCode || 500);
+       next(error);
+    }
+}
+
+static async processJobPendingDisbursementByEscrowId(req, res, next){
+     const errors = validationResult(req);
+    if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+     const { escrowId } = req.params;
+     const result = await EscrowService.processJobPendingDisbursementByEscrowId(escrowId, req.user.id);
+     return sendSuccess(res, result, 'Job Ecrow Disbursement Released');
+    }catch(error){
+       sendError(res, error.message || 'Failed to disburse Job Pending Fund', error.statusCode || 500);
+       next(error);
+    }
+}
+
+static async processAllJobPendingDisbursement(req, res, next){
+     const errors = validationResult(req);
+    if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+     const result = await EscrowService.processAllJobPendingDisbursement(req.user.id);
+     return sendSuccess(res, result, 'Job Ecrow Disbursement Released');
+    }catch(error){
+       sendError(res, error.message || 'Failed to disburse Job Pending Fund', error.statusCode || 500);
+       next(error);
+    }
+}
+
 
  static async getTransactionHistory(req, res, next) {
         const errors = validationResult(req);

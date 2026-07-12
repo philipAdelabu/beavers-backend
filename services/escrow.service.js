@@ -51,6 +51,47 @@ class EscrowService {
         client.release();
       }
   }
+
+  static async releaseEscrowHoldFund(transactionId, releaseReason = 'normal', releasedBy = null) {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const result = await client.query(
+        `UPDATE escrow_transactions 
+         SET status = 'release', 
+             release_date = NOW(),
+             release_reason = $1,
+             released_by = $2
+         WHERE id = $3 AND status = 'held'
+         RETURNING *`,
+        [releaseReason, releasedBy, transactionId]
+      );
+      
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Transaction not found or not held');
+      }
+      
+      const transaction = result.rows[0]; 
+      await client.query('COMMIT');
+      
+      // Send notification to artisan
+   
+      
+      logger.info(`Escrow funds  held fund released: ${transactionId} - ₦${transaction.amount}`);
+
+       await LogService.logAdminActivity(releasedBy, 'escrow_held_release', 
+      { transactionId: transaction.id, amount: transaction.amount, reason: 'Escrow held Funds Released' });
+    
+      return transaction;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
   
   static async releaseFunds(transactionId, releaseReason = 'normal', releasedBy = null) {
     const client = await pool.connect();
@@ -64,7 +105,7 @@ class EscrowService {
              release_date = NOW(),
              release_reason = $1,
              released_by = $2
-         WHERE id = $3 AND status = 'held'
+         WHERE id = $3 AND status = 'release'
          RETURNING *`,
         [releaseReason, releasedBy, transactionId]
       );
@@ -74,9 +115,6 @@ class EscrowService {
       }
       
       const transaction = result.rows[0];
-      
-      // If this is workmanship payment, create payout record
-     
         await client.query(
           `INSERT INTO artisan_payouts (job_id, artisan_id, amount, status)
            VALUES ($1, $2, $3, 'pending')`,
@@ -87,14 +125,7 @@ class EscrowService {
       await client.query('COMMIT');
       
       // Send notification to artisan
-    
-        await NotificationService.sendPushNotification(
-          transaction.artisan_id,
-          'Payment Released',
-          `₦${transaction.amount.toLocaleString()} has been released to your account.`,
-          { type: 'payment_released', amount: transaction.amount }
-        );
-      
+   
       
       logger.info(`Escrow funds released: ${transactionId} - ₦${transaction.amount}`);
 
@@ -126,7 +157,7 @@ class EscrowService {
       
       const released = [];
       for (const transaction of transactions.rows) {
-        const releasedTransaction = await this.releaseFunds(transaction.id, reason, releasedBy);
+        const releasedTransaction = await this.releaseEscrowHoldFund(transaction.id, reason, releasedBy);
         released.push(releasedTransaction);
       }
       
@@ -177,7 +208,7 @@ class EscrowService {
              frozen_at = NOW(),
              freeze_reason = $1,
              frozen_by = $2
-         WHERE job_id = $3 AND status = 'held'
+         WHERE job_id = $3 AND (status = 'held' OR status = 'release')
          RETURNING *`,
         [reason, frozenBy, jobId]
       );
@@ -198,7 +229,7 @@ class EscrowService {
   static async releaseFrozenFunds(transactionId, releasedBy) {
     const result = await pool.query(
       `UPDATE escrow_transactions 
-       SET status = 'released', 
+       SET status = 'release', 
            release_date = NOW(),
            released_by = $1,
            release_reason = 'dispute_resolved'
@@ -435,7 +466,7 @@ class EscrowService {
       
       const released = [];
       for (const transaction of transactions.rows) {
-        const releasedTransaction = await this.releaseFunds(transaction.id, 'buffer_expired', 'system');
+        const releasedTransaction = await this.releaseEscrowHoldFund(transaction.id, 'buffer_expired', 'system');
         released.push(releasedTransaction);
       }
       
@@ -479,24 +510,129 @@ class EscrowService {
     return result.rows;
   } 
 
-  static async disburseEscrow(artisanId){
+  static async processJobPendingDisbursementByArtisanId(artisanId, adminId){
      const client = await pool.connect();
+    try{
+   
+    await client.query('BEGIN');
 
-     try{
-         await client.query('BEGIN');
+    const trans = await client.query(
+      `
+        SELECT id FROM escrow_transactions WHERE artisan_id = $1 AND status = 'release'
+      `, [artisanId]
+    )
+    if(trans.rows.length < 1){
+       throw new AppError(404, 'No pending escrow for disbursements');
+    }
 
-         const escrow_trans = await client.query(
-           ` SELECT * from `
-         );
-
-
-     }catch(error){
-        await client.query('ROLLBACK');
-        throw error;
-     }finally{
-       client.release();
-     }
+    const released = [];
+   for(const transaction of trans.rows){
+    const result = this.releaseFunds(transaction.id, 'completed', adminId) ;
+     released.push(result) 
   }
+    await client.query('COMMIT');
+    return released;
+    }catch(error){
+    await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
+
+  } 
+
+  static async processJobPendingDisbursement(jobId, adminId){
+     const client = await pool.connect();
+    try{
+   
+    await client.query('BEGIN');
+
+    const trans = await client.query(
+      `
+        SELECT id FROM escrow_transactions WHERE job_id = $1 AND status = 'release'
+      `, [jobId]
+    )
+    if(trans.rows.length < 1){
+       throw new AppError(404, 'No pending escrow for disbursements');
+    }
+
+    const released = [];
+   for(const transaction of trans.rows){
+    const result = this.releaseFunds(transaction.id, 'completed', adminId) ;
+     released.push(result) 
+  }
+    await client.query('COMMIT');
+    return released;
+    }catch(error){
+    await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
+
+  }
+
+  static async processAllJobPendingDisbursement(adminId){
+     const client = await pool.connect();
+    try{
+   
+    await client.query('BEGIN');
+
+    const trans = await client.query(
+      `
+        SELECT id FROM escrow_transactions WHERE status = 'release'
+      `
+    )
+    if(trans.rows.length < 1){
+       throw new AppError(404, 'No pending escrow for disbursements');
+    }
+     const released = [];
+   for(const transaction of trans.rows){
+    const result = this.releaseFunds(transaction.id, 'completed', adminId) ;
+     released.push(result) 
+  }
+    await client.query('COMMIT');
+    return released;
+    }catch(error){
+    await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
+
+  }
+
+    static async processJobPendingDisbursementByEscrowId(escrowId, adminId){
+     const client = await pool.connect();
+    try{
+   
+    await client.query('BEGIN');
+
+    const trans = await client.query(
+      `
+        SELECT id FROM escrow_transactions WHERE status = 'release' AND id = $1
+      `, [escrowId]
+    )
+
+    logger.info(`length: ${trans.rows.length}`);
+    if(trans.rows.length !== 1){
+       throw new AppError(404, 'No pending escrow for disbursements');
+    }
+  
+    const result = this.releaseFunds(trans.rows[0].id, 'completed', adminId) ;
+
+    await client.query('COMMIT');
+    return result;
+    }catch(error){
+    await client.query('ROLLBACK');
+      throw error;
+    }finally{
+      client.release();
+    }
+
+  }
+
+
 }
 
 module.exports = EscrowService;

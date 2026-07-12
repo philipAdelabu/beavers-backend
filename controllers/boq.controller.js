@@ -28,7 +28,7 @@ class BOQController {
       
       sendSuccess(res, boq, 'BOQ created successfully', 201);
     } catch (error) {
-     // sendError(res, error.message || 'Failed to create BOQ', error.statusCode || 500);
+      sendError(res, error.message || 'Failed to create BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -72,6 +72,7 @@ class BOQController {
       const boq = await BOQService.submitForApproval(boqId, artisanId);
       sendSuccess(res, boq, 'BOQ submitted for approval');
     } catch (error) {
+      sendError(res, error.message || 'Failed to submit BOQ for approval', error.statusCode || 500);
       next(error);
     }
   }
@@ -93,6 +94,7 @@ class BOQController {
       const boq = await BOQService.clientApprove(boqId, clientId);
       sendSuccess(res, boq, 'BOQ approved by client');
     } catch (error) {
+      sendError(res, error.message || 'Failed to approve BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -115,6 +117,7 @@ class BOQController {
       const boq = await BOQService.clientReject(boqId, clientId, reason);
       sendSuccess(res, boq, 'BOQ rejected by client');
     } catch (error) {
+      sendError(res, error.message || 'Failed to reject BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -136,6 +139,7 @@ class BOQController {
       const boq = await BOQService.adminApprove(boqId, adminId);
       sendSuccess(res, boq, 'BOQ approved by admin');
     } catch (error) {
+      sendError(res, error.message || 'Failed to approve BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -158,6 +162,7 @@ class BOQController {
       const boq = await BOQService.adminReject(boqId, adminId, reason);
       sendSuccess(res, boq, 'BOQ rejected by admin');
     } catch (error) {
+      sendError(res, error.message || 'Failed to reject BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -180,6 +185,7 @@ class BOQController {
       const boq = await BOQService.getBOQ(boqId, userId, userType);
       sendSuccess(res, boq, 'BOQ retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -202,6 +208,7 @@ class BOQController {
       const boq = await BOQService.getBOQByJob(jobId, userId, userType);
       sendSuccess(res, boq, 'BOQ retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve BOQ', error.statusCode || 500);
       next(error);
     }
   }
@@ -224,6 +231,7 @@ class BOQController {
       const history = await BOQService.getBOQHistory(jobId, userId, userType);
       sendSuccess(res, history, 'BOQ history retrieved successfully');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve BOQ history', error.statusCode || 500);
       next(error);
     }
   }
@@ -245,6 +253,7 @@ class BOQController {
       const request = await BOQService.requestSubstitution(boqId, artisanId, itemIndex, alternativeItem, reason);
       sendSuccess(res, request, 'Substitution request submitted', 201);
     } catch (error) {
+      sendError(res, error.message || 'Failed to submit substitution request', error.statusCode || 500);
       next(error);
     }
   }
@@ -266,6 +275,7 @@ class BOQController {
       const result = await BOQService.approveSubstitution(requestId, adminId);
       sendSuccess(res, result, 'Substitution approved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to approve substitution request', error.statusCode || 500);
       next(error);
     }
   }
@@ -288,6 +298,7 @@ class BOQController {
       const result = await BOQService.rejectSubstitution(requestId, adminId, reason);
       sendSuccess(res, result, 'Substitution rejected');
     } catch (error) {
+      sendError(res, error.message || 'Failed to reject substitution request', error.statusCode || 500);
       next(error);
     }
   }
@@ -307,6 +318,7 @@ class BOQController {
       const requests = await BOQService.getSubstitutionRequests({ status, page, limit });
       sendPaginated(res, requests.requests, page, limit, requests.total, 'Substitution requests retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve substitution requests', error.statusCode || 500);
       next(error);
     }
   }
@@ -320,6 +332,7 @@ class BOQController {
       const stats = await BOQService.getBOQStatistics();
       sendSuccess(res, stats, 'BOQ statistics retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve BOQ statistics', error.statusCode || 500);
       next(error);
     }
   }
@@ -345,6 +358,7 @@ class BOQController {
       res.setHeader('Content-Disposition', `attachment; filename=boq_${boqId}.pdf`);
       res.send(pdfBuffer);
     } catch (error) {
+      sendError(res, error.message || 'Failed to download BOQ', error.statusCode || 500);
       next(error);
     }
   }

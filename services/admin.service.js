@@ -7,6 +7,7 @@ const { generateTokens, verifyRefreshToken } = require('../utils/jwt.utils');
 const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { pool } = require('../config/database');
 const NotificationService = require('./notification.service');
+const WalletService = require('./wallet.service');
 
 
 class AdminService {
@@ -2221,13 +2222,11 @@ static async getAllSettlements(filters = {}) {
     SELECT ap.*, 
            j.category, j.service_type,
            cp.full_legal_name as client_name,
-           ap_art.full_legal_name as artisan_name,
-           pi.payment_intent_id
+           ap_art.full_legal_name as artisan_name
     FROM artisan_payouts ap
     JOIN jobs j ON ap.job_id = j.id
     LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
     LEFT JOIN artisan_profiles ap_art ON ap.artisan_id = ap_art.user_id
-    LEFT JOIN payment_intents pi ON j.id = pi.job_id
     WHERE 1=1
   `;
   const params = [];
@@ -2293,42 +2292,91 @@ static async getAllSettlements(filters = {}) {
   };
 }
 
+ static async settlementDetail(payoutId){
+     const result = await pool.query(
+      `
+         SELECT ap.*, 
+           j.category, j.service_type,
+           cp.full_legal_name as client_name,
+           ap_art.full_legal_name as artisan_name
+    FROM artisan_payouts ap
+    JOIN jobs j ON ap.job_id = j.id
+    LEFT JOIN client_profiles cp ON j.client_id = cp.user_id
+    LEFT JOIN artisan_profiles ap_art ON ap.artisan_id = ap_art.user_id
+    WHERE  ap.id = $1
+  
+      `, [payoutId]
+     )
+
+     return result.rows[0];
+ }
+
 /**
  * Process settlement payout
  */
-static async processSettlement(payoutId, adminId, transferReference = null) {
+static async processSettlement(typeId, type,  adminId, transferReference = null) {
   const client = await pool.connect();
   
   try {
     await client.query('BEGIN');
     
-    const payoutResult = await client.query(
+    let payoutResult; 
+    if( type === 'payoutId'){
+       payoutResult = await client.query(
       `SELECT * FROM artisan_payouts WHERE id = $1 AND status = 'pending'`,
-      [payoutId]
+      [typeId]
     );
+   }
+
+    if( type === 'artisanId'){
+       payoutResult = await client.query(
+      `SELECT * FROM artisan_payouts WHERE artisan_id = $1 AND status = 'pending'`,
+      [typeId]
+    );
+   }
+
+   if( type === 'jobId'){
+       payoutResult = await client.query(
+      `SELECT * FROM artisan_payouts WHERE job_id = $1 AND status = 'pending'`,
+      [typeId]
+    );
+   }
     
     if (payoutResult.rows.length === 0) {
       throw new AppError(404, 'Settlement not found or already processed');
     }
     
     const payout = payoutResult.rows[0];
-    
-    await client.query(
+
+ 
+   const payoutTransactioin =  await client.query(
       `UPDATE artisan_payouts 
-       SET status = 'processing',
-           processed_by = $1,
-           processed_at = NOW(),
-           transfer_reference = $2
-       WHERE id = $3`,
-      [adminId, transferReference, payoutId]
+       SET status = 'completed',
+           completed_at = NOW(),
+           transfer_reference = $1
+       WHERE id = $2  RETURNING *`,
+      [transferReference, payout.id]
     );
     
+    // Credit wallet
+      const transaction = await WalletService.creditWallet(
+        payout.artisan_id,
+        payout.amount,
+        'release',
+        {
+          jobId: payout.job_id,
+          payoutId: payout.id,
+          description: `Earnings from job #${payout.job_id.slice(0, 8)}`,
+          source: 'job_completion'
+        }, 'artisan'
+      );
+
     await client.query('COMMIT');
     
-    await this.logAdminActivity(adminId, 'settlement_processing', 
-      { payoutId, amount: payout.amount, transferReference });
+    await this.logAdminActivity(adminId, 'payout_settlement_completed', 
+      { payoutId: payout.id, amount: payout.amount, transferReference });
     
-    return { payoutId, status: 'processing', amount: payout.amount };
+    return { payout: payoutTransactioin.rows[0], walletTransaction: transaction }
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -2337,42 +2385,7 @@ static async processSettlement(payoutId, adminId, transferReference = null) {
   }
 }
 
-/**
- * Confirm settlement completion
- */
-static async completeSettlement(payoutId, adminId, transactionId = null) {
-  const client = await pool.connect();
-  
-  try {
-    await client.query('BEGIN');
-    
-    const result = await client.query(
-      `UPDATE artisan_payouts 
-       SET status = 'completed',
-           completed_at = NOW(),
-           transaction_id = COALESCE($1, transaction_id)
-       WHERE id = $2 AND status = 'processing'
-       RETURNING *`,
-      [transactionId, payoutId]
-    );
-    
-    if (result.rows.length === 0) {
-      throw new AppError(404, 'Settlement not found or not in processing state');
-    }
-    
-    await client.query('COMMIT');
-    
-    await this.logAdminActivity(adminId, 'settlement_completed', 
-      { payoutId, transactionId });
-    
-    return result.rows[0];
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-}
+
 
 /**
  * Fail settlement
@@ -2399,7 +2412,7 @@ static async failSettlement(payoutId, adminId, reason) {
     
     await client.query('COMMIT');
     
-    await this.logAdminActivity(payoutId, 'settlement_failed', 
+    await this.logAdminActivity(adminId, 'settlement_failed', 
       { payoutId, reason });
     
     return result.rows[0];

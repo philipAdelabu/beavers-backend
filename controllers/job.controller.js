@@ -421,6 +421,7 @@ static async getAvailableJobs(req, res, next) {
     
     sendPaginated(res, result.jobs, page, limit, result.total, 'Available jobs retrieved successfully');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve available jobs', error.statusCode || 500);
     next(error);
   }
 }
@@ -439,6 +440,7 @@ static async getAvailableJobDetails(req, res, next) {
     const job = await JobService.getAvailableJobDetails(req.params.jobId, req.user.id);
     sendSuccess(res, job, 'Job details retrieved successfully');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve job details', error.statusCode || 500);
     next(error);
   }
 }
@@ -457,6 +459,7 @@ static async saveJob(req, res, next) {
     const result = await JobService.saveJob(req.params.jobId, req.user.id, req.body.notes);
     sendSuccess(res, result, 'Job saved successfully', 201);
   } catch (error) {
+    sendError(res, error.message || 'Failed to save job', error.statusCode || 500);
     next(error);
   }
 }
@@ -475,6 +478,7 @@ static async unsaveJob(req, res, next) {
     await JobService.unsaveJob(req.params.jobId, req.user.id);
     sendSuccess(res, null, 'Job removed from saved list');
   } catch (error) {
+    sendError(res, error.message || 'Failed to remove saved job', error.statusCode || 500);
     next(error);
   }
 }
@@ -494,6 +498,7 @@ static async getSavedJobs(req, res, next) {
     const result = await JobService.getSavedJobs(req.user.id, { page: parseInt(page), limit: parseInt(limit) });
     sendPaginated(res, result.jobs, page, limit, result.total, 'Saved jobs retrieved successfully');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve saved jobs', error.statusCode || 500);
     next(error);
   }
 }
@@ -512,6 +517,7 @@ static async createJobAlert(req, res, next) {
     const alert = await JobService.createJobAlert(req.user.id, req.body);
     sendSuccess(res, alert, 'Job alert created successfully', 201);
   } catch (error) {
+    sendError(res, error.message || 'Failed to create job alert', error.statusCode || 500);
     next(error);
   }
 }
@@ -525,6 +531,7 @@ static async getJobAlert(req, res, next) {
     const alert = await JobService.getJobAlert(req.user.id);
     sendSuccess(res, alert, 'Job alert retrieved successfully');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve job alert', error.statusCode || 500);
     next(error);
   }
 }
@@ -538,6 +545,7 @@ static async deleteJobAlert(req, res, next) {
     await JobService.deleteJobAlert(req.user.id);
     sendSuccess(res, null, 'Job alert deleted successfully');
   } catch (error) {
+    sendError(res, error.message || 'Failed to delete job alert', error.statusCode || 500);
     next(error);
   }
 }
@@ -557,6 +565,7 @@ static async getRecommendedJobs(req, res, next) {
     const jobs = await JobService.getRecommendedJobs(req.user.id, { limit: parseInt(limit) });
     sendSuccess(res, jobs, 'Recommended jobs retrieved successfully');
   } catch (error) {
+    sendError(res, error.message || 'Failed to retrieve recommended jobs', error.statusCode || 500);
     next(error);
   }
 }

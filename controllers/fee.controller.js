@@ -191,6 +191,7 @@ class FeeController {
       const result = await FeeService.updateFeeConfiguration(feeType, amount, gracePeriodDays, req.user.id);
       sendSuccess(res, result, 'Fee configuration updated');
     } catch (error) {
+      sendError(res, error.message || 'Failed to update fee configuration', error.statusCode || 500);
       next(error);
     }
   }
@@ -210,6 +211,7 @@ class FeeController {
       const result = await FeeService.getExpiredSubscriptions(page, limit);
       sendPaginated(res, result.subscriptions, page, limit, result.total, 'Expired subscriptions retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve expired subscriptions', error.statusCode || 500);
       next(error);
     }
   }
@@ -223,6 +225,7 @@ class FeeController {
       const stats = await FeeService.getFeeStatistics();
       sendSuccess(res, stats, 'Fee statistics retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Failed to retrieve fee statistics', error.statusCode || 500);
       next(error);
     }
   }
@@ -236,6 +239,7 @@ class FeeController {
       const results = await FeeService.processAutoRenewals();
       sendSuccess(res, results, 'Auto-renewals processed');
     } catch (error) {
+      sendError(res, error.message || 'Failed to process auto-renewals', error.statusCode || 500);
       next(error);
     }
   }

@@ -357,19 +357,28 @@ router.get('/settlements', [
   query('endDate').optional().isISO8601()
 ], AdminController.getAllSettlements);
 
-router.post('/settlements/:payoutId/process', [
+router.get('/settlements/:payoutId/detail', [
+  param('payoutId').isUUID()
+], AdminController.settlementDetail);
+
+router.post('/settlements/:payoutId/payout', [
   param('payoutId').isUUID(),
   body('transferReference').optional().isString()
-], AdminController.processSettlement);
+], AdminController.processSettlementByPayoutId);
 
-router.post('/settlements/:payoutId/complete', [
-  param('payoutId').isUUID(),
+router.post('/settlements/:artisanId/artisan', [
+  param('artisanId').isUUID(),
   body('transactionId').optional().isString()
-], AdminController.completeSettlement);
+], AdminController.processSettlementByArtisanId);
+
+router.post('/settlements/:jobId/job', [
+  param('jobId').isUUID(),
+  body('transactionId').optional().isString()
+], AdminController.processSettlementByJobId);
 
 router.post('/settlements/:payoutId/fail', [
   param('payoutId').isUUID(),
-  body('reason').notEmpty()
+  body('reason').notEmpty(),
 ], AdminController.failSettlement);
 
 // ==================== Withdrawal Management ====================
@@ -390,7 +399,7 @@ router.post('/withdrawals/:withdrawalId/process', [
 
 // ==================== Escrow Management ====================
 router.get('/escrow/transactions', [
-  query('status').optional().isIn(['held', 'frozen', 'released', 'refunded']),
+  query('status').optional().isIn(['held', 'release', 'frozen', 'released', 'refunded']),
   query('jobId').optional().isUUID(),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
@@ -436,10 +445,11 @@ router.get('/escrow/pending/:artisanId/disbursements',
    [ param('artisanId').isUUID(),],
    AdminController.getPendingArtisanDisbursements);
 
+
 // { jobId, clientId, artisanId, status, transactionType, page = 1, limit = 20 } = filters;
 
 router.get('/escrow/transactions/history', [
-  query('status').optional().isIn(['held', 'frozen', 'released', 'release', 'refunded']),
+  query('status').optional().isIn(['held', 'frozen', 'released', 'refund', 'release', 'refunded']),
   query('transactionType').optional().isIn(['base_fee',
     'diagnostics_fee', 'platform_fee', 'materials', 'workmanship ', 'full_payment', 'execution_fee']),
   query('jobId').optional().isUUID(),
@@ -449,6 +459,29 @@ router.get('/escrow/transactions/history', [
   query('limit').optional().isInt({ min: 1, max: 100 }),
 ], AdminController.getTransactionHistory);
  
+// process pending disbursement for a particular job
+router.post('/escrow/process/job/:jobId/pending/disbursement', [
+  param('jobId').isUUID(),
+], AdminController.processJobPendingDisbursement);
+
+
+// process all pending disbursement for a particular artisan
+router.post('/escrow/process/artisan/:artisanId/pending/disbursement', [
+  param('artisanId').isUUID(),
+], AdminController.processJobPendingDisbursementByArtisanId);
+
+// process  disbursement for a particular escrow transaction
+router.post('/escrow/process/transaction/:escrowId/pending/disbursement', [
+  param('escrowId').isUUID(),
+], AdminController.processJobPendingDisbursementByEscrowId);
+
+
+// process all pending disbursement for all jobs
+router.post('/escrow/transactions/process/pending/disbursement',
+   AdminController.processAllJobPendingDisbursement);
+
+
+
 // Initiate escrow Refund 
 router.post('/escrow/transactions/:escrowTransactionId/initiate_refund', [
   param('escrowTransactionId').isUUID(),

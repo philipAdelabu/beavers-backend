@@ -57,12 +57,12 @@ class WalletService {
     const wallet = await this.getOrCreateWallet(userId);
     
     return {
-      balance: parseFloat(wallet.balance),
-      pendingBalance: parseFloat(wallet.pending_balance),
-      availableBalance: parseFloat(wallet.balance) - parseFloat(wallet.pending_balance),
-      totalEarned: parseFloat(wallet.total_earned),
-      totalWithdrawn: parseFloat(wallet.total_withdrawn),
-      totalFeesPaid: parseFloat(wallet.total_fees_paid),
+      balance: Number(wallet.balance),
+      pendingBalance: Number(wallet.pending_balance),
+      availableBalance: Number(wallet.balance) - Number(wallet.pending_balance),
+      totalEarned: Number(wallet.total_earned),
+      totalWithdrawn: Number(wallet.total_withdrawn),
+      totalFeesPaid: Number(wallet.total_fees_paid),
       currency: wallet.currency
     };
   }
@@ -75,7 +75,7 @@ class WalletService {
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<Object>} Transaction record
    */
-  static async creditWallet(userId, userType, amount, transactionType, metadata = {}) {
+  static async creditWallet(userId, amount, transactionType, metadata = {}, userType = 'artisan') {
     const client = await pool.connect();
     
     try {
@@ -83,7 +83,7 @@ class WalletService {
       
       // Get wallet with lock
       const walletResult = await client.query(
-        `SELECT * FROM wallets WHERE artisan_id = $1 FOR UPDATE`,
+        `SELECT * FROM wallets WHERE user_id = $1 FOR UPDATE`,
         [userId]
       );
       
@@ -102,14 +102,13 @@ class WalletService {
       }
       
       const balanceBefore = Number(wallet.balance);
-      const balanceAfter = balanceBefore + amount;
+      const balanceAfter = balanceBefore + Number(amount);
       
       // Update wallet balance
       await client.query(
-        `UPDATE artisan_wallets 
+        `UPDATE wallets 
          SET balance = $1, 
              total_earned = total_earned + $2,
-             last_transaction_at = NOW(),
              updated_at = NOW()
          WHERE id = $3`,
         [balanceAfter, amount, wallet.id]
@@ -143,6 +142,15 @@ class WalletService {
       // Invalidate cache
       await cacheDel(`wallet:user:${userId}`);
       await cacheDel(`wallet:balance:${userId}`);
+
+       
+          await NotificationService.sendPushNotification(
+                userId,
+                'Payment Released',
+                `₦${amount} has been released to your account.`,
+                { type: 'payment_released', amount}
+              );
+            
       
       logger.info(`Wallet credited: ${userId} - ₦${amount} (${transactionType})`);
       
@@ -163,7 +171,7 @@ class WalletService {
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<Object>} Transaction record
    */
-  static async debitWallet(artisanId, amount, transactionType, metadata = {}) {
+  static async debitWallet(userId, amount, transactionType, metadata = {}) {
     const client = await pool.connect();
     
     try {
@@ -171,8 +179,8 @@ class WalletService {
       
       // Get wallet with lock
       const walletResult = await client.query(
-        `SELECT * FROM artisan_wallets WHERE artisan_id = $1 FOR UPDATE`,
-        [artisanId]
+        `SELECT * FROM wallets WHERE user_id = $1 FOR UPDATE`,
+        [userId]
       );
       
       if (walletResult.rows.length === 0) {
@@ -180,7 +188,7 @@ class WalletService {
       }
       
       const wallet = walletResult.rows[0];
-      const balanceBefore = parseFloat(wallet.balance);
+      const balanceBefore = Number(wallet.balance);
       
       if (balanceBefore < amount) {
         throw new AppError(400, 'Insufficient balance');
@@ -190,7 +198,7 @@ class WalletService {
       
       // Update wallet balance
       await client.query(
-        `UPDATE artisan_wallets 
+        `UPDATE wallets 
          SET balance = $1,
              total_withdrawn = total_withdrawn + $2,
              last_transaction_at = NOW(),
@@ -203,13 +211,13 @@ class WalletService {
       const reference = `WALLET-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
       const transactionResult = await client.query(
         `INSERT INTO wallet_transactions 
-         (wallet_id, artisan_id, transaction_type, amount, balance_before, balance_after, 
+         (wallet_id, user_id, transaction_type, amount, balance_before, balance_after, 
           currency, status, reference, description, metadata, completed_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, 'completed', $8, $9, $10, NOW())
          RETURNING *`,
         [
           wallet.id, 
-          artisanId, 
+          userId, 
           transactionType, 
           amount, 
           balanceBefore, 
@@ -224,10 +232,10 @@ class WalletService {
       await client.query('COMMIT');
       
       // Invalidate cache
-      await cacheDel(`wallet:artisan:${artisanId}`);
-      await cacheDel(`wallet:balance:${artisanId}`);
+      await cacheDel(`wallet:user:${userId}`);
+      await cacheDel(`wallet:balance:${userId}`);
       
-      logger.info(`Wallet debited: ${artisanId} - ₦${amount} (${transactionType})`);
+      logger.info(`Wallet debited: ${userId} - ₦${amount} (${transactionType})`);
       
       return transactionResult.rows[0];
     } catch (error) {
@@ -246,17 +254,17 @@ class WalletService {
    * @param {string} jobId - Related job ID
    * @returns {Promise<Object>} Hold record
    */
-  static async holdFunds(artisanId, amount, reason, jobId = null) {
+  static async holdFunds(userId, amount, reason, jobId = null) {
     const client = await pool.connect();
     
     try {
       await client.query('BEGIN');
       
-      const wallet = await this.getOrCreateWallet(artisanId);
+      const wallet = await this.getOrCreateWallet(userId);
       
       // Check if enough balance
-      const balance = parseFloat(wallet.balance);
-      const pendingBalance = parseFloat(wallet.pending_balance);
+      const balance = Number(wallet.balance);
+      const pendingBalance = Number(wallet.pending_balance);
       const availableBalance = balance - pendingBalance;
       
       if (availableBalance < amount) {
@@ -265,7 +273,7 @@ class WalletService {
       
       // Update pending balance
       await client.query(
-        `UPDATE artisan_wallets 
+        `UPDATE wallets 
          SET pending_balance = pending_balance + $1,
              updated_at = NOW()
          WHERE id = $2`,
@@ -278,19 +286,19 @@ class WalletService {
          (wallet_id, job_id, amount, reason, release_date, status, created_by)
          VALUES ($1, $2, $3, $4, NOW() + INTERVAL '3 days', 'active', $5)
          RETURNING *`,
-        [wallet.id, jobId, amount, reason, artisanId]
+        [wallet.id, jobId, amount, reason, userId]
       );
       
       // Create transaction record for hold
       const reference = `HOLD-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
       await client.query(
         `INSERT INTO wallet_transactions 
-         (wallet_id, artisan_id, transaction_type, amount, balance_before, balance_after, 
+         (wallet_id, user_id, transaction_type, amount, balance_before, balance_after, 
           currency, status, reference, description, metadata, job_id)
          VALUES ($1, $2, 'hold', $3, $4, $5, $6, 'pending', $7, $8, $9, $10)`,
         [
           wallet.id,
-          artisanId,
+          userId,
           amount,
           balance,
           balance,
@@ -304,8 +312,8 @@ class WalletService {
       
       await client.query('COMMIT');
       
-      await cacheDel(`wallet:artisan:${artisanId}`);
-      await cacheDel(`wallet:balance:${artisanId}`);
+      await cacheDel(`wallet:user:${userId}`);
+      await cacheDel(`wallet:balance:${userId}`);
       
       return holdResult.rows[0];
     } catch (error) {
@@ -323,7 +331,7 @@ class WalletService {
    * @param {boolean} releaseToWallet - Whether to release to wallet balance
    * @returns {Promise<Object>} Released hold record
    */
-  static async releaseHold(holdId, artisanId, releaseToWallet = true) {
+  static async releaseHold(holdId, userId, releaseToWallet = true) {
     const client = await pool.connect();
     
     try {
@@ -342,8 +350,8 @@ class WalletService {
       
       // Verify ownership
       const walletResult = await client.query(
-        `SELECT id FROM artisan_wallets WHERE artisan_id = $1`,
-        [artisanId]
+        `SELECT id FROM wallets WHERE user_id = $1`,
+        [userId]
       );
       
       if (walletResult.rows.length === 0 || walletResult.rows[0].id !== hold.wallet_id) {
@@ -360,7 +368,7 @@ class WalletService {
       
       // Update pending balance
       await client.query(
-        `UPDATE artisan_wallets 
+        `UPDATE wallets 
          SET pending_balance = pending_balance - $1,
              updated_at = NOW()
          WHERE id = $2`,
@@ -370,7 +378,7 @@ class WalletService {
       // If release to wallet, add to balance
       if (releaseToWallet) {
         await client.query(
-          `UPDATE artisan_wallets 
+          `UPDATE wallets 
            SET balance = balance + $1,
                updated_at = NOW()
            WHERE id = $2`,
@@ -390,8 +398,8 @@ class WalletService {
       
       await client.query('COMMIT');
       
-      await cacheDel(`wallet:artisan:${artisanId}`);
-      await cacheDel(`wallet:balance:${artisanId}`);
+      await cacheDel(`wallet:user:${userId}`);
+      await cacheDel(`wallet:balance:${userId}`);
       
       return hold;
     } catch (error) {
@@ -411,17 +419,17 @@ class WalletService {
    * @param {Object} bankDetails - Bank account details
    * @returns {Promise<Object>} Withdrawal request
    */
-  static async requestWithdrawal(artisanId, amount, bankDetails) {
+  static async requestWithdrawal(userId, amount, bankDetails) {
     const client = await pool.connect();
     
     try {
       await client.query('BEGIN');
       
       // Get wallet
-      const wallet = await this.getOrCreateWallet(artisanId);
+      const wallet = await this.getOrCreateWallet(userId);
       
-      const balance = parseFloat(wallet.balance);
-      const pendingBalance = parseFloat(wallet.pending_balance);
+      const balance = Number(wallet.balance);
+      const pendingBalance = Number(wallet.pending_balance);
       const availableBalance = balance - pendingBalance;
       
       if (availableBalance < amount) {
@@ -444,7 +452,7 @@ class WalletService {
          VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8)
          RETURNING *`,
         [
-          artisanId, 
+          userId, 
           wallet.id, 
           amount, 
           bankDetails.bankCode, 
@@ -457,7 +465,7 @@ class WalletService {
       
       // Hold the amount in pending balance
       await client.query(
-        `UPDATE artisan_wallets 
+        `UPDATE wallets 
          SET pending_balance = pending_balance + $1,
              updated_at = NOW()
          WHERE id = $2`,
@@ -467,16 +475,16 @@ class WalletService {
       await client.query('COMMIT');
       
       // Invalidate cache
-      await cacheDel(`wallet:artisan:${artisanId}`);
-      await cacheDel(`wallet:balance:${artisanId}`);
+      await cacheDel(`wallet:user:${userId}`);
+      await cacheDel(`wallet:balance:${userId}`);
       
-      logger.info(`Withdrawal requested: ${artisanId} - ₦${amount}`);
+      logger.info(`Withdrawal requested: ${userId} - ₦${amount}`);
       
       // Send notification
       await NotificationService.sendEmail(
-        await this.getArtisanEmail(artisanId),
+        await this.getArtisanEmail(userId),
         'Withdrawal Request Received',
-        `Your withdrawal request of ₦${amount.toLocaleString()} has been received and is pending processing.`,
+        `Your withdrawal request of ₦${amount.toLocaleString()} has been received and is pending processing.`
         `<h2>Withdrawal Request Received</h2>
          <p>Your withdrawal request of <strong>₦${amount.toLocaleString()}</strong> has been received.</p>
          <p>Reference: ${reference}</p>
@@ -547,7 +555,7 @@ class WalletService {
       // If rejected, release the held amount
       if (action === 'reject') {
         await client.query(
-          `UPDATE artisan_wallets 
+          `UPDATE wallets 
            SET pending_balance = pending_balance - $1,
                updated_at = NOW()
            WHERE id = $2`,
@@ -557,12 +565,12 @@ class WalletService {
         // Create transaction for failed withdrawal
         await client.query(
           `INSERT INTO wallet_transactions 
-           (wallet_id, artisan_id, transaction_type, amount, balance_before, balance_after, 
+           (wallet_id, user_id, transaction_type, amount, balance_before, balance_after, 
             currency, status, reference, description, metadata, completed_at)
            SELECT 
              $1, $2, 'withdrawal', $3, balance, balance - $3,
              currency, 'failed', $4, $5, $6, NOW()
-           FROM artisan_wallets WHERE id = $1`,
+           FROM wallets WHERE id = $1`,
           [
             withdrawal.wallet_id,
             withdrawal.artisan_id,
@@ -577,7 +585,7 @@ class WalletService {
       await client.query('COMMIT');
       
       // Invalidate cache
-      await cacheDel(`wallet:artisan:${withdrawal.artisan_id}`);
+      await cacheDel(`wallet:user:${withdrawal.artisan_id}`);
       await cacheDel(`wallet:balance:${withdrawal.artisan_id}`);
       
       logger.info(`Withdrawal ${action}d: ${withdrawalId}`);
@@ -641,7 +649,7 @@ class WalletService {
       
       // Update wallet - remove from pending balance
       await client.query(
-        `UPDATE artisan_wallets 
+        `UPDATE wallets 
          SET pending_balance = pending_balance - $1,
              total_withdrawn = total_withdrawn + $1,
              updated_at = NOW()
@@ -662,7 +670,7 @@ class WalletService {
       await client.query('COMMIT');
       
       // Invalidate cache
-      await cacheDel(`wallet:artisan:${withdrawal.artisan_id}`);
+      await cacheDel(`wallet:user:${withdrawal.artisan_id}`);
       await cacheDel(`wallet:balance:${withdrawal.artisan_id}`);
       
       logger.info(`Withdrawal completed: ${withdrawalId}`);
@@ -672,7 +680,6 @@ class WalletService {
       await NotificationService.sendEmail(
         artisanEmail,
         'Withdrawal Completed',
-        `Your withdrawal of ₦${withdrawal.amount.toLocaleString()} has been completed.`,
         `<h2>Withdrawal Completed</h2>
          <p>Your withdrawal of <strong>₦${withdrawal.amount.toLocaleString()}</strong> has been completed.</p>
          <p>Transaction Reference: ${transactionId}</p>
@@ -694,7 +701,7 @@ class WalletService {
    * @param {Object} filters - Filter options
    * @returns {Promise<Object>} Withdrawal history
    */
-  static async getWithdrawalHistory(artisanId, filters = {}) {
+  static async getWithdrawalHistory(userId, filters = {}) {
     const { status, page = 1, limit = 20, startDate, endDate } = filters;
     const offset = (page - 1) * limit;
     
@@ -702,7 +709,7 @@ class WalletService {
       SELECT * FROM withdrawal_requests
       WHERE artisan_id = $1
     `;
-    const params = [artisanId];
+    const params = [userId];
     let paramIndex = 2;
     
     if (status) {
@@ -753,7 +760,7 @@ class WalletService {
    * @param {Object} filters - Filter options
    * @returns {Promise<Object>} Transaction history
    */
-  static async getTransactionHistory(artisanId, filters = {}) {
+  static async getTransactionHistory(userId, filters = {}) {
     const { type, status, page = 1, limit = 20, startDate, endDate } = filters;
     const offset = (page - 1) * limit;
     
@@ -765,9 +772,9 @@ class WalletService {
              j.job_status
       FROM wallet_transactions wt
       LEFT JOIN jobs j ON wt.job_id = j.id
-      WHERE wt.artisan_id = $1
+      WHERE wt.user_id = $1
     `;
-    const params = [artisanId];
+    const params = [userId];
     let paramIndex = 2;
     
     if (type) {
@@ -805,7 +812,7 @@ class WalletService {
       ${type ? `AND transaction_type = '${type}'` : ''}
       ${status ? `AND status = '${status}'` : ''}
     `;
-    const countParams = [artisanId];
+    const countParams = [userId];
     const countResult = await pool.query(countQuery, countParams);
     
     return {
@@ -841,18 +848,19 @@ class WalletService {
           jobId,
           description: `Earnings from job #${jobId.slice(0, 8)}`,
           source: 'job_completion'
-        }
+        }, 'artisan'
       );
       
-      // Mark escrow as settled
+     
+       // Mark payout as settled
       await client.query(
-        `UPDATE escrow_transactions 
+        `UPDATE artisan_payouts
          SET status = 'settled', 
-             settled_at = NOW(),
+             completed_at = NOW(),
              settled_amount = $1
-         WHERE job_id = $2 AND transaction_type IN ('workmanship', 'execution_fee')`,
+         WHERE job_id = $2`,
         [amount, jobId]
-      );
+      ); 
       
       await client.query('COMMIT');
       
@@ -941,10 +949,10 @@ class WalletService {
             const { artisan_id, amount } = jobResult.rows[0];
             
             // Settle payout
-            await this.settleJobPayout(jobId, artisan_id, parseFloat(amount));
+            await this.settleJobPayout(jobId, artisan_id, Number(amount));
             
-            totalAmount += parseFloat(amount);
-            results.push({ jobId, artisan_id, amount: parseFloat(amount), status: 'success' });
+            totalAmount += Number(amount);
+            results.push({ jobId, artisan_id, amount: Number(amount), status: 'success' });
           }
         } catch (error) {
           results.push({ jobId, status: 'failed', error: error.message });
@@ -1006,7 +1014,7 @@ class WalletService {
         SUM(total_withdrawn) as total_withdrawn,
         SUM(total_fees_paid) as total_fees_paid,
         COUNT(CASE WHEN balance > 0 THEN 1 END) as active_wallets
-      FROM artisan_wallets
+      FROM wallets
       WHERE is_active = true
     `);
     
