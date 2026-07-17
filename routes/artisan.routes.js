@@ -47,6 +47,8 @@ router.post('/availability', authenticateToken, requireRole(['artisan']), [
   body('currentLocation').optional().isObject(),
 ], ArtisanController.updateAvailability);
 
+
+
 // Pay onboarding fee
 router.post('/pay-onboarding-fee', authenticateToken, requireRole(['artisan']), [
   body('paymentMethodId').notEmpty()

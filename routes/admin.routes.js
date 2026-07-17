@@ -4,6 +4,7 @@ const { body, param, query} = require('express-validator');
 const AdminController = require('../controllers/admin.controller');
 const { authenticateToken, requireRole, requirePermissions } = require('../middleware/auth.middleware');
 const { adminLimiter } = require('../middleware/rateLimit.middleware');
+const NotificationController = require('../controllers/notification.controller');
 
 
 router.post('/auth/login', [ 
@@ -495,6 +496,16 @@ router.post('/escrow/transactions/:escrowTransactionId/complete_refund', [
 ], AdminController.completeRefunds);
 
 */
+
+/* Send a notification (for testing or manual triggers)
+ * @route POST /api/v1/notifications/send
+ */
+router.post('/send', authenticateToken, [
+  body('title').notEmpty().withMessage('Title is required'),
+  body('body').notEmpty().withMessage('Body is required'),
+  body('data').optional().isObject(),
+  body('options').optional().isObject()
+], NotificationController.sendNotification);
 
 
 module.exports = router;

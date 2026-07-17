@@ -1,17 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const { body, query, param, validationResult } = require('express-validator');
-const { authenticateToken } = require('../middleware/auth.middleware');
+const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 const Notification = require('../models/Notification');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
-const { AppError } = require('../middleware/error.middleware');
+const NotificationController = require('../controllers/notification.controller');
 const NotificationService = require('../services/notification.service');
 
 
-
-
 // Register FCM token
-router.post('/register-device', authenticateToken, [
+router.post('/devices/register', authenticateToken, [
   body('fcmToken').notEmpty().withMessage('FCM token is required'),
   body('platform').isIn(['ios', 'android', 'web']).withMessage('Platform must be ios, android, or web'),
   body('deviceId').optional().isString(),
@@ -19,181 +17,92 @@ router.post('/register-device', authenticateToken, [
   body('deviceModel').optional().isString(),
   body('osVersion').optional().isString(),
   body('appVersion').optional().isString()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+], NotificationController.registerFCMToken);
 
-  try {
-    const { fcmToken, platform, deviceId, deviceName, deviceModel, osVersion, appVersion } = req.body;
-    
-    const device = await NotificationService.registerFCMToken(
-      req.user.id,
-      fcmToken,
-      { deviceId, deviceName, deviceModel, osVersion, appVersion, platform }
-    );
-    
-    sendSuccess(res, device, 'Device registered successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Unregister FCM token (logout)
-router.post('/unregister-device', authenticateToken, [
+router.post('/devices/unregister', authenticateToken, [
   body('fcmToken').notEmpty().withMessage('FCM token is required')
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+], NotificationController.unregisterFCMToken);
 
-  try {
-    await NotificationService.unregisterFCMToken(req.user.id, req.body.fcmToken);
-    sendSuccess(res, null, 'Device unregistered successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Get user devices
-router.get('/devices', authenticateToken, async (req, res, next) => {
-  try {
-    const devices = await NotificationService.getUserDevices(req.user.id);
-    sendSuccess(res, devices, 'Devices retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// ... rest of notification routes
-
-
-// Get user notifications
-router.get('/', authenticateToken, [
-  query('isRead').optional().isBoolean(),
-  query('type').optional().isString(),
-  query('page').optional().isInt({ min: 1 }),
-  query('limit').optional().isInt({ min: 1, max: 50 })
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const { isRead, type, page = 1, limit = 20 } = req.query;
-    const result = await Notification.findByUserId(req.user.id, { isRead, type, page, limit });
-    sendPaginated(res, result.notifications, page, limit, result.total, 'Notifications retrieved');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Get unread count
-router.get('/unread/count', authenticateToken, async (req, res, next) => {
-  try {
-    const count = await Notification.getUnreadCount(req.user.id);
-    sendSuccess(res, { count }, 'Unread count retrieved');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Mark notification as read
-router.put('/:notificationId/read', authenticateToken, [
-  param('notificationId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const notification = await Notification.markAsRead(req.params.notificationId, req.user.id);
-    if (!notification) {
-      throw new AppError(404, 'Notification not found');
-    }
-    sendSuccess(res, notification, 'Notification marked as read');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Mark all as read
-router.put('/read-all', authenticateToken, async (req, res, next) => {
-  try {
-    const notifications = await Notification.markAllAsRead(req.user.id);
-    sendSuccess(res, { count: notifications.length }, 'All notifications marked as read');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Delete notification
-router.delete('/:notificationId', authenticateToken, [
-  param('notificationId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const deleted = await Notification.deleteNotification(req.params.notificationId, req.user.id);
-    if (!deleted) {
-      throw new AppError(404, 'Notification not found');
-    }
-    sendSuccess(res, null, 'Notification deleted');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Delete all read notifications
-router.delete('/read/all', authenticateToken, async (req, res, next) => {
-  try {
-    const deleted = await Notification.deleteAllRead(req.user.id);
-    sendSuccess(res, { count: deleted.length }, 'Read notifications deleted');
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/devices', authenticateToken, NotificationController.getUserDevices);
 
 // Get notification preferences
-router.get('/preferences', authenticateToken, async (req, res, next) => {
-  try {
-    const preferences = await Notification.getNotificationPreferences(req.user.id);
-    sendSuccess(res, preferences, 'Preferences retrieved');
-  } catch (error) {
-    next(error);
-  }
-});
+router.get('/preferences', authenticateToken, NotificationController.getPreferences);
 
 // Update notification preferences
 router.put('/preferences', authenticateToken, [
   body('email').optional().isBoolean(),
   body('sms').optional().isBoolean(),
   body('push').optional().isBoolean()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
+], NotificationController.updatePreferences);
 
-  try {
-    const preferences = await Notification.updatePreferences(req.user.id, req.body);
-    sendSuccess(res, preferences, 'Preferences updated');
-  } catch (error) {
-    next(error);
-  }
-});
+
+// Get user notifications
+router.get('/history', authenticateToken, [
+  query('isRead').optional().isBoolean(),
+  query('type').optional().isString(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 50 })
+], NotificationController.getUserNotifications);
+
+// Get unread count
+router.get('/unread/count', authenticateToken, NotificationController.getUnreadCount);
+
+// Mark notification as read
+router.put('/:notificationId/read', authenticateToken, [
+  param('notificationId').isUUID()
+], NotificationController.markAsRead);
+
+// Delete notification
+router.delete('/:notificationId', authenticateToken, [
+  param('notificationId').isUUID().withMessage('Invalid notification ID')
+], NotificationController.deleteNotification);
+
+// Mark all as read
+router.put('/read-all', authenticateToken, NotificationController.markAllAsRead);
+
+
+// Delete all read notifications
+router.delete('/read/all', authenticateToken, NotificationController.deleteAllRead);
+
+// Delete all read notifications
+router.delete('/delete/all', authenticateToken, NotificationController.deleteAll);
+
+
 
 // Get notifications by type
 router.get('/types/:type', authenticateToken, [
   param('type').isString(),
   query('limit').optional().isInt({ min: 1, max: 50 })
+], NotificationController.getByType);
+
+// ==================== Send Notifications ====================
+
+/**
+ * Send a notification (for testing or manual triggers)
+ * @route POST /api/v1/notifications/send
+ */
+router.post('/send', authenticateToken, [
+  body('title').notEmpty().withMessage('Title is required'),
+  body('body').notEmpty().withMessage('Body is required'),
+  body('data').optional().isObject(),
+  body('options').optional().isObject()
+], NotificationController.sendNotification);
+
+// ==================== Notification Templates ====================
+
+/**
+ * Send job offer notification (artisan only)
+ * @route POST /api/v1/notifications/templates/job-offer
+ */
+router.post('/templates/job-offer', authenticateToken, [
+  body('jobId').isUUID().withMessage('Invalid job ID'),
+  body('category').notEmpty(),
+  body('description').optional().isString(),
+  body('distance').optional().isFloat()
 ], async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -201,12 +110,138 @@ router.get('/types/:type', authenticateToken, [
   }
 
   try {
-    const { limit = 20 } = req.query;
-    const notifications = await Notification.getByType(req.user.id, req.params.type, limit);
-    sendSuccess(res, notifications, 'Notifications by type retrieved');
+    const { jobId, category, description, distance } = req.body;
+    const result = await NotificationService.sendJobOffer(req.user.id, {
+      jobId,
+      category,
+      description: description || '',
+      distance: distance || 0
+    });
+    sendSuccess(res, result, 'Job offer notification sent');
   } catch (error) {
     next(error);
   }
 });
+
+/**
+ * Send job accepted notification (client only)
+ * @route POST /api/v1/notifications/templates/job-accepted
+ */
+router.post('/templates/job-accepted', authenticateToken, [
+  body('jobId').isUUID().withMessage('Invalid job ID'),
+  body('category').notEmpty(),
+  body('artisanId').isUUID().withMessage('Invalid artisan ID')
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { jobId, category, artisanId } = req.body;
+    const result = await NotificationService.sendJobAccepted(req.user.id, {
+      jobId,
+      category,
+      artisanId
+    });
+    sendSuccess(res, result, 'Job accepted notification sent');
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Send arrival notification
+ * @route POST /api/v1/notifications/templates/arrival
+ */
+router.post('/templates/arrival', authenticateToken, [
+  body('jobId').isUUID().withMessage('Invalid job ID'),
+  body('pin').isLength({ min: 6, max: 6 }).withMessage('PIN must be 6 digits')
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { jobId, pin } = req.body;
+    const result = await NotificationService.sendArrivalNotification(req.user.id, jobId, pin);
+    sendSuccess(res, result, 'Arrival notification sent');
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Send payment confirmed notification
+ * @route POST /api/v1/notifications/templates/payment-confirmed
+ */
+router.post('/templates/payment-confirmed', authenticateToken, [
+  body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+  body('jobId').isUUID().withMessage('Invalid job ID')
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { amount, jobId } = req.body;
+    const result = await NotificationService.sendPaymentConfirmed(req.user.id, amount, jobId);
+    sendSuccess(res, result, 'Payment confirmed notification sent');
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Send job completed notification
+ * @route POST /api/v1/notifications/templates/job-completed
+ */
+router.post('/templates/job-completed', authenticateToken, [
+  body('jobId').isUUID().withMessage('Invalid job ID')
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { jobId } = req.body;
+    const result = await NotificationService.sendJobCompleted(req.user.id, jobId);
+    sendSuccess(res, result, 'Job completed notification sent');
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Send withdrawal status notification
+ * @route POST /api/v1/notifications/templates/withdrawal-status
+ */
+router.post('/templates/withdrawal-status', authenticateToken, [
+  body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+  body('status').isIn(['pending', 'processing', 'completed', 'failed']).withMessage('Invalid status'),
+  body('reference').notEmpty().withMessage('Reference is required')
+], async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+  }
+
+  try {
+    const { amount, status, reference } = req.body;
+    const result = await NotificationService.sendWithdrawalStatus(
+      req.user.id,
+      amount,
+      status,
+      reference
+    );
+    sendSuccess(res, result, 'Withdrawal status notification sent');
+  } catch (error) {
+    next(error);
+  }
+});
+
 
 module.exports = router;

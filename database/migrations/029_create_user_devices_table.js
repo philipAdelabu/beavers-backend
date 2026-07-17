@@ -11,13 +11,14 @@ exports.up = async (queryInterface) => {
       os_version VARCHAR(50),
       app_version VARCHAR(20),
       platform VARCHAR(20),
-      is_active BOOLEAN DEFAULT TRUE,
+      is_active BOOLEAN DEFAULT TRUE, 
       last_used TIMESTAMP,
       registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       unregistered_at TIMESTAMP,
       invalidated_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
     -- Create indexes
@@ -42,6 +43,7 @@ exports.up = async (queryInterface) => {
       error_message TEXT,
       metadata JSONB,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
     CREATE INDEX IF NOT EXISTS idx_push_notifications_user_id ON push_notifications(user_id);
@@ -55,6 +57,7 @@ exports.up = async (queryInterface) => {
       reason VARCHAR(100),
       invalidated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
     CREATE INDEX IF NOT EXISTS idx_invalid_tokens_token ON invalid_tokens(token);

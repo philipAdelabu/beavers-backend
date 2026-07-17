@@ -1,6 +1,7 @@
 const { pool } = require('../config/database');
 
 class AuditLog {
+  
   static async log(logData) {
     const { entityType, entityId, action, userId, oldData, newData, ipAddress, userAgent } = logData;
     

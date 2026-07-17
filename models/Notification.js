@@ -12,7 +12,7 @@ class Notification {
       [userId, type, title, message, data || {}, priority]
     );
     
-    return result.rows[0];
+    return result.rows[0]; 
   }
 
   static async bulkCreate(notifications) {

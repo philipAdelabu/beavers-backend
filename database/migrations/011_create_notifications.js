@@ -11,6 +11,7 @@ exports.up = async (queryInterface) => {
       is_read BOOLEAN DEFAULT FALSE,
       read_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
     CREATE TABLE IF NOT EXISTS notification_preferences (
@@ -33,6 +34,7 @@ exports.up = async (queryInterface) => {
       unregistered_at TIMESTAMP,
       invalidated_at TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
     CREATE INDEX idx_notifications_user_id ON notifications(user_id);
