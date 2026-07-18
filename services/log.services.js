@@ -14,15 +14,18 @@ class LogService {
     );
   }
 
-     static async logActivity(logData) {
-      
-        const { entityType, entityId, action, userId, oldData, newData, ipAddress, userAgent } = logData; 
+     static async logActivity(logData, req, metaData = null) {
+
+        const { ipAddress, userAgent } = req;
+     
+
+        const { entityType, entityId, action, userId, oldData, newData } = logData; 
         const result = await pool.query(
           `INSERT INTO audit_logs 
-          (entity_type, entity_id, action, user_id, old_data, new_data, ip_address, user_agent)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          (entity_type, entity_id, action, user_id, old_data, new_data, ip_address, user_agent, metadata)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING *`,
-          [entityType, entityId, action, userId, oldData, newData, ipAddress, userAgent]
+          [entityType, entityId, action, userId, oldData, newData, ipAddress, userAgent, metaData]
         );
         
         return result.rows[0];

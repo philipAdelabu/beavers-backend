@@ -1885,6 +1885,8 @@ static async getRecommendedJobs(artisanId, filters = {}) {
   return jobsWithScores;
 }
 
+   
+
 }
 
 module.exports = JobService;

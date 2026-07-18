@@ -87,6 +87,7 @@ router.get('/payment-methods', authenticateToken, requireRole(['client']),
    ClientController.getPaymentMethods);
 
 
+   
 // Add payment method
 router.post('/payment-methods', authenticateToken, requireRole(['client']), [
   body('paymentMethodId').notEmpty(),
@@ -185,63 +186,6 @@ router.get(
   ClientController.getStatistics);
 
 
-// Get unread notifications count
-router.get('/notifications/unread/count', authenticateToken, requireRole(['client']), async (req, res, next) => {
-  try {
-    const count = await Notification.getUnreadCount(req.user.id);
-    sendSuccess(res, { count }, 'Unread count retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
-// Delete notification
-router.delete('/notifications/:notificationId', authenticateToken, requireRole(['client']), [
-  param('notificationId').isUUID()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const deleted = await Notification.deleteNotification(req.params.notificationId, req.user.id);
-    if (!deleted) {
-      throw new AppError(404, 'Notification not found');
-    }
-    sendSuccess(res, null, 'Notification deleted successfully');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Get notification preferences
-router.get('/notification-preferences', authenticateToken, requireRole(['client']), async (req, res, next) => {
-  try {
-    const preferences = await Notification.getNotificationPreferences(req.user.id);
-    sendSuccess(res, preferences, 'Preferences retrieved successfully');
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Update notification preferences
-router.put('/notification-preferences', authenticateToken, requireRole(['client']), [
-  body('email').optional().isBoolean(),
-  body('sms').optional().isBoolean(),
-  body('push').optional().isBoolean()
-], async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return sendError(res, 'Validation error', 400, errors.array());
-  }
-
-  try {
-    const preferences = await Notification.updatePreferences(req.user.id, req.body);
-    sendSuccess(res, preferences, 'Preferences updated successfully');
-  } catch (error) {
-    next(error);
-  }
-});
 
 module.exports = router;

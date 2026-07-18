@@ -233,4 +233,36 @@ router.get('/recommended', requireRole(['artisan']), [
   body('limit').optional().isInt({ min: 1, max: 50 })
 ], JobController.getRecommendedJobs);
 
+/// DISPUTES
+
+router.post('/disputes/:jobId/create', [
+  param('jobId').isUUID(),
+  body('reason').notEmpty(),
+  body('description').optional(),
+  body('evidence').optional().isArray()
+], requireRole(['client']), JobController.createDispute);
+
+router.put('/disputes/:disputeId/cancel', [
+  param('disputeId').isUUID(),
+  body('reason').notEmpty(),
+], requireRole(['client', 'admin']), JobController.cancelDispute);
+
+
+router.get('/disputes/:disputeId/detail', [
+  param('disputeId').isUUID(),
+], requireRole(['client']), JobController.getDisputeStatus);
+
+router.get('/disputes/:clientId/client', [
+  param('clientId').isUUID(),
+], JobController.getDisputeByClientId);
+
+router.get('/disputes/:artisanId/artisan', [
+  param('artisanId').isUUID(),
+], requireRole(['artisan']), JobController.getDisputeByArtisanId);
+
+router.get('/disputes/:jobId/job', [
+  param('jobId').isUUID(),
+], JobController.getDisputeByJobId);
+
+
 module.exports = router;

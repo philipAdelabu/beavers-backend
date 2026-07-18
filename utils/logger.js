@@ -142,6 +142,7 @@ const logQuery = (query, params, duration) => {
 };
 
 
+
 module.exports = {
   logger,
   logInfo,
@@ -150,5 +151,5 @@ module.exports = {
   logDebug,
   logAudit,
   logRequest,
-  logQuery
+  logQuery,
 };

@@ -66,4 +66,35 @@ router.get('/receipt/:paymentId/download', [
 // Transaction details
 router.get('/transaction/:transactionId', PaymentController.getTransactionDetails);
 
+
+
+// Get payment methods
+router.get('/payment-methods', authenticateToken, requireRole(['client']), 
+   PaymentController.getPaymentMethods);
+
+
+   
+// Add payment method
+router.post('/payment-methods', authenticateToken, requireRole(['client']), [
+  body('type').isIn(['card', 'bank']),
+  body('last4').optional().isLength({ min: 4, max: 4 }),
+  body('expiryMonth').optional().isInt({ min: (Number(new Date().getMonth()) + 1), max: 12 }),
+  body('expiryYear').optional().isInt({ min: new Date().getFullYear(), max: (Number(new Date().getFullYear()) + 15) }),
+  body('isDefault').optional().isBoolean(),
+], PaymentController.addPaymentMethod);
+
+// Update default payment method
+router.put('/payment-methods/:paymentMethodId', authenticateToken, requireRole(['client']), [
+  param('paymentMethodId').isUUID(),
+  body('isDefault').notEmpty().isBoolean(),
+], PaymentController.setDefaultPaymentMethod);
+
+
+// Delete payment method
+router.delete('/payment-methods/:paymentMethodId', authenticateToken, requireRole(['client']), [
+  param('paymentMethodId').isUUID()
+], PaymentController.deletePaymentMethod);
+
+
+
 module.exports = router;

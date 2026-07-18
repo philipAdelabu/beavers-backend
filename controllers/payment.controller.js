@@ -281,7 +281,7 @@ class PaymentController {
     }
 
     try {
-      const method = await PaymentService.addPaymentMethod(req.user.id, req.body.paymentMethodId, req.body.setAsDefault);
+      const method = await PaymentService.addPaymentMethod(req.user.id, req.body);
       sendSuccess(res, method, 'Payment method added successfully', 201);
     } catch (error) {
       sendError(res, error.message || 'Failed to add payment method', error.statusCode || 500);
@@ -296,7 +296,7 @@ class PaymentController {
     }
 
     try {
-      await PaymentService.deletePaymentMethod(req.params.methodId, req.user.id);
+      const result = await PaymentService.deletePaymentMethod(req.params.paymentMethodId, req.user.id);
       sendSuccess(res, null, 'Payment method deleted successfully');
     } catch (error) {
       sendError(res, error.message || 'Failed to delete payment method', error.statusCode || 500);
@@ -311,7 +311,10 @@ class PaymentController {
     }
 
     try {
-      const method = await PaymentService.setDefaultPaymentMethod(req.params.methodId, req.user.id);
+      const user_id = req.user.id;
+      const { isDefault } = req.body;
+      const { paymentMethodId } = req.params;
+      const method = await PaymentService.setDefaultPaymentMethod(paymentMethodId, isDefault, user_id);
       sendSuccess(res, method, 'Default payment method updated');
     } catch (error) {
       sendError(res, error.message || 'Failed to set default payment method', error.statusCode || 500);

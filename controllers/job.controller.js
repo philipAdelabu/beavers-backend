@@ -4,6 +4,7 @@ const ReviewService = require('../services/review.service');
 const { sendSuccess, sendError, sendPaginated } = require('../utils/response');
 const { AppError } = require('../middleware/error.middleware');
 const { logger } = require('../config/logger');
+const Dispute = require('../models/Dispute');
 
 
 class JobController {
@@ -569,6 +570,103 @@ static async getRecommendedJobs(req, res, next) {
     next(error);
   }
 }
+
+ static async createDispute(req, res, next){
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+     return sendError(res, 'Validation error', 400, errors.array());
+  }
+   try{
+      const userId = req.user.id;
+      const { jobId } = req.params;
+      const ipAddress = req.ip;
+      const userAgent = req.get('user-agent');
+      const result = await Dispute.create(userId, jobId, req.body, {ipAddress, userAgent});
+      sendSuccess(res, result, 'Dispute created successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to create dispute', error.statusCode || 500);
+     next(error);
+   }
+
+ }
+
+   static async getDisputeStatus(req, res, next){
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+     return sendError(res, 'Validation error', 400, errors.array());
+  }
+   try{
+      const { disputeId } = req.params;
+      const result = await Dispute.getDisputeStatus(disputeId);
+      sendSuccess(res, result, 'Dispute Status Retrieved successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to retrieve dispute status', error.statusCode || 500);
+     next(error);
+   }
+ }
+
+    static async getDisputeByClientId(req, res, next){
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+     return sendError(res, 'Validation error', 400, errors.array());
+  }
+   try{
+      const { clientId } = req.params;
+       const result = await Dispute.findById('clientId', clientId, req.query);
+      sendPaginated(res, result, 'Dispute Retrieved successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to retrieve dispute by client', error.statusCode || 500);
+     next(error);
+   }
+ }
+
+  static async getDisputeByArtisanId(req, res, next){
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+     return sendError(res, 'Validation error', 400, errors.array());
+  }
+   try{
+      const { artisanId } = req.params;
+      const result = await Dispute.findById('artisanId', artisanId, req.query);
+      sendPaginated(res, result, 'Dispute Retrieved successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to retrieve dispute by artisan', error.statusCode || 500);
+     next(error);
+   }
+ }
+
+   static async getDisputeByJobId(req, res, next){
+  const errors = validationResult(req);
+  if(!errors.isEmpty()){
+     return sendError(res, 'Validation error', 400, errors.array());
+  }
+   try{
+      const { jobId } = req.params;
+      const result = await Dispute.findById('jobId', jobId, req.query);
+      sendSuccess(res, result, 'Dispute Retrieved successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to retrieve dispute by job', error.statusCode || 500);
+     next(error);
+   }
+ }
+
+
+ static async cancelDispute(req, res, next){
+  const errors = validationResult(req);
+   if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+   
+    try{
+      const userId = req.user.id;
+      const { disputeId } = req.params
+      const result = await Dispute.cancelDispute(disputeId, userId, {ipAddress: req.ip, userAgent: req.get('user-agent')});
+      sendSuccess(res, result, 'Dispute cancel successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to cancel dispute', error.statusCode || 500);
+     next(error);
+   }
+ }
 
 
 }

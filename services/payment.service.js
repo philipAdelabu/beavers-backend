@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const { pool } = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
 const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
@@ -1043,22 +1044,25 @@ class PaymentService {
       return methods;
     }
     
-    static async addPaymentMethod(clientId, paymentMethodId, setAsDefault = false) {
+    static async addPaymentMethod(clientId, paymentMethod) {
+
+      const { isDefault } = paymentMethod;
       const client = await pool.connect();
       
       try {
         await client.query('BEGIN');
         
         // Retrieve payment method from Stripe
-        const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
         
-        if (setAsDefault) {
+        
+        if (isDefault) {
           await client.query(
             `UPDATE payment_methods SET is_default = false WHERE client_id = $1`,
             [clientId]
           );
         }
-        
+        const paymentMethodId = uuidv4();
+
         const result = await client.query(
           `INSERT INTO payment_methods 
            (client_id, payment_method_id, type, last4, expiry_month, expiry_year, is_default)
@@ -1068,10 +1072,10 @@ class PaymentService {
             clientId, 
             paymentMethodId, 
             paymentMethod.type,
-            paymentMethod.card?.last4,
-            paymentMethod.card?.exp_month,
-            paymentMethod.card?.exp_year,
-            setAsDefault
+            paymentMethod?.last4,
+            paymentMethod?.expiryMonth,
+            paymentMethod?.expiryYear,
+            isDefault || false
           ]
         );
         
@@ -1093,7 +1097,7 @@ class PaymentService {
     static async deletePaymentMethod(methodId, clientId) {
       const result = await pool.query(
         `DELETE FROM payment_methods 
-         WHERE id = $1 AND client_id = $2
+         WHERE payment_method_id = $1 AND client_id = $2
          RETURNING *`,
         [methodId, clientId]
       );
@@ -1108,7 +1112,7 @@ class PaymentService {
       return result.rows[0];
     }
     
-    static async setDefaultPaymentMethod(methodId, clientId) {
+    static async setDefaultPaymentMethod(methodId, isDefault, clientId) {
       const client = await pool.connect();
       
       try {
@@ -1122,7 +1126,7 @@ class PaymentService {
         const result = await client.query(
           `UPDATE payment_methods 
            SET is_default = true 
-           WHERE id = $1 AND client_id = $2
+           WHERE payment_method_id = $1 AND client_id = $2
            RETURNING *`,
           [methodId, clientId]
         );
