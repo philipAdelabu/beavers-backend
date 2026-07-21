@@ -668,6 +668,22 @@ static async getRecommendedJobs(req, res, next) {
    }
  }
 
+   static async updateDispute(req, res, next){
+  const errors = validationResult(req);
+   if(!errors.isEmpty()){
+       return sendError(res, 'Validation error', 400, errors.array());
+    }
+    try{
+      const userId = req.user.id;
+      const { disputeId } = req.params
+      const result = await Dispute.updateDispute(disputeId, req.body, userId, {ipAddress: req.ip, userAgent: req.get('user-agent')});
+      sendSuccess(res, result, 'Dispute cancel successfully');
+   }catch(error){
+     sendError(res, error.message || 'Fail to cancel dispute', error.statusCode || 500);
+     next(error);
+   }
+ }
+
 
 }
 

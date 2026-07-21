@@ -16,6 +16,8 @@ const supportRoutes = require('./support.routes');
 const analyticsRoutes = require('./analytics.routes');
 const webhookRoutes = require('./webhook.routes');
 const feeRoutes = require('./fee.routes');
+const zoneRoutes = require('./zone.routes');
+const trainingRoutes = require('./training.routes');
 
 
 router.use('/auth', authRoutes);
@@ -33,5 +35,7 @@ router.use('/reviews', reviewRoutes);
 router.use('/support', supportRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/webhooks', webhookRoutes);
+router.use('/zones', zoneRoutes);
+router.use('/training', trainingRoutes);
 
 module.exports = router;

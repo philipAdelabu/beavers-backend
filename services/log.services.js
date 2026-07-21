@@ -5,21 +5,30 @@ const { pool } = require('../config/database');
 class LogService {  
   
 
-     static async logAdminActivity(adminId, action, details = {}, ipAddress = null, userAgent = null) {
-      
+     static async logAdminActivity(adminId, action, details = {}, req) {
+      const { ipAddress, userAgent } = req;
       await pool.query(
       `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress, userAgent]
+      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress || null, userAgent || null]
     );
   }
 
-     static async logActivity(logData, req, metaData = null) {
+     static async logActivity(logData, req) {
 
         const { ipAddress, userAgent } = req;
+        const { entityType, entityId, action, userId, newData, metaData} = logData; 
      
+       const oldResult = await pool.query(
+         ` SELECT new_data FROM audit_logs WHERE entity_id = $1 
+          ORDER BY created_at DESC
+         `,[entityId] 
+       );
+       let oldData = {};
+       if(oldResult.rows.length  > 0)
+           oldData = oldResult.rows[0].old_data;
 
-        const { entityType, entityId, action, userId, oldData, newData } = logData; 
+      
         const result = await pool.query(
           `INSERT INTO audit_logs 
           (entity_type, entity_id, action, user_id, old_data, new_data, ip_address, user_agent, metadata)

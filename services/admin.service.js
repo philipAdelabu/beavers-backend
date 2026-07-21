@@ -558,13 +558,15 @@ class AdminService {
     const result = await pool.query(`
       SELECT d.*, 
              j.category, j.service_type, j.description as job_description,
-             cp.full_legal_name as client_name, cp.email as client_email, cp.phone as client_phone,
-             ap.full_legal_name as artisan_name, ap.email as artisan_email, ap.phone as artisan_phone,
+             cp.full_legal_name as client_name, cu.email as client_email, cu.phone as client_phone,
+             ap.full_legal_name as artisan_name, au.email as artisan_email, au.phone as artisan_phone,
              (SELECT json_agg(row_to_json(dm) ORDER BY dm.created_at ASC) FROM dispute_messages dm WHERE dm.dispute_id = d.id) as messages
       FROM disputes d
       JOIN jobs j ON d.job_id = j.id
       JOIN client_profiles cp ON d.client_id = cp.user_id
       LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+      LEFT JOIN users cu ON cu.id = cp.user_id
+      LEFT JOIN users au ON au.id = ap.user_id
       WHERE d.id = $1
     `, [disputeId]);
     
@@ -572,10 +574,10 @@ class AdminService {
       throw new AppError(404, 'Dispute not found');
     }
     
-    return result.rows[0];
+    return result.rows[0]; 
   }
   
-  static async resolveDispute(disputeId, resolution) {
+  static async resolveDispute(disputeId, resolution, userId) {
     const { decision, message, amount } = resolution;
     const client = await pool.connect();
     
@@ -583,7 +585,7 @@ class AdminService {
       await client.query('BEGIN');
       
       const disputeResult = await client.query(
-        `SELECT * FROM disputes WHERE id = $1`,
+        `SELECT * FROM disputes WHERE id = $1 AND status IN ('pending')`,
         [disputeId]
       );
       
@@ -601,24 +603,28 @@ class AdminService {
          WHERE id = $2`,
         [JSON.stringify(resolution), disputeId]
       );
+
+      await client.query(
+        ` INSERT INTO dispute_messages (dispute_id, user_id, message) 
+         VALUES ($1, $2, $3)`, [disputeId, userId, message])
       
       if (decision === 'refund_client' && amount) {
         await client.query(
           `INSERT INTO refunds (job_id, amount, reason, status)
-           VALUES ($1, $2, 'dispute_resolution', 'processing')`,
+           VALUES ($1, $2, 'dispute_resolution', 'pending')`,
           [dispute.job_id, amount]
         );
         
         await client.query(
           `UPDATE escrow_transactions 
-           SET status = 'refunded', refunded_at = NOW(), refund_reason = 'dispute_resolved'
+           SET status = 'refunded', refund_reason = 'dispute_resolved'
            WHERE job_id = $1 AND status = 'frozen'`,
           [dispute.job_id]
         );
       } else if (decision === 'pay_artisan') {
         await client.query(
           `UPDATE escrow_transactions 
-           SET status = 'released', release_date = NOW(), release_reason = 'dispute_resolved'
+           SET status = 'release', release_date = NOW(), release_reason = 'dispute_resolved'
            WHERE job_id = $1 AND status = 'frozen'`,
           [dispute.job_id]
         );
@@ -626,8 +632,16 @@ class AdminService {
       
       await client.query('COMMIT');
       
-      await this.logAdminActivity(disputeId, 'dispute_resolved', 
-        { disputeId, decision, message, amount });
+      await this.logAdminActivity(userId, 'dispute_resolved', 
+        { entityType: 'dispute', entityId: disputeId, decision, message, amount });
+
+      const data = {
+        disputeId,
+        decision, 
+        message
+      }
+
+      await NotificationService.sendNotification(userId, 'Dispute Status', message, data,  {sms: true, email:true, push:true});
       
       return { disputeId, resolution };
     } catch (error) {
@@ -1253,13 +1267,14 @@ class AdminService {
       limit,
       totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
     };
-  }
+  } 
   
-  static async logAdminActivity(adminId, action, details = {}, ipAddress = null, userAgent = null) {
+  static async logAdminActivity(adminId, action, details = {}, req) {
+      const { ipAddress, userAgent } = req;
     await pool.query(
       `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress, userAgent]
+      [adminId, action, details.entityType || null, details.entityId || null, details, ipAddress || null, userAgent || null]
     );
   }
 

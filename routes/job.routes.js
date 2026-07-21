@@ -240,7 +240,7 @@ router.post('/disputes/:jobId/create', [
   body('reason').notEmpty(),
   body('description').optional(),
   body('evidence').optional().isArray()
-], requireRole(['client']), JobController.createDispute);
+], requireRole(['client', 'admin']), JobController.createDispute);
 
 router.put('/disputes/:disputeId/cancel', [
   param('disputeId').isUUID(),
@@ -250,7 +250,7 @@ router.put('/disputes/:disputeId/cancel', [
 
 router.get('/disputes/:disputeId/detail', [
   param('disputeId').isUUID(),
-], requireRole(['client']), JobController.getDisputeStatus);
+], JobController.getDisputeStatus);
 
 router.get('/disputes/:clientId/client', [
   param('clientId').isUUID(),

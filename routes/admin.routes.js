@@ -167,7 +167,7 @@ router.post('/jobs/:jobId/force-cancel', [
 ], AdminController.forceCancelJob);
 
 // ==================== Dispute Management ====================
-router.get('/disputes', [
+router.get('/disputes/all', [
   query('status').optional().isIn(['pending', 'resolved', 'rejected']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 50 })
@@ -256,8 +256,18 @@ router.get('/activity-logs', [
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('startDate').optional().isISO8601(),
-  query('endDate').optional().isISO8601()
+  query('endDate').optional().isISO8601() 
 ], AdminController.getActivityLogs);
+
+router.get('/audit-logs',[
+  query('userId').optional().isUUID(),
+  query('entityType').optional().isString(),
+  query('action').optional().isString(),
+  query('page').optional().isInt({ min: 1 }),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('startDate').optional().isISO8601(),
+  query('endDate').optional().isISO8601() 
+], AdminController.getAuditLogs);
 
 // ==================== Reports ====================
 router.post('/reports/generate', [
@@ -275,6 +285,8 @@ router.post('/notifications/bulk', [
   body('message').notEmpty(),
   body('data').optional().isObject()
 ], AdminController.sendBulkNotification);
+
+
 
  // ==================== Payment Management ====================
 

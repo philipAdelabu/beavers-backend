@@ -27,12 +27,12 @@ class Dispute {
        RETURNING *`,
       [jobId, clientId, reason, description, evidence || []]
     );
+
     await LogService.logActivity({ 
      entityType: 'Dispute',
       entityId: result.rows[0].id, 
       action: 'Created new job dispute',
       userId: clientId, 
-      oldData: {}, 
       newData: { jobId, jobStatus: jobStatus.rows[0].job_status, disputeData },
       }, req);
     return result.rows[0];
@@ -55,9 +55,9 @@ class Dispute {
       entityType: 'Dispute',
       entityId: result.rows[0].id, 
       action: 'Cancel dispute',
-      userId, 
-      oldData: { reason: result.rows[0].reason }, 
-      newData: { },
+      userId,
+      metaData: {}, 
+      newData: { reason: result.rows[0].reason }, 
       }, req);
 
     return result.rows[0];
@@ -65,19 +65,17 @@ class Dispute {
 
     static async getDisputeStatus(disputeId) {
     const result = await pool.query(
-      `SELECT d.*, 
-              j.category, j.service_type, j.job_status,
-              cp.full_legal_name as client_name, cu.email as client_email,
-              ap.full_legal_name as artisan_name, au.email as artisan_email,
-              ap.user_id as artisan_id,
-              a.full_name as resolved_by
-       FROM disputes d
-       JOIN jobs j ON d.job_id = j.id
-       JOIN client_profiles cp ON d.client_id = cp.user_id
-       LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
-       LEFT JOIN admin_profiles a ON d.resolved_by = a.id
-       LEFT JOIN users cu ON cu.id = cp.user_id
-       LEFT JOIN users au ON au.id = ap.user_id
+      ` SELECT d.*, 
+             j.category, j.service_type, j.description as job_description,
+             cp.full_legal_name as client_name, cu.email as client_email, cu.phone as client_phone,
+             ap.full_legal_name as artisan_name, au.email as artisan_email, au.phone as artisan_phone,
+             (SELECT json_agg(row_to_json(dm) ORDER BY dm.created_at ASC) FROM dispute_messages dm WHERE dm.dispute_id = d.id) as messages
+      FROM disputes d
+      JOIN jobs j ON d.job_id = j.id
+      JOIN client_profiles cp ON d.client_id = cp.user_id
+      LEFT JOIN artisan_profiles ap ON j.artisan_id = ap.user_id
+      LEFT JOIN users cu ON cu.id = cp.user_id
+      LEFT JOIN users au ON au.id = ap.user_id
        WHERE d.id = $1`,
       [disputeId]
     );
@@ -125,7 +123,8 @@ class Dispute {
     return result.rows;
   }
  
-  static async updateStatus(disputeId, status, resolution = null, resolvedBy = null) {
+  static async updateDispute(disputeId, body, resolvedBy, req) {
+    const { status, resolution } = body;
     const result = await pool.query(
       `UPDATE disputes 
        SET status = $1,
@@ -136,6 +135,16 @@ class Dispute {
        RETURNING *`,
       [status, resolution, resolvedBy, disputeId]
     );
+    if(result)
+      await LogService.logActivity({ 
+      entityType: 'Dispute',
+      entityId: result.rows[0].entity_id, 
+      action: status,
+      userId: resolvedBy,
+      metaData: result.rows[0], 
+      newData: { status, resolution, resolvedBy }, 
+      }, req);
+
     return result.rows[0];
   }
 

@@ -394,7 +394,7 @@ class AdminController {
       next(error);
     }
   }
-  
+   
   static async getDisputeDetails(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -418,7 +418,7 @@ class AdminController {
     
     try {
       const resolution = req.body;
-      const result = await AdminService.resolveDispute(req.params.disputeId, resolution);
+      const result = await AdminService.resolveDispute(req.params.disputeId, resolution, req.user.id);
       sendSuccess(res, result, 'Dispute resolved');
     } catch (error) {
       sendError(res, error.message || 'Failed to resolve dispute', error.statusCode || 500);
@@ -594,7 +594,7 @@ class AdminController {
     }
   }
 
-    static async getAuditLogs(req, res, next) {
+    static async getAuditLogs(req, res, next) { 
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return sendError(res, 'Validation error', 400, errors.array());
