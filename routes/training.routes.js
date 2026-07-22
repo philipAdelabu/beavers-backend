@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { body, param, query, validationResult } = require('express-validator');
 const TrainingController = require('../controllers/training.controller');
-const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
+const { authenticateToken, requireRole, requirePermissions } = require('../middleware/auth.middleware');
 
 // ==================== Public Routes (Auth Optional) ====================
 
@@ -29,7 +29,7 @@ router.get('/certificates/verify/:certificateNumber', [
 // ==================== Artisan Routes (Auth Required) ====================
 
 router.use(authenticateToken);
-router.use(requireRole(['artisan']));
+router.use(requireRole(['artisan', 'admin']));
 
 // Get all courses (with filters)
 router.get('/courses', [
@@ -89,51 +89,6 @@ router.post('/courses/:courseId/review', [
 // Check and update tier
 router.post('/tier/check', TrainingController.checkAndUpdateTier);
 
-// ==================== Admin Routes ====================
 
-router.use(requireRole(['admin']));
-
-// Create course
-router.post('/admin/courses', [
-  body('name').notEmpty().withMessage('Course name is required'),
-  body('description').notEmpty().withMessage('Description is required'),
-  body('tierLevel').isInt({ min: 1, max: 3 }),
-  body('durationHours').isInt({ min: 1 }),
-  body('modules').isArray({ min: 1 }),
-  body('modules.*.name').notEmpty(),
-  body('price').optional().isFloat({ min: 0 }),
-  body('certificationProvided').optional().isBoolean()
-], TrainingController.createCourse);
-
-// Update course
-router.put('/admin/courses/:courseId', [
-  param('courseId').isUUID()
-], TrainingController.updateCourse);
-
-// Delete course
-router.delete('/admin/courses/:courseId', [
-  param('courseId').isUUID()
-], TrainingController.deleteCourse);
-
-// Get tier requirements
-router.get('/admin/tier/requirements', TrainingController.getTierRequirements);
-
-// Update tier requirements
-router.put('/admin/tier/:tierLevel/requirements', [
-  param('tierLevel').isInt({ min: 1, max: 3 }),
-  body('minJobsCompleted').optional().isInt({ min: 0 }),
-  body('minRating').optional().isFloat({ min: 0, max: 5 }),
-  body('minCompletionRate').optional().isFloat({ min: 0, max: 100 }),
-  body('requiredCourses').optional().isInt({ min: 0 }),
-  body('requiredCertifications').optional().isInt({ min: 0 }),
-  body('minTrustScore').optional().isInt({ min: 0, max: 100 }),
-  body('benefits').optional().isObject()
-], TrainingController.updateTierRequirements);
-
-// Get tier statistics
-router.get('/admin/tier/statistics', TrainingController.getTierStatistics);
-
-// Get course statistics
-router.get('/admin/courses/statistics', TrainingController.getCourseStatistics);
 
 module.exports = router;

@@ -147,34 +147,34 @@ exports.up = async (queryInterface) => {
       (3, 50, 4.5, 90, 3, 1, 85, '{"features": ["Premium job access", "Highest rates", "Top visibility", "Advanced training", "Certification badges"]}');
     
     -- Insert sample training courses
-    INSERT INTO training_courses (id, name, slug, description, short_description, category, tier_level, duration_hours, price, certification_provided, is_active, display_order, created_at, updated_at) VALUES
+    INSERT INTO training_courses (id, name, slug, description, short_description, category, tier_level, duration_hours, price, certification_provided, is_active, display_order, created_at, updated_at, modules) VALUES
       (uuid_generate_v4(), 'Advanced Plumbing Techniques', 'advanced-plumbing-techniques', 
        'Master advanced plumbing techniques including pipe fitting, leak detection, and water heater installation. This course covers both residential and commercial plumbing systems.', 
-       'Master advanced plumbing for residential and commercial', 'plumbing', 2, 40, 25000, true, true, 1, NOW(), NOW()),
+       'Master advanced plumbing for residential and commercial', 'plumbing', 2, 40, 25000, true, true, 1, NOW(), NOW(), '[1,2, 3]'),
       
       (uuid_generate_v4(), 'Electrical Wiring Certification', 'electrical-wiring-certification', 
        'Comprehensive electrical wiring course covering residential and commercial installations, safety protocols, and modern electrical systems.', 
-       'Complete electrical wiring for residential and commercial', 'electrical', 2, 50, 30000, true, true, 2, NOW(), NOW()),
+       'Complete electrical wiring for residential and commercial', 'electrical', 2, 50, 30000, true, true, 2, NOW(), NOW(), '[1,2, 3, 4]'),
       
       (uuid_generate_v4(), 'Professional Carpentry', 'professional-carpentry', 
        'Advanced carpentry skills for furniture making, cabinetry, finishing, and custom woodworking projects.', 
-       'Advanced carpentry for furniture and cabinetry', 'carpentry', 2, 60, 35000, true, true, 3, NOW(), NOW()),
+       'Advanced carpentry for furniture and cabinetry', 'carpentry', 2, 60, 35000, true, true, 3, NOW(), NOW(), '[1,2, 3]'),
       
       (uuid_generate_v4(), 'HVAC Master Class', 'hvac-master-class', 
        'Complete HVAC training for air conditioning and refrigeration systems, including installation, maintenance, and troubleshooting.', 
-       'Complete HVAC systems training', 'hvac', 3, 80, 50000, true, true, 4, NOW(), NOW()),
+       'Complete HVAC systems training', 'hvac', 3, 80, 50000, true, true, 4, NOW(), NOW(), '[1,2, 3, 4, 5]'),
       
       (uuid_generate_v4(), 'Solar Panel Installation', 'solar-panel-installation', 
        'Learn to install and maintain solar power systems for residential and commercial use, including panel installation, inverter setup, and battery systems.', 
-       'Solar power installation and maintenance', 'solar', 3, 40, 40000, true, true, 5, NOW(), NOW()),
+       'Solar power installation and maintenance', 'solar', 3, 40, 40000, true, true, 5, NOW(), NOW(), '[1,2, 3]' ),
       
       (uuid_generate_v4(), 'CCTV & Security Systems', 'cctv-security-systems', 
        'Professional training for CCTV installation, configuration, and maintenance, including remote access and troubleshooting.', 
-       'Professional CCTV and security systems', 'security', 2, 35, 25000, true, true, 6, NOW(), NOW()),
+       'Professional CCTV and security systems', 'security', 2, 35, 25000, true, true, 6, NOW(), NOW(), '[1,2]'),
       
       (uuid_generate_v4(), 'Customer Service Excellence', 'customer-service-excellence', 
        'Essential customer service skills for artisans to build trust, communicate effectively, and get better ratings from clients.', 
-       'Essential customer service skills', 'soft_skills', 1, 15, 10000, false, true, 7, NOW(), NOW());
+       'Essential customer service skills', 'soft_skills', 1, 15, 10000, false, true, 7, NOW(), NOW(), '[1,2]');
     
     -- Create triggers for updated_at
     CREATE TRIGGER update_training_courses_updated_at 

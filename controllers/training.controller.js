@@ -13,9 +13,10 @@ class TrainingController {
     }
     
     try {
-      const course = await TrainingService.createCourse(req.body, req.user.id);
+      const course = await TrainingService.createCourse(req.body, req.user.id, req);
       sendSuccess(res, course, 'Course created successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Fail to create course', error.statusCode || 500);
       next(error);
     }
   }
@@ -38,7 +39,8 @@ class TrainingController {
         limit: parseInt(limit)
       });
       sendPaginated(res, result.courses, page, limit, result.total, 'Courses retrieved');
-    } catch (error) {
+     } catch (error) {
+      sendError(res, error.message || 'Fail to get course', error.statusCode || 500);
       next(error);
     }
   }
@@ -54,6 +56,7 @@ class TrainingController {
       const courses = await TrainingService.getCoursesByTier(parseInt(tierLevel));
       sendSuccess(res, courses, 'Courses retrieved');
     } catch (error) {
+       sendError(res, error.message || 'Fail to retrieve course', error.statusCode || 500);
       next(error);
     }
   }
@@ -68,6 +71,7 @@ class TrainingController {
       const course = await TrainingService.getCourseById(req.params.courseId);
       sendSuccess(res, course, 'Course retrieved');
     } catch (error) {
+       sendError(res, error.message || 'Fail to retrieve course', error.statusCode || 500);
       next(error);
     }
   }
@@ -82,6 +86,7 @@ class TrainingController {
       const course = await TrainingService.getCourseBySlug(req.params.slug);
       sendSuccess(res, course, 'Course retrieved');
     } catch (error) {
+       sendError(res, error.message || 'Fail to retrieve course', error.statusCode || 500);
       next(error);
     }
   }
@@ -93,9 +98,10 @@ class TrainingController {
     }
     
     try {
-      const course = await TrainingService.updateCourse(req.params.courseId, req.body, req.user.id);
+      const course = await TrainingService.updateCourse(req.params.courseId, req.body, req.user.id, req);
       sendSuccess(res, course, 'Course updated successfully');
     } catch (error) {
+      sendError(res, error.message || 'Fail update course', error.statusCode || 500);
       next(error);
     }
   }
@@ -104,12 +110,12 @@ class TrainingController {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
-    }
-    
-    try {
-      const course = await TrainingService.deleteCourse(req.params.courseId, req.user.id);
+      }
+  try {
+      const course = await TrainingService.deleteCourse(req.params.courseId, req.user.id, req);
       sendSuccess(res, course, 'Course deleted successfully');
-    } catch (error) {
+     } catch (error) {
+      sendError(res, error.message || 'Fail to delete course', error.statusCode || 500);
       next(error);
     }
   }
@@ -128,6 +134,7 @@ class TrainingController {
       const enrollment = await TrainingService.enrollArtisan(req.user.id, courseId, paymentReference);
       sendSuccess(res, enrollment, 'Enrolled successfully', 201);
     } catch (error) {
+      sendError(res, error.message || 'Fail to enroll for course', error.statusCode || 500);
       next(error);
     }
   }
@@ -147,6 +154,7 @@ class TrainingController {
       });
       sendPaginated(res, result.enrollments, page, limit, result.total, 'Enrollments retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Fail to get enrolled course', error.statusCode || 500);
       next(error);
     }
   }
@@ -161,6 +169,7 @@ class TrainingController {
       const enrollment = await TrainingService.getEnrollmentDetails(req.params.enrollmentId, req.user.id);
       sendSuccess(res, enrollment, 'Enrollment details retrieved');
     } catch (error) {
+     sendError(res, error.message || 'Fail to enrollment detail', error.statusCode || 500);
       next(error);
     }
   }
@@ -185,6 +194,7 @@ class TrainingController {
       );
       sendSuccess(res, result, 'Module completed successfully');
     } catch (error) {
+       sendError(res, error.message || 'Fail to update module completion', error.statusCode || 500);
       next(error);
     }
   }
@@ -202,6 +212,7 @@ class TrainingController {
       const result = await TrainingService.getArtisanCertificates(req.user.id, parseInt(page), parseInt(limit));
       sendPaginated(res, result.certificates, page, limit, result.total, 'Certificates retrieved');
     } catch (error) {
+       sendError(res, error.message || 'Fail to get certificate', error.statusCode || 500);
       next(error);
     }
   }
@@ -217,6 +228,7 @@ class TrainingController {
       const result = await TrainingService.verifyCertificate(certificateNumber);
       sendSuccess(res, result, 'Certificate verification result');
     } catch (error) {
+       sendError(res, error.message || 'Fail to verify certificate', error.statusCode || 500);
       next(error);
     }
   }
@@ -235,6 +247,7 @@ class TrainingController {
       const result = await TrainingService.submitReview(courseId, req.user.id, rating, review);
       sendSuccess(res, result, 'Review submitted successfully');
     } catch (error) {
+       sendError(res, error.message || 'Fail to submit review', error.statusCode || 500);
       next(error);
     }
   }
@@ -251,6 +264,7 @@ class TrainingController {
       const result = await TrainingService.getCourseReviews(courseId, parseInt(page), parseInt(limit));
       sendPaginated(res, result.reviews, page, limit, result.total, 'Reviews retrieved');
     } catch (error) {
+       sendError(res, error.message || 'Fail to get course review', error.statusCode || 500);
       next(error);
     }
   }
@@ -262,6 +276,7 @@ class TrainingController {
       const requirements = await TrainingService.getTierRequirements();
       sendSuccess(res, requirements, 'Tier requirements retrieved');
     } catch (error) {
+      sendError(res, error.message || 'Fail to get tier requirement', error.statusCode || 500); 
       next(error);
     }
   }
@@ -277,6 +292,7 @@ class TrainingController {
       const result = await TrainingService.updateTierRequirements(parseInt(tierLevel), req.body, req.user.id);
       sendSuccess(res, result, 'Tier requirements updated');
     } catch (error) {
+      sendError(res, error.message || 'Fail to update tier requirements', error.statusCode || 500);
       next(error);
     }
   }
@@ -286,6 +302,7 @@ class TrainingController {
       const result = await TrainingService.checkAndUpdateTier(req.user.id);
       sendSuccess(res, result, 'Tier check completed');
     } catch (error) {
+      sendError(res, error.message || 'Fail to check tier update', error.statusCode || 500);
       next(error);
     }
   }
@@ -295,6 +312,7 @@ class TrainingController {
       const stats = await TrainingService.getTierStatistics();
       sendSuccess(res, stats, 'Tier statistics retrieved');
     } catch (error) {
+     sendError(res, error.message || 'Fail to get tier statistics', error.statusCode || 500);
       next(error);
     }
   }
@@ -306,6 +324,7 @@ class TrainingController {
       const stats = await TrainingService.getCourseStatistics();
       sendSuccess(res, stats, 'Course statistics retrieved');
     } catch (error) {
+       sendError(res, error.message || 'Fail to get course statistics', error.statusCode || 500);
       next(error);
     }
   }

@@ -1,16 +1,16 @@
 const { pool } = require('../config/database');
-const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
+const { redis, cacheGet, cacheSet, cacheDel, cacheGetMultiple } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { v4: uuidv4 } = require('uuid');
-
+const LogService = require('./log.services');
 class TrainingService {
   // ==================== Course Management ====================
   
   /**
    * Create a new training course
    */
-  static async createCourse(courseData, adminId) {
+  static async createCourse(courseData, adminId, req) {
     const {
       name, description, shortDescription, category, tierLevel,
       durationHours, modules, price, thumbnailUrl, coverImageUrl,
@@ -46,6 +46,13 @@ class TrainingService {
     );
     
     await this.clearCourseCache();
+
+    await LogService.logAdminActivity(
+      adminId, 
+      'Course Created', 
+      {entityType: 'training_courses', entityId: result.rows[0].id},
+      req
+    )
     
     logger.info(`Course created: ${name} by admin ${adminId}`);
     
@@ -203,7 +210,7 @@ class TrainingService {
   /**
    * Update course
    */
-  static async updateCourse(courseId, updateData, adminId) {
+  static async updateCourse(courseId, updateData, adminId, req) {
     const allowedFields = [
       'name', 'description', 'short_description', 'category', 'tier_level',
       'duration_hours', 'modules', 'price', 'thumbnail_url', 'cover_image_url',
@@ -255,6 +262,13 @@ class TrainingService {
     await this.clearCourseCache();
     
     logger.info(`Course updated: ${courseId} by admin ${adminId}`);
+
+    await LogService.logAdminActivity(
+      adminId, 
+      'Update course', 
+      {entityType: 'training_courses', entityId: result.rows[0].id},
+      req
+    )
     
     return result.rows[0];
   }
@@ -262,7 +276,8 @@ class TrainingService {
   /**
    * Delete course (soft delete)
    */
-  static async deleteCourse(courseId, adminId) {
+  static async deleteCourse(courseId, adminId, req) {
+    return "Yes";
     const result = await pool.query(
       `UPDATE training_courses 
        SET is_active = false, updated_by = $1, updated_at = NOW()
@@ -278,6 +293,13 @@ class TrainingService {
     await this.clearCourseCache();
     
     logger.info(`Course deleted: ${courseId} by admin ${adminId}`);
+
+      await LogService.logAdminActivity(
+      adminId, 
+      'Delete training course', 
+      {entityType: 'training_courses', entityId: result.rows[0].id},
+      req
+    )
     
     return result.rows[0];
   }
@@ -523,12 +545,12 @@ class TrainingService {
       if (completedCount === totalModules) {
         status = 'completed';
       }
-      
+   
       await client.query(
         `UPDATE course_enrollments 
          SET progress_percentage = $1,
              status = $2,
-             completed_at = CASE WHEN $2 = 'completed' THEN NOW() ELSE completed_at END
+             completed_at = CASE WHEN status = 'completed' THEN NOW() ELSE completed_at END
          WHERE id = $3`,
         [progressPercentage, status, enrollmentId]
       );
@@ -956,9 +978,9 @@ class TrainingService {
    */
   static async clearCourseCache() {
     await cacheDel('courses:tier:*');
-    const keys = await redis.keys('course:*');
+    const keys = await cacheGetMultiple('course:*');
     if (keys.length > 0) {
-      await redis.del(keys);
+      await cacheDel(keys);
     }
     logger.info('Course cache cleared');
   }
