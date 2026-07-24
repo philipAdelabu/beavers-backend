@@ -18,6 +18,8 @@ const webhookRoutes = require('./webhook.routes');
 const feeRoutes = require('./fee.routes');
 const zoneRoutes = require('./zone.routes');
 const trainingRoutes = require('./training.routes');
+const walletRoutes = require('./wallet.routes');
+const systemWalletRoutes = require('./system-wallet.routes');
 
 
 router.use('/auth', authRoutes);
@@ -37,5 +39,7 @@ router.use('/analytics', analyticsRoutes);
 router.use('/webhooks', webhookRoutes);
 router.use('/zones', zoneRoutes);
 router.use('/training', trainingRoutes);
+router.use('/wallets', walletRoutes);
+router.use('/sys-wallets', systemWalletRoutes);
 
 module.exports = router;

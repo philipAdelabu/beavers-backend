@@ -20,13 +20,13 @@ class LogService {
         const { entityType, entityId, action, userId, newData, metaData} = logData; 
      
        const oldResult = await pool.query(
-         ` SELECT new_data FROM audit_logs WHERE entity_id = $1 
+         ` SELECT new_data, created_at FROM audit_logs WHERE entity_id = $1 
           ORDER BY created_at DESC
          `,[entityId] 
        );
        let oldData = {};
        if(oldResult.rows.length  > 0)
-           oldData = oldResult.rows[0].old_data;
+           oldData = oldResult.rows[0].new_data;
 
       
         const result = await pool.query(

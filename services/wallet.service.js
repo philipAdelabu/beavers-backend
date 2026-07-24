@@ -4,6 +4,7 @@ const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const { v4: uuidv4 } = require('uuid');
+const LogService = require('./log.services');
 
 class WalletService {
   // ==================== Wallet Management ====================
@@ -20,7 +21,7 @@ class WalletService {
     
     if (wallet) {
       return wallet;
-    }
+    } 
     
     // Check database
     const result = await pool.query(
@@ -75,7 +76,7 @@ class WalletService {
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<Object>} Transaction record
    */
-  static async creditWallet(userId, amount, transactionType, metadata = {}, userType = 'artisan') {
+  static async creditWallet(userId, amount, transactionType, metadata = {}, userType = 'artisan', req = null) {
     const client = await pool.connect();
     
     try {
@@ -89,12 +90,13 @@ class WalletService {
       
       let wallet;
       if (walletResult.rows.length === 0) {
+         const usrT = await this.getUserType(userId);
         // Create wallet if doesn't exist
         const newWallet = await client.query(
           `INSERT INTO wallets (user_id, user_type, balance, pending_balance, currency)
            VALUES ($1, $2, 0, 0, 'NGN')
            RETURNING *`,
-          [userId, userType]
+          [userId, usrT]
         );
         wallet = newWallet.rows[0];
       } else {
@@ -108,10 +110,11 @@ class WalletService {
       await client.query(
         `UPDATE wallets 
          SET balance = $1, 
-             total_earned = total_earned + $2,
+             total_earned = CASE WHEN $4 <> 'deposit' THEN total_earned + $2 ELSE total_earned END,
+             total_deposited = CASE WHEN $4 = 'deposit' THEN total_deposited + $2 ELSE total_deposited END,
              updated_at = NOW()
          WHERE id = $3`,
-        [balanceAfter, amount, wallet.id]
+        [balanceAfter, amount, wallet.id, transactionType]
       );
       
       // Create transaction record
@@ -136,9 +139,22 @@ class WalletService {
           metadata.jobId || null
         ]
       );
+
+       //  const { entityType, entityId, action, userId, newData, metaData} = logData; 
+      // static async logActivity(logData, req) 
+      const logData = {
+        entityType: 'wallet',
+        entityId: wallet.id,
+        action: 'wallet credited',
+        userId,
+        newData: { amount, userType, balanceBefore, balanceAfter },
+        metadata,
+      };
+      await LogService.logActivity(logData, req);
+    
       
-      await client.query('COMMIT');
-      
+     
+        await client.query('COMMIT');
       // Invalidate cache
       await cacheDel(`wallet:user:${userId}`);
       await cacheDel(`wallet:balance:${userId}`);
@@ -146,13 +162,14 @@ class WalletService {
        
           await NotificationService.sendPushNotification(
                 userId,
-                'Payment Released',
-                `₦${amount} has been released to your account.`,
-                { type: 'payment_released', amount}
+                'Payment Recieved',
+                `₦${amount} has been sent to your account.`,
+                { type: 'payment_credited', amount}
               );
             
       
       logger.info(`Wallet credited: ${userId} - ₦${amount} (${transactionType})`);
+     
       
       return transactionResult.rows[0];
     } catch (error) {
@@ -171,7 +188,7 @@ class WalletService {
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<Object>} Transaction record
    */
-  static async debitWallet(userId, amount, transactionType, metadata = {}) {
+  static async debitWallet(userId, amount, transactionType, metadata = {}, req = null) {
     const client = await pool.connect();
     
     try {
@@ -201,7 +218,6 @@ class WalletService {
         `UPDATE wallets 
          SET balance = $1,
              total_withdrawn = total_withdrawn + $2,
-             last_transaction_at = NOW(),
              updated_at = NOW()
          WHERE id = $3`,
         [balanceAfter, amount, wallet.id]
@@ -228,6 +244,20 @@ class WalletService {
           metadata
         ]
       );
+        const userType = this.getUserType(userId);
+            //  const { entityType, entityId, action, userId, newData, metaData} = logData; 
+      // static async logActivity(logData, req) 
+      const logData = {
+        entityType: 'wallet',
+        entityId: wallet.id,
+        action: 'wallet debited',
+        userId,
+        newData: { amount, userType, balanceBefore, balanceAfter },
+        metadata,
+      };
+      await LogService.logActivity(logData, req);
+    
+      
       
       await client.query('COMMIT');
       
@@ -1034,6 +1064,112 @@ class WalletService {
       recentTransactions: recentTransactions.rows
     };
   }
-}
+
+   static async fundWallet(userId, amount, req){
+
+     try{
+    const userType = await this.getUserType(userId);
+    if(!userType) return null;
+    logger.info(userType)
+    const metadata = {gateway: 'paystack', amount };
+    const result = await this.creditWallet(userId, amount, 'deposit', metadata, userType, req );
+    return result; 
+     }catch(error){
+       throw error;
+     }   
+   }
+
+    static async cashoutFund(userId, amount, req){
+
+     try{
+    const userType = await this.getUserType(userId);
+    if(!userType) return null;
+
+    const metadata = {gateway: 'paystack', amount };
+    const result = await this.debitWallet(userId, amount, 'withdrawal', metadata, req );
+    return result; 
+     }catch(error){
+       throw error;
+     }   
+   }
+
+   static async getUserType(userId){
+       const user = await pool.query(
+        ` SELECT user_type FROM users WHERE id = $1`, [userId]
+       )
+      const userType = user.rows[0].user_type;
+       return userType;
+   }
+
+     /**
+   * Get transaction history
+   * @param {string} userId - User ID
+   * @param {Object} filters - Filter options
+   * @returns {Promise<Object>} Transaction history
+   */
+  static async getWalletHistory(userId, filters = {}) {
+    const { type, status, startDate, endDate, page = 1, limit = 20 } = filters;
+    const offset = (page - 1) * limit;
+    
+    let query = `
+      SELECT wt.*, j.category as job_category
+      FROM wallet_transactions wt
+      LEFT JOIN jobs j ON wt.job_id = j.id
+      WHERE wt.user_id = $1
+    `;
+    const params = [userId];
+    let paramIndex = 2;
+    
+    if (type) {
+      query += ` AND wt.transaction_type = $${paramIndex}`;
+      params.push(type);
+      paramIndex++;
+    }
+    
+    if (status) {
+      query += ` AND wt.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+    
+    if (startDate) {
+      query += ` AND wt.created_at >= $${paramIndex}`;
+      params.push(startDate);
+      paramIndex++;
+    }
+    
+    if (endDate) {
+      query += ` AND wt.created_at <= $${paramIndex}`;
+      params.push(endDate);
+      paramIndex++;
+    }
+    
+    query += ` ORDER BY wt.created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limit, offset);
+    
+    const result = await pool.query(query, params);
+    
+    const countQuery = `
+      SELECT COUNT(*) FROM wallet_transactions
+      WHERE user_id = $1
+      ${type ? `AND transaction_type = '${type}'` : ''}
+      ${status ? `AND status = '${status}'` : ''}
+    `;
+    const countResult = await pool.query(countQuery, [userId]);
+    
+    return {
+      transactions: result.rows,
+      total: parseInt(countResult.rows[0].count),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+    };
+  }
+
+
+       
+   }
+
+
 
 module.exports = WalletService;

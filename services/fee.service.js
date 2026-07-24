@@ -7,6 +7,7 @@ const FeePaymentService = require('./fee.payment.service');
 const { v4: uuidv4 } = require('uuid');
 const { PRICING } = require('../config/constants');
 const SysConfig = require('../config/syst-config');
+const SystemWalletService = require('./system-wallet.service');
 
 class FeeService {
   // ==================== Fee Configuration ====================
@@ -225,6 +226,13 @@ class FeeService {
             SET status = 'completed' WHERE artisan_id = $1 AND transaction_id = $2
           `, [userId, reference]
          );
+
+             // Credit system wallet
+              await SystemWalletService.processOnboardingFee(
+                userId,
+                payment.amount,
+                reference
+              );
 
          if(payment.fee_type === 'monthly'){
             await this.monthlyFeeConfirmed(userId, reference);

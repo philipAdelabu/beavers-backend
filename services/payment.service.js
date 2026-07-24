@@ -10,6 +10,9 @@ const BillingService = require('./billing.service');
 const EscrowService = require('./escrow.service');
 const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 const SysConfig = require('../config/syst-config');
+const SystemWalletService = require('./system-wallet.service');
+
+
 
 // Paystack API configuration
 let PAYSTACK_SECRET_KEY;
@@ -270,6 +273,26 @@ class PaymentService {
         );
     
          await this.processEscrow(payment.job_id, clientId, payment.amount);
+
+         /*
+
+             // Calculate platform commission
+              const totalAmount = paymentIntent.amount / 100;
+              const commissionPercent = process.env.PLATFORM_COMMISSION_PERCENT || 10;
+              const platformCommission = (totalAmount * commissionPercent) / 100;
+              
+              if (platformCommission > 0) {
+                // Credit system wallet with commission
+                await SystemWalletService.processCommission(
+                  jobId,
+                  job.artisan_id,
+                  job.client_id,
+                  platformCommission,
+                  { totalAmount, commissionPercent }
+                );
+              }
+
+         */
 
         // Send notifications
         if(process.env.NODE_ENV === 'production'){
