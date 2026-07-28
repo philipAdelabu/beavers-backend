@@ -8,9 +8,10 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const BillingService = require('./billing.service');
 const EscrowService = require('./escrow.service');
-const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
+const {PRICING, TIMEOUTS, GEOFENCE, SYSTEM_FEES } = require('../config/constants');
 const SysConfig = require('../config/syst-config');
 const SystemWalletService = require('./system-wallet.service');
+
 
 
 
@@ -68,13 +69,16 @@ class PaymentService {
          JOIN jobs j ON jb.job_id = j.id
          WHERE jb.job_id = $1 AND j.client_id = $2`,
         [jobId, clientId]
-      );
+      ); 
       
       if (billingResult.rows.length === 0) {
         throw new AppError(404, 'Job billing not found');
       }
       
       const billing = billingResult.rows[0];
+
+      if(billing.billing_status === 'paid' || billing.billing_status === 'settled')
+          throw new AppError(400, 'Billing already paid to escrow');
 
       const totalAmount = Number(billing.total_amount);
 
@@ -274,26 +278,6 @@ class PaymentService {
     
          await this.processEscrow(payment.job_id, clientId, payment.amount);
 
-         /*
-
-             // Calculate platform commission
-              const totalAmount = paymentIntent.amount / 100;
-              const commissionPercent = process.env.PLATFORM_COMMISSION_PERCENT || 10;
-              const platformCommission = (totalAmount * commissionPercent) / 100;
-              
-              if (platformCommission > 0) {
-                // Credit system wallet with commission
-                await SystemWalletService.processCommission(
-                  jobId,
-                  job.artisan_id,
-                  job.client_id,
-                  platformCommission,
-                  { totalAmount, commissionPercent }
-                );
-              }
-
-         */
-
         // Send notifications
         if(process.env.NODE_ENV === 'production'){
         await this.sendPaymentSuccessNotifications(payment.job_id, clientId, transaction.amount / 100);
@@ -334,7 +318,7 @@ class PaymentService {
   }
 
 
-  static async processEscrow(jobId, clientId, amount){
+  static async processEscrow(jobId, clientId, amount = null){
        const client = await pool.connect();
        try{
         await client.query('BEGIN');
@@ -351,16 +335,16 @@ class PaymentService {
 
         const job = jobResult.rows[0];
         const sys_config = await SysConfig.getSysConfig();
+      
+        const dispute_buffer = sys_config.job_setting_timeouts.dispute_buffer || TIMEOUTS.DISPUTE_BUFFER;
+
         const escrowData = {
            jobId: job.job_id,
            clientId,
            artisanId: job.artisan_id,
-           transactiontype: 'full_payment',
-           status: 'held',
-           disputeBufferDays: 3 ,
         };
 
-        await EscrowService.createHold(escrowData);
+      
 
         escrowData.transactionType = 'base_fee';
         escrowData.status  = 'released';
@@ -375,6 +359,22 @@ class PaymentService {
               escrowData.amount = job.materials_cost;
              await EscrowService.createHold(escrowData); 
         }
+
+         if(job.platform_fee > 0){
+             // release materials cost immediately
+              escrowData.transactionType = 'platform_fee';
+              escrowData.amount = job.platform_fee;
+             await EscrowService.createHold(escrowData); 
+              // Credit system wallet with commission
+                await SystemWalletService.processCommission(
+                  jobId,
+                  job.artisan_id,
+                  job.client_id,
+                  job.platform_fee,
+                  { totalAmount: amount, commissionPercent: job.platform_fee }
+                );
+              
+        }
        
         if(job.diagnostics_fee > 0){
              // release materials cost immediately
@@ -386,7 +386,7 @@ class PaymentService {
         if(job.execution_fee > 0){
                escrowData.transactionType = 'execution';
                escrowData.status = 'held',
-               escrowData.disputeBufferDays = 3,
+               escrowData.disputeBufferDays = dispute_buffer,
                 escrowData.amount = job.execution_fee;
              await EscrowService.createHold(escrowData); 
         }
@@ -395,6 +395,7 @@ class PaymentService {
         if(job.workmanship_cost > 0){
               escrowData.transactionType = 'workmanship';
               escrowData.amount = job.workmanship_cost;
+              escrowData.status = 'held',
              await EscrowService.createHold(escrowData); 
         }
     

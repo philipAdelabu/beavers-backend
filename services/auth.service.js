@@ -872,6 +872,14 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     
     return userResult.rows.length > 0 && userResult.rows[0].is_active;
   }
+  
+  static async deleteAccount(userId){
+      const user = await pool.query(` UPDATE users SET password_hash = $1,
+        is_active = false, is_verified = false, is_logged_in = false, is_email_verified = false, 
+        is_phone_verified = false WHERE id = $2`, ['**%3_3uy@dhd9=', userId]);
+        return ;
+  }
+
 }
 
 module.exports = AuthService;

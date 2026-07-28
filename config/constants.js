@@ -294,6 +294,13 @@ const PRICING = {
   ARTISAN_ONBOARDING_FEE: process.env.ARTISAN_ONBOARDING_FEE,
 };
 
+const SYSTEM_FEES = {
+  VAT: 0.075,
+  MIN_CHARGES: 300,
+  MIN_JOB_VALUE: 10000,
+  MAX_CHARGES: 500,
+};
+
 // Socket Events
 const SOCKET_EVENTS = {
   CONNECTION: 'connection',
@@ -340,5 +347,6 @@ module.exports = {
   GEOFENCE,
   TIMEOUTS,
   PRICING,
-  SOCKET_EVENTS
+  SOCKET_EVENTS,
+  SYSTEM_FEES,
 };

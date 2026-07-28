@@ -5,7 +5,7 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const { generateArrivalPIN, calculateDistance } = require('../utils/geo.utils');
 const Wallet = require('../models/Wallet');
-const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
+const {PRICING, TIMEOUTS, GEOFENCE, SYSTEM_FEES} = require('../config/constants');
 const SysConfig = require('../config/syst-config');
 
 
@@ -966,16 +966,41 @@ class JobService {
     }
     
     const job = result.rows[0];
+
+    const b = await pool.query(`SELECT * FROM job_billing WHERE job_id = $1`, [jobId]);
+     
     
     // update job_billing
     const billingResult = await pool.query(
       `UPDATE job_billing 
        SET billing_status = 'awaiting_job_confirmation', execution_mode = 'completed',
-       total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost + platform_fee - discount_amount
+       total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost
        WHERE job_id = $1
        RETURNING *`,
       [jobId]
     );
+
+    const bill = billingResult.rows[0];
+    let platform_fee = 0;
+    if(bill.workmanship > 0) {
+        platform_fee += bill.workmanship * SYSTEM_FEES.VAT;
+        platform_fee += bill.workmanship < SYSTEM_FEES.MIN_JOB_VALUE ? SYSTEM_FEES.MIN_CHARGES : SYSTEM_FEES.MAX_CHARGES;  
+    } 
+
+    if(bill.execution_fee > 0) {
+        platform_fee += bill.execution_fee * SYSTEM_FEES.VAT;
+        platform_fee += bill.execution_fee < SYSTEM_FEES.MIN_JOB_VALUE ? SYSTEM_FEES.MIN_CHARGES : SYSTEM_FEES.MAX_CHARGES;  
+    } 
+
+     const billing = await pool.query(
+      `UPDATE job_billing 
+       platform_fee = $1,
+       total_amount = total_amount + platform_fee - discount_amount
+       WHERE job_id = $2
+       RETURNING *`,
+      [jobId, platform_fee]
+    );
+
     
     // Notify client
     await NotificationService.sendPushNotification(
@@ -991,7 +1016,7 @@ class JobService {
     this.addTimelineEntry(jobId, 'completed', descript);
 
     await client.query('COMMIT');
-    return { job, billing: billingResult.rows[0] };
+    return { job, billing: billing.rows[0] };
      } catch (error) {
      await client.query('ROLLBACK');
      throw error;
@@ -1024,8 +1049,7 @@ class JobService {
     // Calculate total amount
     const billingResult = await pool.query(
       `UPDATE job_billing 
-       SET billing_status = 'awaiting_payment', execution_mode = 'completed',
-       total_amount = base_fee + diagnostics_fee + execution_fee + materials_cost + workmanship_cost + platform_fee - discount_amount
+       SET billing_status = 'awaiting_payment', execution_mode = 'completed'
        WHERE job_id = $1
        RETURNING *`,
       [jobId]

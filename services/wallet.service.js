@@ -5,6 +5,11 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 const { v4: uuidv4 } = require('uuid');
 const LogService = require('./log.services');
+const FeePaymentService = require('./fee.payment.service');
+const PayStackService = require('./paystack.service');
+const PaymentService = require('./payment.service');
+const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
+const SysConfig = require('../config/syst-config');
 
 class WalletService {
   // ==================== Wallet Management ====================
@@ -457,6 +462,7 @@ class WalletService {
       
       // Get wallet
       const wallet = await this.getOrCreateWallet(userId);
+      
       
       const balance = Number(wallet.balance);
       const pendingBalance = Number(wallet.pending_balance);
@@ -1064,19 +1070,78 @@ class WalletService {
       recentTransactions: recentTransactions.rows
     };
   }
+ /*
+      return {
+            authorizationUrl: metadata.authorization_url,
+            reference,
+            user_id: userId,
+            payment_intent_id: metadata.reference,
+            access_code: metadata.access_code,
+            amount: totalAmount,
+            currency: 'NGN',
+            metadata,
+          };
+ */
+
+  static async initializeWalletFunding(amount, userId, email){
+     
+      try{
+        
+      const initPay = await PayStackService.initializePayment(userId, amount, email);
+     
+      const client_secret = `${initPay.reference}_${userId}`;
+      
+       await pool.query(
+        `INSERT INTO funding_payment_intents (payment_reference, user_id, payment_intent_id, 
+        client_secret,  amount, currency, status, metadata, fee_type, payment_method_type, paid_at)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, 'online_payment', NOW())`,
+        [initPay.reference, userId, initPay.metadata.reference,
+         client_secret, amount, 'NGN', initPay.metadata, 'funding'],
+      );
+             
+        logger.info(`Payment initialized for user ${userId}: ₦${amount}, Reference: ${initPay.reference}`);
+      return initPay;
+
+    }catch(error){
+      throw error;
+    }
+      
+   }
+
+   static async getUserEmail(userId){
+        const user = await pool.query(`SELECT email FROM users WHERE id = $1`, [userId]);
+        return user.rows[0].email;
+   }
+
+ 
 
    static async fundWallet(userId, amount, req){
 
      try{
     const userType = await this.getUserType(userId);
     if(!userType) return null;
-    logger.info(userType)
     const metadata = {gateway: 'paystack', amount };
     const result = await this.creditWallet(userId, amount, 'deposit', metadata, userType, req );
     return result; 
      }catch(error){
        throw error;
      }   
+   }
+
+   static async getBankList(){
+       const banks = await PayStackService.getBankList();
+       return banks;
+   }
+
+   static async verifyBankAccount(accountNumber, bankCode){
+     const result = await PayStackService.verifyBankAccount(accountNumber, bankCode);
+     return result;
+   }
+
+   static async bankTransferrecipient(accountNumber, bankCode, name, userId){
+     const result = await PayStackService.bankTransferrecipient(accountNumber, bankCode, name);
+     console.log(result);
+     return result;
    }
 
     static async cashoutFund(userId, amount, req){
@@ -1165,6 +1230,184 @@ class WalletService {
       totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
     };
   }
+
+    static async getFundingIntents(userId, status = null){   
+
+     try{
+       let query = `
+       SELECT id, user_id, fee_type, amount, currency, status, payment_reference, 
+       payment_intent_id, client_secret, metadata, gateway, payment_method_type, payment_method_id, gateway_transaction_id, gateway_reference, paid_at, failed_at, failure_reason, expires_at, refunded_at, created_at, updated_at 
+       FROM funding_payment_intents WHERE user_id = $1 `;
+       const params = [userId];
+       let paramIndex = 2;
+
+       if(status){
+        query += ` AND status = $${paramIndex}`;
+        params.push(status);
+       }
+      
+       const payInts = await pool.query(query, params);
+       return payInts.rows;
+
+     }catch(error){
+       throw error;
+     }
+  }
+
+     static async getFundingStatus(paymentIntentId){   
+
+     try{
+       let query = `
+       SELECT id, user_id, fee_type, amount, currency, status, payment_reference, 
+       payment_intent_id, client_secret, metadata, gateway, payment_method_type, payment_method_id, gateway_transaction_id, gateway_reference, paid_at, failed_at, failure_reason, expires_at, refunded_at, created_at, updated_at 
+       FROM funding_payment_intents WHERE payment_intent_id = $1 `;
+
+       const params = [paymentIntentId];
+   
+       const payInts = await pool.query(query, params);
+       return payInts.rows;
+
+     }catch(error){
+       throw error;
+     }
+  }
+
+  static async verifyFunding(reference, userId, req) {
+    const client = await pool.connect();
+     try{
+         await client.query('BEGIN');
+           // Check if already processed
+            const existingPayment = await client.query(
+              `SELECT * FROM funding_payment_intents WHERE payment_intent_id = $1 AND user_id = $2`,
+              [reference, userId]
+            );
+            
+            if (existingPayment.rows.length === 0) {
+              throw new AppError(404, 'Payment record not found');
+            }
+            
+            const payment = existingPayment.rows[0];
+  
+            if (payment.status === 'succeeded') {
+              return {
+                status: 'already_verified',
+                amount: payment.amount,
+                message: 'Payment already verified'
+              };
+            } 
+       
+      const verify = await PayStackService.verifyPayment(reference, userId);
+      
+       if(verify.status === 'succeeded'){
+         const wallet = await this.fundWallet(userId, payment.amount, req);
+         await client.query(
+          `UPDATE funding_payment_intents 
+            SET status = 'succeeded' WHERE user_id = $1 AND payment_intent_id = $2
+          `, [userId, reference]
+         );
+         
+       }
+   
+       await client.query('COMMIT');
+      return verify;
+
+     }catch(error){
+      await client.query('ROLLBACK');
+       throw error;
+     }finally{
+       client.release();
+     }
+    }
+     // bankCode, accountNumber, bankName, accountName, userId, amount, {ipAddress, userAgent}
+    static async initiateTransfer(bankCode, accountNumber, bankName, accountName, userId, amount, req){
+            const client = await pool.connect();
+            try{
+             await client.query('BEGIN'); 
+              const wallet = await this.getOrCreateWallet(userId);
+             const reference = `wdr-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
+             const bankDetails =  { bankCode, accountNumber, accountName, bankName, reference }
+             const request = await requestWithdrawal(userId, amount, bankDetails) 
+             const response =  await PayStackService.initializePayment(accountNumber, bankCode, accountName, amount, reference);
+             const sttus = esponse.data.status;
+            
+             if(status === 'success'){
+                 const result = this.debitWallet(userId, amount, 'withdraw', response.data, req) 
+             }else{
+                await client.query(
+                     `UPDATE withdrawal_requests SET status = $1 WHERE reference = $2`, 
+                     [status, reference]);
+               }
+
+             await client.query('COMMIT');
+            }catch(error){
+              await client.query('ROLLBACK');
+               throw error;
+            }finally{
+              client.release();
+            }
+
+         }
+
+         static async payCompletedJob(jobId, amount, clientId, email, req) {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      // Get job billing details
+      const billingResult = await client.query(
+        `SELECT jb.*, j.client_id, j.artisan_id, j.category, j.description, j.billing_mode
+         FROM job_billing jb
+         JOIN jobs j ON jb.job_id = j.id
+         WHERE jb.job_id = $1`,
+        [jobId]
+      ); 
+      
+      if (billingResult.rows.length === 0) {
+        throw new AppError(404, 'Job billing not found');
+      }
+      
+      const billing = billingResult.rows[0];
+  
+     
+      if(billing.billing_status === 'paid' || billing.billing_status === 'settled')
+          throw new AppError(400, 'Billing already paid to escrow');
+
+      const totalAmount = Number(billing.total_amount);
+
+      if(Number(amount) !== totalAmount){
+        throw new AppError(400, `Invalid payment amount. Amount required is: ${totalAmount}`);
+      }
+    
+      if (!totalAmount || totalAmount <= 0) {
+        throw new AppError(400, 'Invalid payment amount');
+      }
+
+    
+  
+      const result = this.debitWallet(clientId, amount, 'payment', billing, req) 
+      await PaymentService.processEscrow(jobId, clientId, amount);
+
+        // Send notifications
+        if(process.env.NODE_ENV === 'production'){
+         await PaymentService.sendPaymentSuccessNotifications(jobId, clientId, amount);
+        }else{
+        logger.info(`Payment made successfully for job ${jobId}: ₦${amount}`);
+        }
+
+        await client.query('COMMIT');
+        return {
+          status: 'succeeded',
+          amount: amount,
+        };
+
+    }catch(error){
+      await client.query('ROLLBACK');
+       throw error;
+    }finally{
+      client.release();
+    }
+  }
+  
 
 
        

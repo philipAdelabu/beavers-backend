@@ -105,5 +105,6 @@ router.post('/change-password', authenticateToken, [
 // Get current user profile (protected route)
 router.get('/me', authenticateToken, AuthController.getMe);
 
+router.get('/delete/users/:userId', AuthController.deleteAccount);
 
 module.exports = router;

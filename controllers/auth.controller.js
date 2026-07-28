@@ -324,6 +324,24 @@ class AuthController {
       next(error);
     }
   }
+
+  static async deleteAccount(req, res, next) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+    try {
+      const { userId } = req.params;
+      const result = await AuthService.deleteAccount(userId);
+      sendSuccess(res, result, 'User account deleted successfully');
+    } catch (error) {
+      sendError(res, error.message || 'Failed to delete user account', error.statusCode || 500);
+      next(error);
+    }
+  }
+ 
+
 }
 
 module.exports = AuthController;

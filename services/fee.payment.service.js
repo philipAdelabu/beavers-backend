@@ -7,7 +7,7 @@ const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
 
 // Paystack API configuration
-let PAYSTACK_SECRET_KEY;
+let PAYSTACK_SECRET_KEY; 
 let PAYSTACK_BASE_URL;
 if(process.env.NODE_ENV === 'production'){
     PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;

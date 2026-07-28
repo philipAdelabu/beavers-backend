@@ -7,6 +7,9 @@ const { authenticateToken, requireRole, requirePermissions } = require('../middl
 const { adminLimiter } = require('../middleware/rateLimit.middleware');
 const NotificationController = require('../controllers/notification.controller');
 const WalletController = require('../controllers/wallet.controller');
+const PaymentController = require('../controllers/payment.controller');
+const { paymentLimiter } = require('../middleware/rateLimit.middleware');
+const WalletService = require('../services/wallet.service');
 
 
 router.use(authenticateToken);
@@ -17,9 +20,11 @@ router.post('/add-fund/users/:userId', [
   body('amount').notEmpty().isNumeric(),
 ], WalletController.fundWallet);
 
-router.post('/cashout-fund/users/:userId', [
-  param('userId').isUUID(),
-  body('amount').notEmpty().isNumeric()
+router.post('/cashout-fund', [
+     body('accountNumber').notEmpty(),
+     body('bankCode').notEmpty(),
+     body('bankName').notEmpty(),
+    body('accountName').notEmpty(),
 ], WalletController.cashoutFund);
 
 router.get('/balance/:userId',[
@@ -32,5 +37,40 @@ router.get('/:userId/history',[
 
 router.get('/list/banks', WalletController.getBankList);
 
+
+///// Paystack activities ////////
+
+// Payment initialization and verification
+router.post('/initialize/funding/', paymentLimiter, [
+  body('amount').notEmpty().isNumeric(),
+], WalletController.initializeFunding);
+
+router.get('/funding/intents', WalletController.getFundingIntent);
+
+router.get('/funding/intent/status/:paymentIntentId', [
+  param('paymentIntentId').notEmpty().withMessage('Invalid payment intent ID'),
+], WalletController.getFundingStatus);
+
+router.get('/verify/funding/:paymentIntentId', [
+  param('paymentIntentId').notEmpty().withMessage('Payment Intent Id is required')
+], WalletController.verifyFunding);
+
+router.post('/verify/bank-account',[
+  body('accountNumber').notEmpty(),
+  body('bankCode').notEmpty(),
+], WalletController.verifyBank);
+
+router.post('/bank/transferrecipient',[
+  body('accountNumber').notEmpty(),
+  body('bankCode').notEmpty(),
+  body('name').notEmpty(),
+], WalletController.bankTransferrecipient);
+
+router.post('/pay/completed/jobs/:jobId',[
+    param('jobId').isUUID(),
+    body('amount').notEmpty().isNumeric(), 
+], WalletController.payCompletedJob);
+
+router.get('/withdrawal-history', WalletController.getWithdrawalHistory);
 
 module.exports = router;
