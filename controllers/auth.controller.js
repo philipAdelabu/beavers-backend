@@ -35,7 +35,7 @@ class AuthController {
        }
 
       const result = await AuthService.registerClient(req.body, uploadedFiles);
-      sendSuccess(res, result.user, result.message, 201);
+      sendSuccess(res, result, 'Client registered successfully', 201);
     } catch (error) {
       // Clean up uploaded files on error
       if (req.files) {
@@ -88,7 +88,7 @@ class AuthController {
         }
       }
       const result = await AuthService.registerArtisan(req.body, uploadedFiles);
-      sendSuccess(res, result.user, result.message, 201);
+      sendSuccess(res, result, 'Artisan registered successfully', 201);
     } catch (error) {
             // Clean up uploaded files on error
       if (req.files) {

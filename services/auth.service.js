@@ -86,7 +86,6 @@ class AuthService {
       logger.info(`New client registered: ${email}`);
       logger.info("profile: ",userProfile);
       return {
-        user: {
           id: user.id,
           email: user.email,
           phone: user.phone,
@@ -94,8 +93,6 @@ class AuthService {
           isEmailVerified: user.is_email_verified,
           isPhoneVerified: user.is_phone_verified,
           is_logged_in: user.is_logged_in,
-        },
-        message: 'Registration successful. Please verify your email.'
       };
     } catch (error) {
       await client.query('ROLLBACK');
@@ -193,7 +190,6 @@ class AuthService {
       logger.info(`New artisan registered: ${email}`);
       
       return {
-        user: {
           id: user.id,
           email: user.email,
           phone: user.phone,
@@ -201,8 +197,6 @@ class AuthService {
           isPhoneVerified: user.is_phone_verified,
           isEmailVerified: user.is_email_verified,
           isLoggedIn: user.is_logged_in,
-        },
-        message: 'Registration successful. Please verify your email and pay onboarding fee.'
       };
     } catch (error) {
       await client.query('ROLLBACK');

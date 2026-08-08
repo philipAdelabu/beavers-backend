@@ -480,17 +480,13 @@ class NotificationService {
             };
 
     const options = {
-    'method': 'POST',
-    'url': `${termii_base_url}/api/sms/send`,
     'headers': {
       'Content-Type': ['application/json', 'application/json']
     },
-    body: JSON.stringify(data)
-
-    };
+};
         
-
-      const response = await axios.request(options);
+     const url = `${termii_base_url}/api/sms/send`;
+      const response = await axios.post(url, data, { headers: options.headers });
       if(response.status !== 200) {
         logger.error(`Failed to send SMS to ${to}: ${response.statusText}`);
           return { success: false, error: 'SMS failed' };
