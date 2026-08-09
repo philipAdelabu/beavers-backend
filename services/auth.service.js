@@ -73,7 +73,7 @@ class AuthService {
       if(process.env.NODE_ENV === 'production') {
         await sendEmail(email, 'Verify Your Email',
         `Your  email verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
-         await sendSMS(phone, `Your  phone verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
+        // await sendSMS(phone, `Your  phone verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
@@ -179,7 +179,7 @@ class AuthService {
         if(process.env.NODE_ENV === 'production') {
       await sendEmail(email, 'Verify Your Email', 
         `Your email verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
-      await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
+    //  await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  

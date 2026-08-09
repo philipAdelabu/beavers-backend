@@ -469,7 +469,8 @@ class NotificationService {
            return `SMS sent to ${to}: ${message}`;
       } 
 
-      logger.info(`SMS sent to ${to}: ${message}`); 
+     
+
       const data = {
               "to":to,
               "from":"Beavers",
@@ -479,14 +480,23 @@ class NotificationService {
               "channel":"generic",
             };
 
-    const options = {
-    'headers': {
-      'Content-Type': ['application/json', 'application/json']
-    },
-};
+        const options = {
+            method: 'POST',
+            url: `${termii_base_url}/api/sms/send`,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            data: data
+          };
+
+          console.log('Sending SMS with options:', options);
+
         
-     const url = `${termii_base_url}/api/sms/send`;
-      const response = await axios.post(url, data, { headers: options.headers });
+            const response = await axios.request(options);
+
+            console.log('Termii response:', response.data);
+
+        
       if(response.status !== 200) {
         logger.error(`Failed to send SMS to ${to}: ${response.statusText}`);
           return { success: false, error: 'SMS failed' };
@@ -497,7 +507,7 @@ class NotificationService {
       return response.data; 
   
     } catch (error) {
-      logger.error('SMS sending failed:', error);
+      console.error('Termii error:', error.response?.data || error.message);
       throw error;
     }
   }
