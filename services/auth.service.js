@@ -279,7 +279,7 @@ class AuthService {
       // Check if email is verified (for first-time login warning only)
       if (!user.is_verified) {
         // Don't block login, but send reminder
-        await this.sendVerificationReminder(user.email, user.phone, user.full_name);
+       // await this.sendVerificationReminder(user.email, user.phone, user.full_name);
       }
       
       // Check artisan monthly fee
@@ -401,10 +401,10 @@ class AuthService {
           `SELECT monthly_fee_status FROM artisan_profiles WHERE user_id = $1`,
           [user.id]
         );
-        
+        /*
        if (artisanResult.rows[0]?.monthly_fee_status !== 'paid') {
           throw new AppError(403, 'Monthly fee not paid. Please pay to continue.');
-        } 
+        }  */
       }
       
       // Generate tokens
@@ -481,7 +481,7 @@ class AuthService {
       // Generate and send OTP
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production') {
-      await sendSMS(formattedPhone, `Your BeaverWorks  OTP is: ${otp}. This code expires in 10 minutes.`, user.user_id);
+    //  await sendSMS(formattedPhone, `Your BeaverWorks  OTP is: ${otp}. This code expires in 10 minutes.`, user.user_id);
       }else{
          logger.info(`Test environment - OTP for ${formattedPhone}: ${otp}`);
       }
@@ -693,7 +693,7 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production'){
-      await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`, userResult.rows[0].id);
+     // await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`, userResult.rows[0].id);
     }else{
       logger.info(`Test environment - Phone OTP for ${formattedPhone}: ${otp}`);
     }
@@ -835,20 +835,15 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     }
     
     // Send reminder email
+    /*
     await sendEmail(
       email,
       'Complete Your Verification',
       `Hi ${name || 'there'},\n\nPlease complete your account verification to access all features on BeaverWorks.\n\nThank you!`,
       user.id
-    );
-    
-    // Send reminder SMS
-    if (phone) {
-      await sendSMS(
-        phone,
-        `BeaverWorks: Please complete your account verification to access all features. Thank you!`, user.id
-      );
-    }
+    ); */
+     // Send not  
+  
   }
 
 

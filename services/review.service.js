@@ -397,6 +397,7 @@ class ReviewService {
     
     const result = await pool.query(query, params);
     return result.rows;
+
   }
   
   static async getRecentReviews(limit = 20) {

@@ -17,7 +17,7 @@ router.post('/register/client', authLimiter, uploadFields([
   body('phone').isMobilePhone(),
   body('password').optional().isLength({ min: 6 }),
   body('fullLegalName').notEmpty(),
-  body('nin').notEmpty(),
+  body('nin').optional(),
   body('streetAddress').notEmpty(),
   body('serviceAddress').notEmpty(),
 ], AuthController.registerClient);
@@ -34,7 +34,7 @@ router.post('/register/artisan', authLimiter, uploadFields([
   body('phone').isMobilePhone(),
   body('password').isLength({ min: 6 }),
   body('fullLegalName').notEmpty(),
-  body('nin').notEmpty(),
+  body('nin').optional(),
   body('residentialAddress').notEmpty(),
   body('skillCategory').notEmpty(),
 ], AuthController.registerArtisan);
