@@ -4,13 +4,13 @@ const { pool } = require('../config/database');
 const { cacheSet, cacheGet, cacheDel } = require('../config/redis');
 const { generateTokens, verifyRefreshToken } = require('../utils/jwt.utils');
 const { generateAndStoreOTP, verifyOTP } = require('../utils/otp.utils');
-const { sendEmail, sendSMS } = require('./notification.service');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { upload } = require('../config/multer');
 const { profile, log } = require('winston');
 const { PRICING } = require('../config/constants');
 const SysConfig = require('../config/syst-config');
+const NotificationService = require('./notification.service');
 
 class AuthService {
   static async registerClient(userData, uploadedFiles = {}) {
@@ -68,21 +68,28 @@ class AuthService {
 
       // Generate OTP for phone verification
       const phoneOtp = await generateAndStoreOTP(`phone:${phone}`, 600);
-      
+        await client.query('COMMIT');
       // Send verification email
       if(process.env.NODE_ENV === 'production') {
-        await sendEmail(email, 'Verify Your Email',
-        `Your  email verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
-        // await sendSMS(phone, `Your  phone verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
+         let message = `Your  email verification code is: ${mailOtp}. This code expires in 20 minutes.`;
+         const data = {
+            userType: 'client',
+            userId: user.id,
+            action: 'Client registration',
+         }
+        await NotificationService.sendNotification(user.id, 'Verify Your Email', message, data,  {sms: false, email:true, push:false});
+          message = `Your  phone verification code is: ${phoneOtp}. This code expires in 10 minutes.`;
+        await NotificationService.sendNotification(user.id, 'Verify Your Phone', message, data,  {sms: true, email:false, push:false});
+
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
        }
 
 
-      await client.query('COMMIT');
-      
-      // Log registration
+    
+       
+   
       logger.info(`New client registered: ${email}`);
       logger.info("profile: ",userProfile);
       return {
@@ -152,16 +159,7 @@ class AuthService {
               const sys_config = await SysConfig.getSysConfig();
               const onboardingFee = sys_config.onboarding_fee || process.env.ARTISAN_ONBOARDING_FEE;
     
-             if(process.env.NODE_ENV === 'production') {
-              await sendEmail(
-              email, 'Complete Your Registration - Pay Onboarding Fee',
-              `Dear ${fullLegalName},\n\nPlease pay the onboarding fee of ₦${onboardingFee.toLocaleString()} to activate your account and start receiving job offers.\n\nThank you for choosing BeaverWorks!`,
-              user.id
-             );
-            }
-          
-
-      const userProfile = userProfileResult.rows[0];
+         const userProfile = userProfileResult.rows[0];
 
        //Create the Wallte for the user
       const userWalletResult = await client.query(
@@ -174,18 +172,29 @@ class AuthService {
       const mailOtp = await generateAndStoreOTP(`email:${email}`, 1200);
       const phoneOtp = await generateAndStoreOTP(`phone:${phone}`, 600);
       
+      await client.query('COMMIT');
       
       // Send verification email
         if(process.env.NODE_ENV === 'production') {
-      await sendEmail(email, 'Verify Your Email', 
-        `Your email verification code is: ${mailOtp}. This code expires in 20 minutes.`, user.id);
-    //  await sendSMS(phone, `Your verification code is: ${phoneOtp}. This code expires in 10 minutes.`, user.id);
+         let message = `Your  email verification code is: ${mailOtp}. This code expires in 20 minutes.`;
+         const data = {
+            userType: 'artisan',
+            userId: user.id,
+            action: 'Artisan registration',
+         }
+         await NotificationService.sendNotification(user.id, 'Verify Your Email', message, data,  {sms: false, email:true, push:false});
+
+         message =  `Dear ${fullLegalName},\n\nPlease pay the onboarding fee of ₦${onboardingFee.toLocaleString()} to activate your account and start receiving job offers.\n\nThank you for choosing BeaverWorks!`;
+        await NotificationService.sendNotification(user.id, 'Complete Your Registration - Pay Onboarding Fee', message, data,  {sms: false, email:true, push:false});
+
+          message = `Your  phone verification code is: ${phoneOtp}. This code expires in 10 minutes.`;
+          await NotificationService.sendNotification(user.id, 'Verify Your Phone', message, data,  {sms: true, email:false, push:false});
       }else {
           logger.info(`Test environment - Email OTP for ${email}: ${mailOtp}`);
           logger.info(`Test environment - Phone OTP for ${phone}: ${phoneOtp}`);  
        }
   
-      await client.query('COMMIT');
+      
       
       logger.info(`New artisan registered: ${email}`);
       
@@ -481,7 +490,9 @@ class AuthService {
       // Generate and send OTP
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production') {
-    //  await sendSMS(formattedPhone, `Your BeaverWorks  OTP is: ${otp}. This code expires in 10 minutes.`, user.user_id);
+      const message = `Your BeaverWorks  OTP is: ${otp}. This code expires in 10 minutes.`;
+      const data = { phone, message }
+      await NotificationService.sendNotification(user.id, 'Verify Your Phone', message, data,  {sms: true, email:false, push:false});
       }else{
          logger.info(`Test environment - OTP for ${formattedPhone}: ${otp}`);
       }
@@ -675,10 +686,12 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       if (userResult.rows.length === 0) {
         throw new AppError(404, 'User not found');
       }
-      
+      const userId = userResult.rows[0].id;
       const otp = await generateAndStoreOTP(`email:${identifier}`, 600);
       if(process.env.NODE_ENV === 'production'){
-      await sendEmail(identifier, 'Your Verification Code', `Your email verification code is: ${otp}`, userResult.rows[0].id);
+      const message = `Your email verification code is: ${otp}`;
+      const data = { identifier, userId }
+      await NotificationService.sendNotification(userId, 'Your Verification Code', message, data,  {sms: false, email:true, push:false});
      }else {
         logger.info(`Test environment - Email OTP for ${identifier}: ${otp}`);
      }
@@ -690,10 +703,13 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       if (userResult.rows.length === 0) {
         throw new AppError(404, 'User not found');
       }
-      
+       const userId = userResult.rows[0].id;
       const otp = await generateAndStoreOTP(`phone:${formattedPhone}`, 600);
       if(process.env.NODE_ENV === 'production'){
-     // await sendSMS(formattedPhone, `Your BeaverWorks verification code is: ${otp}`, userResult.rows[0].id);
+    
+       const message = `Your BeaverWorks verification code is: ${otp}`;
+      const data = { identifier, userId }
+      await NotificationService.sendNotification(userId, 'Your Verification Code', message, data,  {sms: true, email:false, push:false});
     }else{
       logger.info(`Test environment - Phone OTP for ${formattedPhone}: ${otp}`);
     }
@@ -725,8 +741,9 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
     // Send reset email
     const resetUrl = `${process.env.APP_FRONTEND_URL}/reset-password?token=${resetToken}`;
     if(process.env.NODE_ENV === 'production'){
-    await sendEmail(email, 'Reset Your Password', 
-      `Click here to reset your password: ${resetUrl}. This link expires in 1 hour.`, user.id);
+     const message = `Click here to reset your password: ${resetUrl}. This link expires in 1 hour.`;
+     const data = { message: 'Reset password', userId: user.id }
+      await NotificationService.sendNotification(user.id, 'Reset Your Password', message, data,  {sms: false, email:true, push:false});
     }else{
       logger.info(`Test environment - Password reset link for ${email}: ${resetUrl}`);
     }
@@ -834,15 +851,9 @@ static async logoutAllDevices(userId, currentAccessToken = null) {
       return; // User already verified, no reminder needed
     }
     
-    // Send reminder email
-    /*
-    await sendEmail(
-      email,
-      'Complete Your Verification',
-      `Hi ${name || 'there'},\n\nPlease complete your account verification to access all features on BeaverWorks.\n\nThank you!`,
-      user.id
-    ); */
-     // Send not  
+       const message =  `Hi ${name || 'there'},\n\nPlease complete your account verification to access all features on BeaverWorks.\n\nThank you!`;
+     const data = { message: 'Complete Verifications', userId: user.id }
+      await NotificationService.sendNotification(user.id, 'Complete Your Verification', message, data,  {sms: false, email:true, push:false});
   
   }
 

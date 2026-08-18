@@ -66,7 +66,7 @@ class JobService {
           description: job.description,
           distance: artisan.distance,
           serviceType: job.service_type
-        });
+        }); 
       }
       
       const descript = `Job created by client with id: ${clientId}`;

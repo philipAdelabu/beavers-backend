@@ -5,7 +5,7 @@ const { pool } = require('../config/database');
 class LogService {  
   
 
-     static async logAdminActivity(adminId, action, details = {}, req) {
+     static async logAdminActivity(adminId, action, details = {}, req = {}) {
       const { ipAddress, userAgent } = req;
       await pool.query(
       `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)

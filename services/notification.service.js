@@ -488,15 +488,12 @@ class NotificationService {
             },
             data: data
           };
+          
+          return;
 
-          console.log('Sending SMS with options:', options);
-
-        
             const response = await axios.request(options);
-
             console.log('Termii response:', response.data);
 
-        
       if(response.status !== 200) {
         logger.error(`Failed to send SMS to ${to}: ${response.statusText}`);
           return { success: false, error: 'SMS failed' };
@@ -508,7 +505,7 @@ class NotificationService {
   
     } catch (error) {
       console.error('Termii error:', error.response?.data || error.message);
-      throw error;
+       return { success: false, error: error.message };
     }
   }
 

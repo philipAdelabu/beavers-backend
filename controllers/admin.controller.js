@@ -232,7 +232,7 @@ class AdminController {
     }
   }
   
-  static async getUserDetails(req, res, next) {
+  static async getUserDetails(req, res, next) { 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return sendError(res, 'Validation error', 400, errors.array());
@@ -247,6 +247,7 @@ class AdminController {
     }
   }
   
+
   static async updateUserStatus(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -676,9 +677,11 @@ class AdminController {
           if (!errors.isEmpty()) {
             return sendError(res, 'Validation error', 400, errors.array());
           }
-      
+           const adminId = req.user.id;
+            const ipAddress = req.ip;
+            const userAgent = req.get('user-agent');
           try {
-            const result = await AdminService.activateUser(req.params.userId);
+            const result = await AdminService.activateUser(adminId, req.params.userId, {ipAddress, userAgent});
             sendSuccess(res, result, 'User activated successfully');
           } catch (error) {
             sendError(res, error.message || 'Failed to activate user', error.statusCode || 500);

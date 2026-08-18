@@ -8,6 +8,7 @@ const { cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { pool } = require('../config/database');
 const NotificationService = require('./notification.service');
 const WalletService = require('./wallet.service');
+const LogService = require('./log.services');
 
 
 class AdminService {
@@ -641,7 +642,7 @@ class AdminService {
         message
       }
 
-      await NotificationService.sendNotification(userId, 'Dispute Status', message, data,  {sms: true, email:true, push:true});
+      await NotificationService.sendNotification(userId, 'Dispute Status', message, data,  {sms: false, email:true, push:true});
       
       return { disputeId, resolution };
     } catch (error) {
@@ -1269,7 +1270,7 @@ class AdminService {
     };
   } 
   
-  static async logAdminActivity(adminId, action, details = {}, req) {
+  static async logAdminActivity(adminId, action, details = {}, req = {}) {
       const { ipAddress, userAgent } = req;
     await pool.query(
       `INSERT INTO admin_activity_logs (admin_id, action, entity_type, entity_id, details, ip_address, user_agent)
@@ -1489,11 +1490,12 @@ class AdminService {
    }
     
     if (process.env.NODE_ENV === 'production') {
-      await NotificationService.sendEmail(
-        user.email,
-        'Account Suspended',
-        `Your account has been suspended. Reason: ${reason}${duration ? ` Duration: ${duration}` : ''}`
-      );
+      const message = `Your account has been suspended. Reason: ${reason}${duration ? ` Duration: ${duration}` : ''}`;
+      const data = {
+        reason,
+        userId,
+      }
+      await NotificationService.sendNotification(userId, 'Account Suspended', message, data,  {sms: false, email:true, push:false});
     }
     
     logger.info(`User ${userId} suspended: ${reason}`);
@@ -1511,7 +1513,7 @@ class AdminService {
   }
   }
   
-  static async activateUser(userId) {
+  static async activateUser(adminId, userId, ipAgent) {
     const result = await pool.query(
       `UPDATE users 
        SET is_active = true, 
@@ -1529,20 +1531,25 @@ class AdminService {
     
     // Send notification
     const userResult = await pool.query(`SELECT email FROM users WHERE id = $1`, [userId]);
-    if (userResult.rows[0]) {
-      await NotificationService.sendEmail(
-        userResult.rows[0].email,
-        'Account Activated',
-        'Your account has been reactivated. You can now use all features.'
-      );
+    if (userResult.rows[0]) {    
+
+      const title = 'Account Activated';
+      const body = 'Your account has been reactivated. You can now use all features.';
+      const data = { approved_by: adminId, action: 'account activated', body: `User ${userId} activated` }; 
+      const options = {
+        email: false,
+        push: true,
+        sms: false,
+      };   
+      await NotificationService.sendNotification(userId, title, body, data, options);
     }
-    
+    await LogService.logAdminActivity(adminId, 'approved_user',  { Reason: 'Suspension lifted'}, ipAgent);
     logger.info(`User ${userId} activated`);
     const user = result.rows[0];
     delete user.password_hash;
     return user;
   }
-
+  
 
   static async getSystemSettings() {
     const result = await pool.query(

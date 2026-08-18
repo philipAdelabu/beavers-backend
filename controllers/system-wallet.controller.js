@@ -10,6 +10,7 @@ class SystemWalletController {
    * Get all system wallets
    * @route GET /api/v1/admin/wallets
    */
+  
   static async getAllWallets(req, res, next) {
     try {
       const wallets = await SystemWalletService.getAllWallets();

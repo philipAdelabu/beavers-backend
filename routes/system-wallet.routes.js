@@ -7,7 +7,7 @@ const router = express.Router();
 
 // All routes require authentication and admin role
 router.use(authenticateToken);
-router.use(requireRole(['admin']));
+router.use(requireRole(['admin'])); 
 
 // ==================== Wallet Management ====================
 router.get('/wallets', SystemWalletController.getAllWallets);
@@ -25,7 +25,7 @@ router.get('/wallets/:walletType/balance', [
 router.post('/wallets/:walletType/credit', [
   param('walletType').isIn(['main', 'commission', 'fees', 'escrow', 'operations']),
   body('amount').isFloat({ min: 0.01 }),
-  body('transactionType').isIn(['adjustment', 'bonus', 'operational_cost']),
+  body('transactionType').optional().isIn(['adjustment', 'bonus', 'operational_cost']),
   body('description').optional().isString()
 ], SystemWalletController.creditWallet);
 

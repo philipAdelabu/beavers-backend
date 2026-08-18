@@ -40,6 +40,6 @@ router.use('/webhooks', webhookRoutes);
 router.use('/zones', zoneRoutes);
 router.use('/training', trainingRoutes);
 router.use('/wallets', walletRoutes);
-router.use('/sys-wallets', systemWalletRoutes);
+router.use('/sys/admin', systemWalletRoutes);
 
 module.exports = router;

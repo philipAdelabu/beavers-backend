@@ -165,14 +165,17 @@ class WalletService {
       await cacheDel(`wallet:balance:${userId}`);
 
        
-          await NotificationService.sendPushNotification(
-                userId,
-                'Payment Recieved',
-                `₦${amount} has been sent to your account.`,
-                { type: 'payment_credited', amount}
-              );
-            
-      
+     
+      const title = 'Payment Recieved';
+      const body = `₦${amount} has been sent to your account.`;
+      const data = { type: 'payment_credited', amount }; 
+      const options = {
+        sms: false,
+        email: false,
+        push: true,
+      };    
+      await NotificationService.sendNotification(userId, title, body, data, options);
+
       logger.info(`Wallet credited: ${userId} - ₦${amount} (${transactionType})`);
      
       

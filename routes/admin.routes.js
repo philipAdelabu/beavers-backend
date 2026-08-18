@@ -92,7 +92,7 @@ router.get('/users', [
 ], AdminController.getAllUsers);
 
 
-router.get('/users/:userId', [
+router.get('/users/:userId', [ 
   param('userId').isUUID()
 ], AdminController.getUserDetails);
 
