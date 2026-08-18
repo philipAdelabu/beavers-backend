@@ -5,7 +5,7 @@ const { AppError } = require('../middleware/error.middleware');
 const { v4: uuidv4 } = require('uuid');
 
 class SystemWalletService {
-  // ==================== Wallet Management ====================
+  // ==================== Wallet Management ==================== 
   
   /**
    * Get wallet by type
@@ -99,8 +99,8 @@ class SystemWalletService {
       }
       
       const wallet = walletResult.rows[0];
-      const balanceBefore = parseFloat(wallet.balance);
-      const balanceAfter = balanceBefore + amount;
+      const balanceBefore = Number(wallet.balance);
+      const balanceAfter = balanceBefore + Number(amount);
       
       // Update wallet
       await client.query(
@@ -177,13 +177,13 @@ class SystemWalletService {
       }
       
       const wallet = walletResult.rows[0];
-      const balanceBefore = parseFloat(wallet.balance);
+      const balanceBefore = Number(wallet.balance);
       
-      if (balanceBefore < amount) {
+      if (balanceBefore < Number(amount)) {
         throw new AppError(400, `Insufficient balance in ${walletType} wallet`);
       }
       
-      const balanceAfter = balanceBefore - amount;
+      const balanceAfter = balanceBefore - Number(amount);
       
       // Update wallet
       await client.query(

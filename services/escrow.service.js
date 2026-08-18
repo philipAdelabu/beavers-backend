@@ -285,7 +285,7 @@ class EscrowService {
       transaction.client_id,
       'Refund Pending',
       `A refund of ₦${transaction.amount.toLocaleString()} has been processed and awaiting payout for your job.`,
-      { type: 'refund', amount: transaction.amount, jobId: transaction.job_id }
+      { type: 'refund', amount: transaction.amount, jobId: transaction.job_id }, {sms:false, push:true, email:false}
     );
 
     await LogService.logAdminActivity(refundedBy, 'Escrow funds initateed', 

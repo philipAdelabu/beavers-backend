@@ -5,9 +5,12 @@ const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const NotificationService = require('./notification.service');
+const SystemWalletService = require('./system-wallet.service');
+
 
 // Paystack API configuration
-let PAYSTACK_SECRET_KEY; 
+
+let PAYSTACK_SECRET_KEY;  
 let PAYSTACK_BASE_URL;
 if(process.env.NODE_ENV === 'production'){
     PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
@@ -105,7 +108,7 @@ class PaymentService {
                metadata = $1 
            WHERE payment_intent_id = $2`,
           [transaction, reference]
-        );
+        ); 
     
         logger.info(`Payment verified successfully for ref. ${reference}: ₦${transaction.amount / 100}`);
         
