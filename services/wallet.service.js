@@ -11,6 +11,7 @@ const PaymentService = require('./payment.service');
 const {PRICING, TIMEOUTS, GEOFENCE } = require('../config/constants');
 const SysConfig = require('../config/syst-config');
 
+
 class WalletService {
   // ==================== Wallet Management ====================
   
@@ -22,11 +23,6 @@ class WalletService {
   static async getOrCreateWallet(userId, userType) {
     // Check cache first
     const cacheKey = `wallet:user:${userId}`;
-    let wallet = await cacheGet(cacheKey);
-    
-    if (wallet) {
-      return wallet;
-    } 
     
     // Check database
     const result = await pool.query(
@@ -35,9 +31,7 @@ class WalletService {
     );
     
     if (result.rows.length > 0) {
-      wallet = result.rows[0];
-      await cacheSet(cacheKey, wallet, 300);
-      return wallet;
+      return  result.rows[0];
     }
     
     // Create new wallet
@@ -48,10 +42,7 @@ class WalletService {
       [userId, userType]
     );
     
-    wallet = newWallet.rows[0];
-    await cacheSet(cacheKey, wallet, 300);
-    
-    return wallet;
+    return newWallet.rows[0];
   }
   
   /**
@@ -115,11 +106,11 @@ class WalletService {
       await client.query(
         `UPDATE wallets 
          SET balance = $1, 
-             total_earned = CASE WHEN $4 <> 'deposit' THEN total_earned + $2 ELSE total_earned END,
+             total_earned = CASE WHEN $4 <> 'deposit' AND $5 <> 'client' THEN total_earned + $2 ELSE total_earned END,
              total_deposited = CASE WHEN $4 = 'deposit' THEN total_deposited + $2 ELSE total_deposited END,
              updated_at = NOW()
          WHERE id = $3`,
-        [balanceAfter, amount, wallet.id, transactionType]
+        [balanceAfter, amount, wallet.id, transactionType, userType]
       );
       
       // Create transaction record
@@ -254,16 +245,18 @@ class WalletService {
       );
         const userType = this.getUserType(userId);
             //  const { entityType, entityId, action, userId, newData, metaData} = logData; 
-      // static async logActivity(logData, req) 
-      const logData = {
-        entityType: 'wallet',
-        entityId: wallet.id,
-        action: 'wallet debited',
-        userId,
-        newData: { amount, userType, balanceBefore, balanceAfter },
-        metadata,
-      };
-      await LogService.logActivity(logData, req);
+      // static async logActivity(logData, req)
+      if(userType !== 'admin'){ 
+        const logData = {
+          entityType: 'wallet',
+          entityId: wallet.id,
+          action: 'wallet debited',
+          userId,
+          newData: { amount, userType, balanceBefore, balanceAfter },
+          metadata,
+        };
+        await LogService.logActivity(logData, req);
+      }
     
       
       
@@ -476,10 +469,11 @@ class WalletService {
       }
       
       // Check minimum withdrawal amount
+      /*
       const minWithdrawal = 5000; // ₦5,000 minimum
       if (amount < minWithdrawal) {
         throw new AppError(400, `Minimum withdrawal amount is ₦${minWithdrawal}`);
-      }
+      } */
       
       // Generate reference
       const reference = `WDR-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
@@ -519,17 +513,7 @@ class WalletService {
       
       logger.info(`Withdrawal requested: ${userId} - ₦${amount}`);
       
-      // Send notification
-      await NotificationService.sendEmail(
-        await this.getArtisanEmail(userId),
-        'Withdrawal Request Received',
-        `Your withdrawal request of ₦${amount.toLocaleString()} has been received and is pending processing.`
-        `<h2>Withdrawal Request Received</h2>
-         <p>Your withdrawal request of <strong>₦${amount.toLocaleString()}</strong> has been received.</p>
-         <p>Reference: ${reference}</p>
-         <p>We will process your request shortly.</p>
-         <p>Thank you for using BeaverWorks!</p>`
-      );
+   
       
       return withdrawalResult.rows[0];
     } catch (error) {
@@ -1141,25 +1125,13 @@ class WalletService {
      return result;
    }
 
-   static async bankTransferrecipient(accountNumber, bankCode, name, userId){
+   static async bankTransferrecipient(accountNumber, bankCode, name){
      const result = await PayStackService.bankTransferrecipient(accountNumber, bankCode, name);
      console.log(result);
      return result;
    }
 
-    static async cashoutFund(userId, amount, req){
 
-     try{
-    const userType = await this.getUserType(userId);
-    if(!userType) return null;
-
-    const metadata = {gateway: 'paystack', amount };
-    const result = await this.debitWallet(userId, amount, 'withdrawal', metadata, req );
-    return result; 
-     }catch(error){
-       throw error;
-     }   
-   }
 
    static async getUserType(userId){
        const user = await pool.query(
@@ -1321,27 +1293,219 @@ class WalletService {
        client.release();
      }
     }
+
+
+     static async userRequestWithdrawal(userId, amount, bankDetails, reference) {
+
+    const client = await pool.connect();
+    
+    try {
+    
+      // Get wallet
+      const wallet = await this.getOrCreateWallet(userId);
+        
+      const balance = Number(wallet.balance);
+      const pendingBalance = Number(wallet.pending_balance);
+      const availableBalance = balance - pendingBalance;
+      
+      if (availableBalance < amount) {
+        throw new AppError(400, 'Insufficient available balance');
+      }
+       
+      // Create withdrawal request
+      const withdrawalResult = await client.query(
+        `INSERT INTO withdrawal_requests 
+         (artisan_id, wallet_id, amount, bank_code, account_number, account_name, bank_name, status, reference)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8)
+         RETURNING *`,
+        [
+          userId, 
+          wallet.id, 
+          amount, 
+          bankDetails.bankCode, 
+          bankDetails.accountNumber, 
+          bankDetails.accountName, 
+          bankDetails.bankName,
+          reference
+        ]
+      );
+      
+      // Hold the amount in pending balance
+      await client.query(
+        `UPDATE wallets 
+         SET pending_balance = pending_balance + $1,
+             updated_at = NOW()
+         WHERE id = $2`,
+        [amount, wallet.id]
+      );
+      
+      // Invalidate cache
+      await cacheDel(`wallet:user:${userId}`);
+      await cacheDel(`wallet:balance:${userId}`);
+      
+      logger.info(`Withdrawal requested: ${userId} - ₦${amount}`);
+      
+      return withdrawalResult.rows[0];
+    } catch (error) {
+      throw error;
+    } 
+  }
+
+
+      static async userCompleteWithdrawal(withdrawalId, userId, referenceId) {
+        const client = await pool.connect();
+        try {
+       
+          
+          const withdrawalResult = await client.query(
+            `SELECT * FROM withdrawal_requests WHERE reference = $1 AND (status = 'processing' OR status = 'pending') FOR UPDATE`,
+            [referenceId]
+          );
+          
+          if (withdrawalResult.rows.length === 0) {
+            return;
+          }
+          
+          const withdrawal = withdrawalResult.rows[0];
+          
+          // Update withdrawal
+          const result = await client.query(
+            `UPDATE withdrawal_requests 
+            SET status = 'completed',
+                processed_by = $1,
+                completed_at = NOW()
+            WHERE id = $2
+            RETURNING *`,
+            [userId, withdrawalId]
+          );
+          
+          // Update wallet - remove from pending balance
+          await client.query(
+            `UPDATE wallets 
+            SET pending_balance = pending_balance - $1,
+                total_withdrawn = total_withdrawn + $1,
+                updated_at = NOW()
+            WHERE id = $2`,
+            [withdrawal.amount, withdrawal.wallet_id]
+          );
+       
+          logger.info(`Withdrawal completed: ${withdrawalId}`);
+    
+          return result.rows[0];
+        } catch (error) {
+      
+          return;
+        } 
+      }
+
+      static async reversePendingDebit(amount, userId,  req){
+             const client = await pool.connect();
+             try{
+                    const resp = await client.query( `UPDATE wallets SET 
+                    balance = CASE WHEN pending_balance >= $1 THEN balance + $1 END,
+                    pending_balance = CASE WHEN pending_balance >= $1 THEN pending_balance - $1 END, 
+                    total_withdrawn = CASE WHEN total_withdrawn >= $1 THEN total_withdrawn - $1 END
+                    WHERE user_id = $2 RETURNING *`, 
+                     [amount, userId]);
+
+                    return resp.rows[0];
+             }catch(error){
+               throw error;
+             } 
+       } 
+
+       static async getPendingUserWithdrawalRequestAll(userId){
+            const result = await pool.query(`SELECT * FROM withdrawal_requests 
+              WHERE status = 'pending' AND artisan_id = $1`, [userId]); 
+              return result.rows;
+       }
+
+         static async getPendingUserWithdrawalRequestByAmount(userId, amount){
+            const result = await pool.query(`SELECT * FROM withdrawal_requests 
+              WHERE status = 'pending' AND artisan_id = $1 AND amount = $2`, [userId, amount]); 
+              return result.rows[0];
+       }
+
+          static async getPendingUserWithdrawalRequestByRecipientCode(userId, amount, recipientCode){
+            const result = await pool.query(`SELECT * FROM withdrawal_requests 
+              WHERE status = 'pending' AND artisan_id = $1 AND amount = $2`, [userId, amount]); 
+              
+              if(result.rows.length === 0)
+                  return 0;
+                const length = result.rows.length;
+                for(let i = 0; i < length; i++){
+                    const dt = result.rows[i];
+                    const reference = dt.reference;
+                    const ref = (reference.split('|'))[0];
+                    if((reference.split('|'))[1] === recipientCode)
+                       return { 
+                              amount : dt.amount, 
+                              reference: ref, 
+                              recipient_code: (reference.split('|'))[1],
+                              id: dt.id 
+                            };
+                  }
+              return 0;
+       }
+  
+
      // bankCode, accountNumber, bankName, accountName, userId, amount, {ipAddress, userAgent}
     static async initiateTransfer(bankCode, accountNumber, bankName, accountName, userId, amount, req){
             const client = await pool.connect();
             try{
-             await client.query('BEGIN'); 
+
+              await client.query('BEGIN'); 
               const wallet = await this.getOrCreateWallet(userId);
-             const reference = `wdr-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`;
-             const bankDetails =  { bankCode, accountNumber, accountName, bankName, reference }
-             const request = await requestWithdrawal(userId, amount, bankDetails) 
-             const response =  await PayStackService.initializePayment(accountNumber, bankCode, accountName, amount, reference);
-             const sttus = esponse.data.status;
-            
-             if(status === 'success'){
-                 const result = this.debitWallet(userId, amount, 'withdraw', response.data, req) 
+             
+             if(Number(amount) > (Number(wallet.balance) - Number(wallet.pending_balance))) 
+                throw new AppError(403, 'Insufficient available balance');
+
+            const recipient  = await PayStackService.bankTransferrecipient(accountNumber, bankCode, accountName);
+            let recipient_code = recipient.data.recipient_code;
+
+            let withdrawalRequest = await this.getPendingUserWithdrawalRequestByRecipientCode(userId, amount, recipient_code);
+        
+               // Generate reference
+            let reference;
+            let reference_code;
+            const bankDetails =  { bankCode, accountNumber, accountName, bankName};
+           
+             if(!withdrawalRequest ||( withdrawalRequest && parseInt(withdrawalRequest.amount) !== parseInt(amount))){
+              reference = `wdr_${uuidv4()}`;
+              reference_code = `${reference}|${recipient_code}`;
+              bankDetails.reference = reference;
+              bankDetails.recipient_code = recipient_code;
+               withdrawalRequest = await this.userRequestWithdrawal(userId, amount, bankDetails, reference_code) 
+               const result = await this.debitWallet(userId, amount, 'withdrawal', bankDetails, req);
+               const response =  await PayStackService.initiateTransfer(amount, recipient_code, reference);
+               reference = response.reference;
+            }else{
+               reference = withdrawalRequest.reference;
+               recipient_code = withdrawalRequest.recipient_code;
+            }
+
+             const verifyTransfer = await PayStackService.verifyTransfer(reference);
+             console.log('verify:', verifyTransfer);
+             const status = verifyTransfer.status;
+             if(verifyTransfer.status === 'success'){
+                 const reqRes = await this.userCompleteWithdrawal(withdrawalRequest.id, userId, reference_code);
              }else{
                 await client.query(
                      `UPDATE withdrawal_requests SET status = $1 WHERE reference = $2`, 
-                     [status, reference]);
-               }
+                     [status, reference_code]);
+              }
+              if(status !== 'success' || status !== 'pending' || status !== 'received'){
+                 await this.creditWallet(userId, amount, 'refund', verifyTransfer, 'artisan', req) 
+              }
 
              await client.query('COMMIT');
+             return {
+                    status,
+                    amount, 
+                    bankDetails,
+                    reference
+               }
+
             }catch(error){
               await client.query('ROLLBACK');
                throw error;
@@ -1351,8 +1515,22 @@ class WalletService {
 
          }
 
-         static async payCompletedJob(jobId, amount, clientId, email, req) {
-    const client = await pool.connect();
+    static async cashoutFund(userId, amount, req){
+
+     try{
+      const userType = await this.getUserType(userId);
+      if(!userType) return null;
+
+      const metadata = {gateway: 'paystack', amount };
+      const result = await this.debitWallet(userId, amount, 'withdrawal', metadata, req );
+      return result; 
+      }catch(error){
+        throw error;
+      }   
+   }
+
+    static async payCompletedJob(jobId, amount, clientId, email, req) {
+       const client = await pool.connect();
     
     try {
       await client.query('BEGIN');

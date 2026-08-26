@@ -20,13 +20,6 @@ router.post('/add-fund/users/:userId', [
   body('amount').notEmpty().isNumeric(),
 ], WalletController.fundWallet);
 
-router.post('/cashout-fund', [
-     body('accountNumber').notEmpty(),
-     body('bankCode').notEmpty(),
-     body('bankName').notEmpty(),
-    body('accountName').notEmpty(),
-], WalletController.cashoutFund);
-
 router.get('/balance/:userId',[
      param('userId').isUUID(), 
 ], WalletController.getBalance);
@@ -35,8 +28,12 @@ router.get('/:userId/history',[
      param('userId').isUUID(), 
 ], WalletController.getWalletHistory);
 
-router.get('/list/banks', WalletController.getBankList);
+router.post('/pay/completed/jobs/:jobId',[
+    param('jobId').isUUID(),
+    body('amount').notEmpty().isNumeric(), 
+], WalletController.payCompletedJob);
 
+router.get('/withdrawal-history', WalletController.getWithdrawalHistory);
 
 ///// Paystack activities ////////
 
@@ -55,6 +52,8 @@ router.get('/verify/funding/:paymentIntentId', [
   param('paymentIntentId').notEmpty().withMessage('Payment Intent Id is required')
 ], WalletController.verifyFunding);
 
+router.get('/list/banks', WalletController.getBankList);
+
 router.post('/verify/bank-account',[
   body('accountNumber').notEmpty(),
   body('bankCode').notEmpty(),
@@ -66,11 +65,19 @@ router.post('/bank/transferrecipient',[
   body('name').notEmpty(),
 ], WalletController.bankTransferrecipient);
 
-router.post('/pay/completed/jobs/:jobId',[
-    param('jobId').isUUID(),
-    body('amount').notEmpty().isNumeric(), 
-], WalletController.payCompletedJob);
 
-router.get('/withdrawal-history', WalletController.getWithdrawalHistory);
+router.post('/cashout-fund', [
+     body('accountNumber').notEmpty(),
+     body('bankCode').notEmpty(),
+     body('bankName').notEmpty(),
+     body('accountName').notEmpty(),
+     body('amount').isDecimal().notEmpty(),
+], WalletController.cashoutFund);
+
+router.post('/reverse/pending/debit', [
+  body('amount').notEmpty().isDecimal()
+], WalletController.reversePendingDebit);
+
+router.get('/cashout/pending/request', WalletController.getCashoutPendingRequest);
 
 module.exports = router;

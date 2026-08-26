@@ -227,6 +227,7 @@ class FeeService {
           `, [userId, reference]
          );
 
+      
              // Credit system wallet
               await SystemWalletService.processOnboardingFee(
                 userId,

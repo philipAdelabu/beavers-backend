@@ -1003,12 +1003,11 @@ class JobService {
 
     
     // Notify client
-    await NotificationService.sendPushNotification(
-      job.client_id,
-      'Job Completed, awaiting confirmation',
-      'Your job has been marked as completed. Please review and make payment.',
-      { jobId, type: 'job_completed' }
-    );
+    await NotificationService.sendNotification(job.client_id, 
+       'Job Completed, awaiting confirmation', 
+       'Your job has been marked as completed. Please review and make payment.', 
+       { jobId, type: 'job_completed'}, { sms: false, push: true, email: false});
+       
     
     logger.info(`Job ${jobId} completed by artisan ${artisanId}`);
     

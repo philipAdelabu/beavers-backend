@@ -483,6 +483,7 @@ class PaymentService {
            <p>Funds will be released to your wallet after job completion and client confirmation.</p>
            <p>Thank you for using BeaverWorks!</p>`
         );
+
       }
     } finally {
       client.release();

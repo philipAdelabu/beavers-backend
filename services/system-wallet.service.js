@@ -3,6 +3,8 @@ const { redis, cacheGet, cacheSet, cacheDel } = require('../config/redis');
 const { logger } = require('../config/logger');
 const { AppError } = require('../middleware/error.middleware');
 const { v4: uuidv4 } = require('uuid');
+const WalletService = require('./wallet.service');
+const LogService = require('./log.services');
 
 class SystemWalletService {
   // ==================== Wallet Management ==================== 
@@ -648,6 +650,280 @@ class SystemWalletService {
       difference: expectedBalance - actualBalance
     };
   }
+
+          static async getUserWallets(){
+             const client = await pool.connect();
+             try{
+                    const resp = await client.query( `
+                    SELECT w.*,  u.id, u.email, u.phone, u.user_type, u.is_verified, u.is_active,
+                          u.verification_status, u.created_at, u.last_login,
+                          CASE 
+                            WHEN u.user_type = 'client' THEN cp.full_legal_name
+                            WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+                          END as full_name
+                    FROM wallets w LEFT JOIN users u ON w.user_id = u.id
+                    LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+                    LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+                      `, 
+                     );
+
+                    return resp.rows;
+             }catch(error){
+               throw error;
+             } 
+           } 
+
+           static async getUserWalletById(userId){
+             const result = await pool.query(`
+                   SELECT w.*,  u.id, u.email, u.phone, u.user_type, u.is_verified, u.is_active,
+                          u.verification_status, u.created_at, u.last_login,
+                          CASE 
+                            WHEN u.user_type = 'client' THEN cp.full_legal_name
+                            WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+                          END as full_name
+                    FROM wallets w LEFT JOIN users u ON w.user_id = u.id
+                    LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+                    LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+                 WHERE u.id = $1
+               `, [userId]);
+
+               return result.rows[0];
+
+           }
+
+
+             static async getUserWalletsTransactions(){
+             const client = await pool.connect();
+             try{
+                    const resp = await client.query( `
+                    SELECT w.*,  u.id, u.email, u.phone, u.user_type, u.is_verified, u.is_active,
+                          u.verification_status, u.created_at, u.last_login,
+                          CASE 
+                            WHEN u.user_type = 'client' THEN cp.full_legal_name
+                            WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+                          END as full_name 
+                          
+                    FROM wallet_transactions w LEFT JOIN users u ON w.user_id = u.id
+                    LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+                    LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+                     
+                      `, 
+                     );
+
+                    return resp.rows;
+             }catch(error){
+               throw error;
+             } 
+           } 
+
+           static async getUserWalletTransactionsById(userId){
+             const result = await pool.query(`
+                   SELECT w.*,  u.id, u.email, u.phone, u.user_type, u.is_verified, u.is_active,
+                          u.verification_status, u.created_at, u.last_login,
+                          CASE 
+                            WHEN u.user_type = 'client' THEN cp.full_legal_name
+                            WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+                          END as full_name
+                    FROM wallet_transactions w LEFT JOIN users u ON w.user_id = u.id
+                    LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+                    LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+                 WHERE u.id = $1
+               `, [userId]);
+
+               return result.rows;
+
+           }
+
+           static async getPendingUserWithdrawalRequests(status = null){
+            const result = await pool.query(`
+                   SELECT w.id as withdrawal_request_id, w.wallet_id, w.amount, 
+                      w.bank_code, w.account_number, w.account_name, w.bank_name, w.status as withdrawal_request_status,
+                      w.reference, w.failure_reason, w.processed_by, w.processed_at, w.completed_at, w.created_at,
+                      w.updated_at, u.id, u.email, u.phone, u.user_type, u.is_verified, u.is_active,
+                          u.verification_status, u.created_at, u.last_login,
+                          CASE 
+                            WHEN u.user_type = 'client' THEN cp.full_legal_name
+                            WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+                          END as full_name
+                    FROM withdrawal_requests w LEFT JOIN users u ON w.artisan_id = u.id
+                    LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+                    LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+               
+               `);
+              return result.rows;
+            }
+
+
+                static async getPendingUserWithdrawalRequestById(userId, status = null){
+               
+                   const client = await pool.connect();
+
+                 let query = `SELECT w.id as withdrawal_request_id, w.wallet_id, w.amount, 
+                      w.bank_code, w.account_number, w.account_name, w.bank_name, w.status as withdrawal_request_status,
+                      w.reference, w.failure_reason, w.processed_by, w.processed_at, w.completed_at, w.created_at,
+                      w.updated_at, 
+                      u.id, u.email, u.phone, u.user_type, u.is_verified, u.is_active,
+                          u.verification_status, u.created_at, u.last_login,
+                          CASE 
+                            WHEN u.user_type = 'client' THEN cp.full_legal_name
+                            WHEN u.user_type = 'artisan' THEN ap.full_legal_name
+                          END as full_name
+                    FROM withdrawal_requests w 
+                    LEFT JOIN users u ON w.artisan_id = u.id
+                    LEFT JOIN client_profiles cp ON u.id = cp.user_id AND u.user_type = 'client'
+                    LEFT JOIN artisan_profiles ap ON u.id = ap.user_id AND u.user_type = 'artisan'
+                  WHERE u.id = $1 `;
+
+                 const params = [userId];
+                let paramIndex = 2;
+            
+               if(status){
+                 query  += ` AND w.status = $${paramIndex}`;
+                 params.push(status);
+               }
+               const result =  await client.query(query, params);
+            
+              return result.rows;
+            }
+
+
+            // Reverse the pending amount debited from a user wallet
+             static async reversePendingDebit(userId, amount, adminId, reason, req){
+             const client = await pool.connect();
+             try{
+                await client.query('BEGIN');
+                    
+
+               
+                const pending = await client.query(`
+                      SELECT * FROM withdrawal_requests WHERE 
+                      artisan_id = $1 AND amount = $2 AND status = 'pending'
+                    `, [userId, amount]);
+
+                      const walt = await pool.query(
+                          `SELECT * FROM wallets WHERE user_id = $1`,
+                          [userId]
+                        );
+                        
+                    const usrW = walt.rows[0];
+
+                  if(!pending.rows.length && (  !usrW.pending_balance || usrW.pending_balance < amount)) return {
+                    status: 'Nothing reversed',
+                    reason: `No pending amount of ${amount}`
+                  }
+                      
+              
+                const metaData = {
+                  transactionType: 'Reverse Pending Debit',
+                  processedBy: adminId,
+                  reason
+                }
+                  
+                 const wallet = await WalletService.creditWallet(userId, amount, 'refund', metaData, 'artisan', req) 
+
+                    const resp = await client.query( `UPDATE wallets SET 
+                    pending_balance = CASE WHEN pending_balance >= $1 THEN pending_balance - $1 END, 
+                    total_withdrawn = CASE WHEN total_withdrawn >= $1 THEN total_withdrawn - $1 END
+                    WHERE user_id = $2 RETURNING *`, 
+                     [amount, userId]);
+
+                     
+                        // Update withdrawal
+                  const result = await client.query(
+                    `UPDATE withdrawal_requests 
+                    SET status = 'completed',
+                        processed_by = $1,
+                        completed_at = NOW(),
+                        failure_reason = $2
+                    WHERE status = 'pending' AND artisan_id = $3 AND amount = $4
+                    RETURNING *`,
+                    [adminId, reason, userId, amount]
+                  );
+
+                              
+                await client.query('COMMIT');
+              await LogService.logAdminActivity(adminId, 'Reversed debited wallet', metaData, req);
+
+               return resp.rows[0];
+             }catch(error){
+              await client.query('ROLLBACK')
+               throw error;
+             }finally{
+                client.release();
+             } 
+          }
+          
+           static async pendDebit(userId, amount, adminId, reason = 'Debit and Pending', ipAgent){
+              const client = await pool.connect();
+              try{
+                await client.query('BEGIN')
+              const metaData = {
+                 processedBy: adminId,
+                 reason,
+                 status: `holding ${amount}`
+              };
+
+                   const usrW = await pool.query(
+                          `SELECT * FROM wallets WHERE user_id = $1`,
+                          [userId]
+                        );
+                        
+                  if(!usrW.rows.length || usrW.balance < amount) 
+                     throw AppError(403, 'Insufficient balance');
+                    
+
+             const wallet = await WalletService.debitWallet(userId, amount, 'hold', metaData, ipAgent);
+
+            // Hold the amount in pending balance
+           const result = await client.query(
+              `UPDATE wallets 
+              SET pending_balance = CASE WHEN pending_balance >= 0 THEN pending_balance + $1 ELSE $1 END,
+                  updated_at = NOW()
+              WHERE user_id = $2 RETURNING *`,
+              [amount, userId]
+            );
+
+               await client.query('COMMIT');
+              await LogService.logAdminActivity(adminId, 'Reversed debited wallet', metaData, ipAgent);
+              return result.rows[0];
+          }catch(error){
+             await client.query('ROLLBACK');
+              throw error;
+          }finally{
+             client.release();
+          }
+          }  
+
+      
+         static async getPendingUserWithdrawalRequestByAmount(userId, amount){
+            const result = await pool.query(`SELECT * FROM withdrawal_requests 
+              WHERE status = 'pending' AND artisan_id = $1 AND amount = $2`, [userId, amount]); 
+              return result.rows[0];
+       }
+
+          static async getPendingUserWithdrawalRequestByRecipientCode(userId, amount, recipientCode){
+            const result = await pool.query(`SELECT * FROM withdrawal_requests 
+              WHERE status = 'pending' AND artisan_id = $1 AND amount = $2`, [userId, amount]); 
+              
+              if(result.rows.length === 0)
+                  return 0;
+                const length = result.rows.length;
+                for(i = 0; i < length; i++){
+                    const dt = result.rows[i];
+                    const reference = dt.reference;
+                    const ref = (reference.split('|'))[0];
+                    if((reference.split('|'))[1] === recipientCode)
+                       return { 
+                              amount : dt.amount, 
+                              reference: ref, 
+                              recipient_code: (reference.split('|'))[1],
+                              id: dt.id 
+                            };
+                  }
+              return 0;
+       }
+
+
 }
 
 module.exports = SystemWalletService;

@@ -66,7 +66,7 @@ class WalletController {
        try {
                  const { userId } = req.params;
                const result = await WalletService.getWalletBalance(userId);
-              sendSuccess(res, result, 'Available banks list');
+              sendSuccess(res, result, 'Available Wallet Balance');
             } catch (error) {
                   sendError(res, error.message || 'Failed to retrieve bank list', error.statusCode || 500);
                   next(error);
@@ -231,6 +231,27 @@ class WalletController {
     }
   }
 
+  static async reversePendingDebit(req, res, next){
+            const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return sendError(res, 'Validation error', 400, errors.array());
+    }
+
+       try {
+      const { amount } = req.body;
+      const ipAgent = {
+            ipAddress: req.ip, 
+            userAgent: req.get('user-agent'),
+          }
+      const result = await WalletService.reversePendingDebit(amount, req.user.id, ipAgent);
+      sendSuccess(res, result, 'Pending debit reverse successfully');
+     } catch (error) {
+      sendError(res, error.message || 'Failed to reverse debit', error.statusCode || 500);
+      next(error);
+    }
+
+  }
+
    static async payCompletedJob(req, res, next){
         const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -251,6 +272,16 @@ class WalletController {
       sendError(res, error.message || 'Failed to make payment', error.statusCode || 500);
       next(error);
     }
+  }
+
+  static async getCashoutPendingRequest(req, res, next){
+      try{
+        const result = await WalletService.getPendingUserWithdrawalRequestAll(req.user.id);
+        sendSuccess(res, result, 'Cashout pending request retrieved successfully');
+      }catch(error){
+        sendError(res, error.message || 'Failed to retrieve cashout pending request', error.statusCode || 500);
+        next(error); 
+      }
   }
 
 

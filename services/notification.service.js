@@ -820,6 +820,18 @@ class NotificationService {
       artisanName: jobDetails.artisanName,
       arrival_pin: jobDetails.arrival_pin,
     });
+
+    await this.sendNotification(
+      clientId, 'Job accepted',
+       `Your job has been accepted. This is the arrival pin: ${jobDetails.arrival_pin}`,
+       {
+      type: 'job_accepted',
+      jobId: jobDetails.jobId,
+      artisanId: jobDetails.artisanId,
+      artisanName: jobDetails.artisanName,
+      arrival_pin: jobDetails.arrival_pin,
+       }, { sms: false, email: true, push: false}
+      )
   }
   
   static async sendArrivalNotification(clientId, jobDetails) {

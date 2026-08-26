@@ -232,26 +232,37 @@ class PayStackService {
           currency: 'NGN'
        }
        const response = await paystackAxios.post(path, pdata);
-       return response.data;
+       return response.data; 
   }
 
-  static async initiateTransfer(accountNumber, bankCode, name, amount, reference){
-      const recpt = await this.bankTransferrecipient(accountNumber, bankCode, name);
-   
-
-       const data = {
+  static async initiateTransfer(amount, recipient_code, reference){
+  
+      const amt = Number(amount);
+      try{
+        const pdata = {
         source: 'balance',
-        amount: amount, 
-        reference,
-        recipient: recpt.recipient,
-        reason: 'Cashout payment',
+        amount: Math.round(amt * 100), 
+        reference: reference,
+        recipient: recipient_code,
+        reason: 'Cashout payment'
        }
-       const path = 'transfer';
-       const response = await paystackAxios.post(path, data);
-
+       const path = '/transfer';
+      const response = await paystackAxios.post(path, pdata);
        return response.data;
+      }catch(error){
+          // This log exposes Paystack's exact validation message
+        if (error.response) {
+            console.error("Paystack Error Data:", error.response.data);
+        } else {
+            console.error("Axios Configuration Error:", error.message);
+        }
+        throw error;
+      }
   }
+
+  
     
+
   static async verifyTransfer(reference){
        const path = `/transfer/verify/${reference}`;
        const response = await paystackAxios.get(path);
