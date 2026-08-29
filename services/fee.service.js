@@ -763,6 +763,24 @@ class FeeService {
       monthlyTrend: monthlyTrend.rows
     };
   }
+
+  static async getOnboardingAndMonthlyFee(){
+     const fee = await pool.query(`
+         SELECT * FROM fees_settings WHERE name = 'fee_configuration'
+      `);
+      return fee.rows[0];
+  }
+
+    static async getChargesRateFee(){
+     const fee = await pool.query(`
+         SELECT * charges_rete_settings WHERE name = 'charges_fee_rate_configuration'
+      `);
+      return fee.rows[0];
+  }
+
+
+
+
 }
 
 module.exports = FeeService;

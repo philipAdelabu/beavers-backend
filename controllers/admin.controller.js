@@ -1268,6 +1268,64 @@ static async processAllJobPendingDisbursement(req, res, next){
    }
  }
 
+
+ static async getFeesSettings(req, res, next){
+   try{
+    const result = await AdminService.getFeesSettings();
+    sendSuccess(res, result, 'Fees Settings Successfully retrieved');
+   }catch(error){
+    sendError(res, error.message || 'Failed to retrieve fees settings', error.statusCode || 500);
+    next(error);
+   }
+ }
+
+  static async updateFeesSettings(req, res, next){
+     const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+   }  
+   try{
+    const ipAgent = {
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent')
+    }
+    const result = await AdminService.updateFeesSettings(req.body, req.user.id, ipAgent );
+    sendSuccess(res, result, 'Fee settings updated successfully');
+   }catch(error){
+    sendError(res, error.message || 'Failed to update fee settings', error.statusCode || 500);
+    next(error);
+   }
+ }
+
+   static async getChargesRatesSettings(req, res, next){
+   try{
+    const result = await AdminService.getChargesRatesSettings();
+    sendSuccess(res, result, 'charge Fees Rate Settings Successfully retrieved');
+   }catch(error){
+    sendError(res, error.message || 'Failed to retrieve  charges fees reate settings', error.statusCode || 500);
+    next(error);
+   }
+ }
+
+  static async updateChargesRatesSettings(req, res, next){
+     const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendError(res, 'Validation error', 400, errors.array());
+   }  
+   try{
+    const ipAgent = {
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent')
+    }
+    const result = await AdminService.updateChargesRatesSettings(req.body, req.user.id, ipAgent );
+    sendSuccess(res, result, 'Charges Fee rate settings updated successfully');
+   }catch(error){
+    sendError(res, error.message || 'Failed to update  charge fee rate settings', error.statusCode || 500);
+    next(error);
+   }
+ }
+
+
 }
 
 module.exports = AdminController;

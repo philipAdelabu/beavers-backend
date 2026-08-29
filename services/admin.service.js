@@ -2744,6 +2744,106 @@ static async getEscrowSummary() {
   };
 }
 
+static async getFeesSettings(){
+   const result = await pool.query(`
+       SELECT * FROM fees_settings;
+    `);
+    if(result.rows.length > 0)
+       return result.rows[0];
+    throw AppError(403, 'No fees settings');
+  }
+
+static async updateFeesSettings(updates, adminId, ipAgent){
+    const allowedFields = [
+      'onboarding_fee',  'onboarding_fee_is_active',
+      'monthly_fee', 'monthly_fee_is_active'
+    ];
+
+       const setClause = [];
+       const values = [];
+       let paramIndex = 1;
+       
+       for (const [key, value] of Object.entries(updates)) {
+         if (allowedFields.includes(key)) {
+           setClause.push(`${key} = $${paramIndex}`);
+           values.push(value);
+           paramIndex++;
+         }
+       }
+       
+       if (setClause.length === 0) return null;
+     
+       const query = `
+         UPDATE fees_settings 
+         SET ${setClause.join(', ')}, updated_at = NOW()
+         WHERE name = 'fee_configuration'
+         RETURNING *
+       `;
+       
+       const result = await pool.query(query, values);
+
+       const detail = {
+          entityType: 'fees_settings',
+          entityId: result.rows[0].id
+       }
+       await LogService.logAdminActivity(adminId, 'update fees settings', detail, ipAgent)
+       return result.rows[0];
+
+     }
+
+
+     static async getChargesRatesSettings(){
+   const result = await pool.query(`
+       SELECT * FROM charges_rate_settings;
+    `);
+    if(result.rows.length > 0)
+       return result.rows[0];
+    throw AppError(404, 'No charges fee rate settings found');
+  }
+
+static async updateChargesRatesSettings(updates, adminId, ipAgent){
+
+    const allowedFields = [
+      'client_fee_rate', 'client_fee_rate_is_active',
+      'artisan_fee_rate', 'artisan_fee_rate_is_active',
+      'merchant_fee_rate', 'merchant_fee_rate_is_active',
+      'vat_fee_rate', 'vat_fee_rate_is_active'
+     ];
+
+       const setClause = [];
+       const values = [];
+       let paramIndex = 1;
+       
+       for (const [key, value] of Object.entries(updates)) {
+         if (allowedFields.includes(key)) {
+           setClause.push(`${key} = $${paramIndex}`);
+           values.push(value);
+           paramIndex++;
+         }
+       }
+       
+       if (setClause.length === 0) return null;
+     
+       const query = `
+         UPDATE charges_rate_settings 
+         SET ${setClause.join(', ')}, updated_at = NOW()
+         WHERE name = 'charges_fee_rate_configuration'
+         RETURNING *
+       `;
+       
+       const result = await pool.query(query, values);
+
+       const detail = {
+          entityType: 'charges_rate_settings',
+          entityId: result.rows[0].id
+       }
+       await LogService.logAdminActivity(adminId, 'update charges fee rate settings', detail, ipAgent)
+       return result.rows[0];
+
+     }
+
+
+
 }
 
 module.exports = AdminService;

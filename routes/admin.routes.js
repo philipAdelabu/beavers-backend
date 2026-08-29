@@ -578,5 +578,28 @@ router.get('/training/tier/statistics', TrainingController.getTierStatistics);
 // Get course statistics
 router.get('/training/courses/statistics', TrainingController.getCourseStatistics);
 
+router.get('/fees-settings/', AdminController.getFeesSettings);
+
+router.put('/fees-settings', [
+   body('onboarding_fee').optional().isDecimal(),
+   body('onborading_fee_is_active').optional().isBoolean(),
+   body('monthly_fee').optional().isDecimal(),
+   body('monthly_fee_is_active').optional().isBoolean()
+], AdminController.updateFeesSettings);
+
+
+router.get('/charges/fees/rate-settings/', AdminController.getChargesRatesSettings);
+
+router.put('/charges/fees/rate-settings', [
+   body('client_fee_rate').optional().isDecimal(),
+   body('client_fee_is_active').optional().isBoolean(),
+   body('artisan_fee_rate').optional().isDecimal(),
+   body('artisan_fee_rate_is_active').optional().isBoolean(),
+   body('merchant_fee_rate').optional().isDecimal(),
+   body('merchant_fee_rate_is_active').optional().isBoolean(),
+   body('vat_fee_rate').optional().isDecimal(),
+   body('vat_fee_rate_is_active').optional().isBoolean(),
+
+], AdminController.updateChargesRatesSettings);
 
 module.exports = router;

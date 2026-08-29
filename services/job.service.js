@@ -7,6 +7,7 @@ const { generateArrivalPIN, calculateDistance } = require('../utils/geo.utils');
 const Wallet = require('../models/Wallet');
 const {PRICING, TIMEOUTS, GEOFENCE, SYSTEM_FEES} = require('../config/constants');
 const SysConfig = require('../config/syst-config');
+const FeeService = require('../services/fee.service');
 
 
 class JobService {
@@ -110,32 +111,43 @@ class JobService {
       logger.info(`Found ${artisanIds.length} nearby artisans: ${artisanIds}` );
       logger.info(`category: ${category}`);
 
+       const fee = await FeeService.getOnboardingAndMonthlyFee();
+       const isMonthlyFeeActive = fee.monthly_fee_is_active;
+
       // Get artisan details from database with ranking
       //  AND ap.monthly_fee_status = 'paid' ; --- IGNORE for now, we can filter this in the future when we implement monthly fee
-      const result = await pool.query(
+      const newResult = await pool.query(
         `SELECT ap.user_id, ap.full_legal_name, ap.tier_level, ap.star_rating, 
-                ap.completion_rate, ap.trust_score, ap.skill_category,
+                ap.completion_rate, ap.trust_score, ap.skill_category, ap.monthly_fee_status,
                 u.is_active
         FROM artisan_profiles ap
         JOIN users u ON ap.user_id = u.id
         WHERE ap.user_id = ANY($1::uuid[])
           AND ap.is_available = true
           AND u.is_active = true
-          AND ap.monthly_fee_status = 'paid'
+          AND u.is_verified = true
           AND LOWER(ap.skill_category) = $2
         ORDER BY ap.tier_level DESC, ap.star_rating DESC, ap.completion_rate DESC`,
         [artisanIds, category.toLowerCase()],
       );
+    
       
-      if (result.rows.length === 0) {
+      if (newResult.rows.length === 0) {
         logger.info('No eligible artisans found in database');
         return [];
       }
-      
-      logger.info(`Found ${result.rows.length} eligible artisans from database`);
+
+     let result;
+      if(isMonthlyFeeActive){
+        result = newResult.rows.filter( artisan => artisan.monthly_fee_status === 'paid')
+      }else{
+        result = newResult.rows;
+      }
+    
+      logger.info(`Found ${result.length} eligible artisans from database`);
       
       // Calculate priority scores
-      const artisansWithDistance = result.rows.map((artisan) => {
+      const artisansWithDistance = result.map((artisan) => {
         const found = nearby.find(([id]) => id === artisan.user_id);
         const distance = found ? parseFloat(found[1]) : 999;
         logger.info(`Artisan ${artisan.full_legal_name} distance: ${distance}km`);
