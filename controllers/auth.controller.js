@@ -333,7 +333,8 @@ class AuthController {
 
     try {
       const { userId } = req.params;
-      const result = await AuthService.deleteAccount(userId);
+      const accessToken = req.token || req.headers.authorization?.split(' ')[1];
+      const result = await AuthService.deleteAccount(userId, accessToken);
       sendSuccess(res, result, 'User account deleted successfully');
     } catch (error) {
       sendError(res, error.message || 'Failed to delete user account', error.statusCode || 500);
